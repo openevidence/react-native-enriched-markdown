@@ -1,15 +1,18 @@
 #pragma once
 #import "ENRMContextMenuTextView+macOS.h"
+#import "ENRMSpoilerCapable.h"
+#import "ENRMSpoilerOverlayView.h"
 #import "ENRMUIKit.h"
 #import "LinkTapUtils.h"
 #import "StyleConfig.h"
 
 @class RenderContext;
 @class AccessibilityInfo;
+@class ENRMSpoilerOverlayManager;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface EnrichedMarkdownInternalText : RCTUIView
+@interface EnrichedMarkdownInternalText : RCTUIView <ENRMSpoilerCapable>
 
 - (instancetype)initWithConfig:(StyleConfig *)config;
 
@@ -19,6 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (CGSize)measureSize:(CGFloat)maxWidth;
 
 @property (nonatomic, readonly) ENRMPlatformTextView *textView;
+@property (nonatomic, readonly) ENRMSpoilerOverlayManager *spoilerManager;
+@property (nonatomic) ENRMSpoilerMode spoilerMode;
 
 @property (nonatomic, strong, nullable) AccessibilityInfo *accessibilityInfo;
 

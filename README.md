@@ -17,6 +17,7 @@
 - ✨ Text selection and copy support
 - 📌 Custom text selection context menu items
 - 🔗 Interactive link handling
+- 🙈 Spoiler text with animated particle overlay and tap-to-reveal
 - 🖼️ Native image interactions (iOS: Copy, Save to Camera Roll)
 - 🌐 Native platform features (Translate, Look Up, Search Web, Share)
 - 🗣️ Accessibility support (VoiceOver on iOS, TalkBack on Android, semantic HTML on web)
@@ -31,6 +32,8 @@
 - 🔗 Auto-link detection with customizable regex
 - 🔄 Smart copy/paste with Markdown preservation
 - 🎨 Customizable bold, italic, and link colors
+
+> **Note:** Spoiler syntax (`||text||`) is always enabled. Any double-pipe delimiters in your content will be parsed as spoilers — for example, `a || b || c` would render `b` as a spoiler span rather than plain text.
 
 Since 2012 [Software Mansion](https://swmansion.com) is a software agency with experience in building web and mobile apps. We are Core React Native Contributors and experts in dealing with all kinds of React Native issues.
 We can help you build your next dream product –
@@ -68,11 +71,13 @@ We can help you build your next dream product –
 ## Prerequisites
 
 **Native (iOS / Android / macOS)**
+
 - Requires [the React Native New Architecture (Fabric)](https://reactnative.dev/architecture/landing-page)
 - Supported React Native releases: `0.81`, `0.82`, `0.83`, and `0.84`
 - macOS support via [react-native-macos](https://github.com/microsoft/react-native-macos) `0.81+`
 
 **Web**
+
 - Requires [`react-native-web`](https://necolas.github.io/react-native-web/) and Metro (or another bundler with `.web.tsx` platform resolution)
 - No New Architecture requirement — the web renderer runs entirely in JavaScript via WebAssembly
 - Only `EnrichedMarkdownText` is supported on web (`EnrichedMarkdownInput` is native-only)
@@ -177,7 +182,7 @@ We're actively working on expanding the capabilities of `react-native-enriched-m
 - `EnrichedMarkdownInput`: headings, lists, blockquotes, code blocks, mentions, inline images
 - `EnrichedMarkdownInput` web support
 - macOS: block math rendering, VoiceOver accessibility, tail fade-in animation
-- Web: streaming animation, configurable link `target`, copy options (Copy as Markdown, multi-format clipboard)
+- Web: spoiler text, streaming animation, configurable link `target`, copy options (Copy as Markdown, multi-format clipboard)
 
 ## Contributing
 

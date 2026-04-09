@@ -368,3 +368,14 @@ Styles for inline LaTeX math (`$...$`). Inline math is rendered within the surro
 | Property | Type | Description |
 |----------|------|-------------|
 | `color` | `string` | Equation text color |
+
+### Spoiler-specific
+
+Styles for spoiler text (`||hidden text||`). Spoiler text is concealed behind an animated particle overlay until the user taps to reveal it.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `color` | `string` | Color used by all presets for the spoiler overlay |
+| `particles.density` | `number` | Density of the particle field (higher = more particles). Default: `8` |
+| `particles.speed` | `number` | Speed of particle movement. Default: `20` |
+| `solid.borderRadius` | `number` | Corner radius of the solid spoiler overlay rectangles. Default: `4` |

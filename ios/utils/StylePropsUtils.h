@@ -1041,5 +1041,28 @@ BOOL applyMarkdownStyleToConfig(StyleConfig *config, const MarkdownStyle &newSty
     changed = YES;
   }
 
+  // ── Spoiler ─────────────────────────────────────────────────────────────
+
+  if (newStyle.spoiler.color != oldStyle.spoiler.color) {
+    RCTUIColor *color = RCTUIColorFromSharedColor(newStyle.spoiler.color);
+    [config setSpoilerColor:color];
+    changed = YES;
+  }
+
+  if (newStyle.spoiler.particleDensity != oldStyle.spoiler.particleDensity) {
+    [config setSpoilerParticleDensity:newStyle.spoiler.particleDensity];
+    changed = YES;
+  }
+
+  if (newStyle.spoiler.particleSpeed != oldStyle.spoiler.particleSpeed) {
+    [config setSpoilerParticleSpeed:newStyle.spoiler.particleSpeed];
+    changed = YES;
+  }
+
+  if (newStyle.spoiler.solidBorderRadius != oldStyle.spoiler.solidBorderRadius) {
+    [config setSpoilerSolidBorderRadius:newStyle.spoiler.solidBorderRadius];
+    changed = YES;
+  }
+
   return changed;
 }

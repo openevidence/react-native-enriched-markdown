@@ -221,6 +221,11 @@ static inline NSString *normalizedFontWeight(NSString *fontWeight)
   NSString *_mathTextAlign;
   // Inline Math properties
   RCTUIColor *_inlineMathColor;
+  // Spoiler properties
+  RCTUIColor *_spoilerColor;
+  CGFloat _spoilerParticleDensity;
+  CGFloat _spoilerParticleSpeed;
+  CGFloat _spoilerSolidBorderRadius;
 }
 
 - (instancetype)init
@@ -250,6 +255,9 @@ static inline NSString *normalizedFontWeight(NSString *fontWeight)
   _tableFontNeedsRecreation = YES;
   _tableHeaderFontNeedsRecreation = YES;
   _linkUnderline = YES;
+  _spoilerParticleDensity = 8.0;
+  _spoilerParticleSpeed = 20.0;
+  _spoilerSolidBorderRadius = 4.0;
   return self;
 }
 
@@ -486,6 +494,10 @@ static inline NSString *normalizedFontWeight(NSString *fontWeight)
   copy->_mathMarginBottom = _mathMarginBottom;
   copy->_mathTextAlign = [_mathTextAlign copy];
   copy->_inlineMathColor = [_inlineMathColor copy];
+  copy->_spoilerColor = [_spoilerColor copy];
+  copy->_spoilerParticleDensity = _spoilerParticleDensity;
+  copy->_spoilerParticleSpeed = _spoilerParticleSpeed;
+  copy->_spoilerSolidBorderRadius = _spoilerSolidBorderRadius;
 
   return copy;
 }
@@ -2337,6 +2349,48 @@ static const CGFloat kDefaultMinGap = 4.0;
 - (void)setInlineMathColor:(RCTUIColor *)newValue
 {
   _inlineMathColor = newValue;
+}
+
+// ── Spoiler ─────────────────────────────────────────────────────────────
+
+- (RCTUIColor *)spoilerColor
+{
+  return _spoilerColor;
+}
+
+- (void)setSpoilerColor:(RCTUIColor *)newValue
+{
+  _spoilerColor = newValue;
+}
+
+- (CGFloat)spoilerParticleDensity
+{
+  return _spoilerParticleDensity;
+}
+
+- (void)setSpoilerParticleDensity:(CGFloat)newValue
+{
+  _spoilerParticleDensity = newValue;
+}
+
+- (CGFloat)spoilerParticleSpeed
+{
+  return _spoilerParticleSpeed;
+}
+
+- (void)setSpoilerParticleSpeed:(CGFloat)newValue
+{
+  _spoilerParticleSpeed = newValue;
+}
+
+- (CGFloat)spoilerSolidBorderRadius
+{
+  return _spoilerSolidBorderRadius;
+}
+
+- (void)setSpoilerSolidBorderRadius:(CGFloat)newValue
+{
+  _spoilerSolidBorderRadius = newValue;
 }
 
 @end

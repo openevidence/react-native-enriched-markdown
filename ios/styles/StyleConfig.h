@@ -355,5 +355,14 @@
 // Inline Math properties
 - (RCTUIColor *)inlineMathColor;
 - (void)setInlineMathColor:(RCTUIColor *)newValue;
+// Spoiler properties
+- (RCTUIColor *)spoilerColor;
+- (void)setSpoilerColor:(RCTUIColor *)newValue;
+- (CGFloat)spoilerParticleDensity;
+- (void)setSpoilerParticleDensity:(CGFloat)newValue;
+- (CGFloat)spoilerParticleSpeed;
+- (void)setSpoilerParticleSpeed:(CGFloat)newValue;
+- (CGFloat)spoilerSolidBorderRadius;
+- (void)setSpoilerSolidBorderRadius:(CGFloat)newValue;
 
 @end

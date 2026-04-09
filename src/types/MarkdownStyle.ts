@@ -149,6 +149,37 @@ interface InlineMathStyle {
   color?: string;
 }
 
+interface SpoilerParticlesStyle {
+  /**
+   * Number of particles per 100x100pt area.
+   * Higher values = denser, more opaque concealment.
+   * @default 8
+   */
+  density?: number;
+  /**
+   * Base speed of particle drift in points per second.
+   * @default 20
+   */
+  speed?: number;
+}
+
+interface SpoilerSolidStyle {
+  /**
+   * Corner radius of the solid spoiler overlay rectangles.
+   * @default 4
+   */
+  borderRadius?: number;
+}
+
+interface SpoilerStyle {
+  /** Color used by all presets for the spoiler overlay. */
+  color?: string;
+  /** Particle-preset tuning (only applies when spoilerMode='particles'). */
+  particles?: SpoilerParticlesStyle;
+  /** Solid-preset tuning (only applies when spoilerMode='solid'). */
+  solid?: SpoilerSolidStyle;
+}
+
 export interface MarkdownStyle {
   paragraph?: ParagraphStyle;
   h1?: HeadingStyle;
@@ -173,6 +204,7 @@ export interface MarkdownStyle {
   taskList?: TaskListStyle;
   math?: MathStyle;
   inlineMath?: InlineMathStyle;
+  spoiler?: SpoilerStyle;
 }
 
 /**

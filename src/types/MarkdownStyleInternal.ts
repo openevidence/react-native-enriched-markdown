@@ -137,6 +137,13 @@ interface InlineMathStyleInternal {
   color: string;
 }
 
+interface SpoilerStyleInternal {
+  color: string;
+  particleDensity: number;
+  particleSpeed: number;
+  solidBorderRadius: number;
+}
+
 export interface MarkdownStyleInternal {
   paragraph: ParagraphStyleInternal;
   h1: HeadingStyleInternal;
@@ -161,4 +168,5 @@ export interface MarkdownStyleInternal {
   taskList: TaskListStyleInternal;
   math: MathStyleInternal;
   inlineMath: InlineMathStyleInternal;
+  spoiler: SpoilerStyleInternal;
 }
