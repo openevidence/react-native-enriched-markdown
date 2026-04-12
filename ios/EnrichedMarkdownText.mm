@@ -356,7 +356,6 @@ using namespace facebook::react;
 #endif
 
     [_spoilerManager updateIfNeeded];
-    [self emitCitationLayout];
 
     CGSize measured = [self measureSize:self.bounds.size.width];
     if (needsHeightUpdate(measured, self.bounds)) {
@@ -375,53 +374,6 @@ using namespace facebook::react;
     [_fadeAnimator animateFrom:tailStart to:attributedText.length];
     _previousTextLength = attributedText.length;
   }
-}
-
-- (void)emitCitationLayout
-{
-  if (!_renderContext || _renderContext.citationRanges.count == 0) {
-    return;
-  }
-
-  auto eventEmitter = std::static_pointer_cast<EnrichedMarkdownTextEventEmitter const>(_eventEmitter);
-  if (!eventEmitter) {
-    return;
-  }
-
-  NSLayoutManager *layoutManager = _textView.layoutManager;
-  NSTextContainer *textContainer = _textView.textContainer;
-  CGPoint textViewOffset = [_textView convertPoint:CGPointZero toView:self];
-
-  NSMutableArray *citationsArray = [NSMutableArray array];
-
-  for (NSUInteger i = 0; i < _renderContext.citationRanges.count; i++) {
-    NSRange charRange = [_renderContext.citationRanges[i] rangeValue];
-    if (NSMaxRange(charRange) > ENRMGetAttributedText(_textView).length) {
-      continue;
-    }
-
-    NSRange glyphRange = [layoutManager glyphRangeForCharacterRange:charRange actualCharacterRange:NULL];
-    CGRect rect = [layoutManager boundingRectForGlyphRange:glyphRange inTextContainer:textContainer];
-
-    rect.origin.x += textViewOffset.x;
-    rect.origin.y += textViewOffset.y;
-
-    NSString *numbers = _renderContext.citationNumbers[i];
-    [citationsArray addObject:@{
-      @"x" : @(rect.origin.x),
-      @"y" : @(rect.origin.y),
-      @"width" : @(rect.size.width),
-      @"height" : @(rect.size.height),
-      @"numbers" : numbers ?: @"",
-    }];
-  }
-
-  NSData *jsonData = [NSJSONSerialization dataWithJSONObject:citationsArray options:0 error:nil];
-  NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-
-  EnrichedMarkdownTextEventEmitter::OnCitationLayout event;
-  event.citationsJson = std::string([jsonString UTF8String] ?: "[]");
-  eventEmitter->onCitationLayout(event);
 }
 
 #if !TARGET_OS_OSX

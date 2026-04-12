@@ -197,11 +197,6 @@ export interface CitationPressEvent {
   numbers: string;
 }
 
-export interface CitationLayoutEvent {
-  /** JSON-encoded array of {x, y, width, height, numbers} objects */
-  citationsJson: string;
-}
-
 export interface ContextMenuItemConfig {
   text: string;
   icon?: string;
@@ -267,11 +262,6 @@ export interface NativeProps extends ViewProps {
    * Receives the citation numbers as a comma-separated string (e.g. "1,2,3").
    */
   onCitationPress?: CodegenTypes.BubblingEventHandler<CitationPressEvent>;
-  /**
-   * Fired after text layout with the frame of each citation placeholder.
-   * Used to overlay React Native CitationElement views at those positions.
-   */
-  onCitationLayout?: CodegenTypes.BubblingEventHandler<CitationLayoutEvent>;
   /**
    * Controls whether the system link preview is shown on long press (iOS only).
    *

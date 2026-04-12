@@ -8,7 +8,7 @@ import android.text.method.LinkMovementMethod
 import android.view.MotionEvent
 import android.view.ViewConfiguration
 import android.widget.TextView
-import com.swmansion.enriched.markdown.spans.CitationClickSpan
+import com.swmansion.enriched.markdown.spans.CitationChipSpan
 import com.swmansion.enriched.markdown.spans.LinkSpan
 import com.swmansion.enriched.markdown.spans.SpoilerSpan
 import com.swmansion.enriched.markdown.spoiler.SpoilerCapable
@@ -57,6 +57,13 @@ class LinkLongPressMovementMethod : LinkMovementMethod() {
           Selection.removeSelection(buffer)
         }
         if (handleSpoilerTap(widget, buffer, event)) {
+          Selection.removeSelection(buffer)
+          return true
+        }
+        // CitationChipSpan is not a ClickableSpan, so handle its tap here
+        val citationSpan = findCitationSpan(widget, buffer, event)
+        if (citationSpan != null) {
+          citationSpan.onClick(widget)
           Selection.removeSelection(buffer)
           return true
         }
@@ -133,9 +140,9 @@ class LinkLongPressMovementMethod : LinkMovementMethod() {
     widget: TextView,
     buffer: Spannable,
     event: MotionEvent,
-  ): CitationClickSpan? {
+  ): CitationChipSpan? {
     val offset = charOffsetAt(widget, event) ?: return null
-    return buffer.getSpans(offset, offset, CitationClickSpan::class.java).firstOrNull()
+    return buffer.getSpans(offset, offset, CitationChipSpan::class.java).firstOrNull()
   }
 
   private fun handleSpoilerTap(

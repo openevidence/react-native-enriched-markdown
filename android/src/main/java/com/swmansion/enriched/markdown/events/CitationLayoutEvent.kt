@@ -3,9 +3,11 @@ package com.swmansion.enriched.markdown.events
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.events.Event
-import org.json.JSONArray
-import org.json.JSONObject
 
+/**
+ * Carries the layout frames of every citation placeholder span in the rendered text.
+ * JS uses these frames to overlay React Native CitationElement views at the correct positions.
+ */
 class CitationLayoutEvent(
   surfaceId: Int,
   viewId: Int,
@@ -23,17 +25,17 @@ class CitationLayoutEvent(
 
   override fun getEventData(): WritableMap =
     Arguments.createMap().apply {
-      val jsonArray = JSONArray()
+      val arr = Arguments.createArray()
       for (frame in citations) {
-        val obj = JSONObject()
-        obj.put("x", frame.x.toDouble())
-        obj.put("y", frame.y.toDouble())
-        obj.put("width", frame.width.toDouble())
-        obj.put("height", frame.height.toDouble())
-        obj.put("numbers", frame.numbers)
-        jsonArray.put(obj)
+        val map = Arguments.createMap()
+        map.putDouble("x", frame.x.toDouble())
+        map.putDouble("y", frame.y.toDouble())
+        map.putDouble("width", frame.width.toDouble())
+        map.putDouble("height", frame.height.toDouble())
+        map.putString("numbers", frame.numbers)
+        arr.pushMap(map)
       }
-      putString("citationsJson", jsonArray.toString())
+      putArray("citations", arr)
     }
 
   companion object {

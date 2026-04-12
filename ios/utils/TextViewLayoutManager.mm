@@ -1,6 +1,5 @@
 #import "TextViewLayoutManager.h"
 #import "BlockquoteBorder.h"
-#import "CitationBackground.h"
 #import "CodeBackground.h"
 #import "CodeBlockBackground.h"
 #import "ListMarkerDrawer.h"
@@ -43,10 +42,6 @@
 
   ListMarkerDrawer *markerDrawer = [self getListMarkerDrawerWithConfig:config];
   [markerDrawer drawMarkersForGlyphRange:glyphsToShow layoutManager:self textContainer:textContainer atPoint:origin];
-
-  // Citation backgrounds are no longer drawn natively.
-  // Citations use NSTextAttachment placeholders and their frames are emitted
-  // via onCitationLayout so JS can overlay React Native views.
 }
 
 #pragma mark - Safe Property Accessors
@@ -94,16 +89,6 @@
   return obj;
 }
 
-- (CitationBackground *)getCitationBackgroundWithConfig:(StyleConfig *)config
-{
-  CitationBackground *obj = objc_getAssociatedObject(self, kCitationBackgroundKey);
-  if (!obj) {
-    obj = [[CitationBackground alloc] initWithConfig:config];
-    objc_setAssociatedObject(self, kCitationBackgroundKey, obj, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-  }
-  return obj;
-}
-
 #pragma mark - Configuration
 
 - (StyleConfig *)config
@@ -118,7 +103,6 @@
   objc_setAssociatedObject(self, kCodeBlockBackgroundKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   objc_setAssociatedObject(self, kBlockquoteBorderKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   objc_setAssociatedObject(self, kListMarkerDrawerKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-  objc_setAssociatedObject(self, kCitationBackgroundKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 
   objc_setAssociatedObject(self, kStyleConfigKey, config, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 

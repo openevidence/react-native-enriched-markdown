@@ -245,6 +245,11 @@ class EnrichedMarkdownText
         span.registerTextView(this)
       }
 
+      (styledText as? android.text.Spanned)?.let { spanned ->
+        spanned.getSpans(0, spanned.length, com.swmansion.enriched.markdown.spans.CitationChipSpan::class.java)
+          .forEach { it.registerTextView(this) }
+      }
+
       spoilerOverlayDrawer = SpoilerOverlayDrawer.setupIfNeeded(this, styledText, spoilerOverlayDrawer, spoilerMode)
 
       layoutManager.invalidateLayout()

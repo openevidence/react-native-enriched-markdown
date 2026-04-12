@@ -2,8 +2,7 @@ package com.swmansion.enriched.markdown.renderer
 
 import android.text.SpannableStringBuilder
 import com.swmansion.enriched.markdown.parser.MarkdownASTNode
-import com.swmansion.enriched.markdown.spans.CitationClickSpan
-import com.swmansion.enriched.markdown.spans.CitationPlaceholderSpan
+import com.swmansion.enriched.markdown.spans.CitationChipSpan
 import com.swmansion.enriched.markdown.utils.text.span.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
 
 class CitationRenderer(
@@ -16,32 +15,26 @@ class CitationRenderer(
     onLinkLongPress: ((String) -> Unit)?,
     factory: RendererFactory,
   ) {
-    val numbers = node.content
-    if (numbers.isEmpty()) return
-
-    // Leading space
-    builder.append(" ")
+    val label = node.content
+    val numbers = node.getAttribute("numbers") ?: return
+    val faviconUrl = node.getAttribute("faviconUrl") ?: ""
 
     val start = builder.length
-    // Insert a placeholder character that the ReplacementSpan will size
     builder.append("\uFFFC") // Object replacement character
     val end = builder.length
 
     builder.setSpan(
-      CitationPlaceholderSpan(numbers),
+      CitationChipSpan(
+        label = label,
+        faviconUrl = faviconUrl,
+        numbers = numbers,
+        onCitationPress = factory.onCitationPress,
+        styleCache = factory.styleCache,
+        context = factory.context,
+      ),
       start,
       end,
       SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,
     )
-
-    builder.setSpan(
-      CitationClickSpan(numbers, factory.onCitationPress, factory.styleCache),
-      start,
-      end,
-      SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,
-    )
-
-    // Trailing space
-    builder.append(" ")
   }
 }

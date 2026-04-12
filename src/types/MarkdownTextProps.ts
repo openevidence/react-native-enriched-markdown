@@ -5,7 +5,6 @@ import type {
   LinkLongPressEvent,
   TaskListItemPressEvent,
   CitationPressEvent,
-  CitationLayoutItem,
 } from './events';
 
 /**
@@ -77,15 +76,6 @@ export interface EnrichedMarkdownTextProps extends Omit<ViewProps, 'style'> {
    * @platform ios, android, web
    */
   onCitationPress?: (event: CitationPressEvent) => void;
-  /**
-   * Render prop for citation chips. Called for each citation placeholder
-   * after native text layout computes its frame. The returned React element
-   * is absolutely positioned over the text at the citation's location.
-   *
-   * @param item - The citation's position and numbers string
-   * @returns A React element to render as the citation chip
-   */
-  renderCitation?: (item: CitationLayoutItem) => React.ReactNode;
   /**
    * Controls whether the system link preview is shown on long press (iOS only).
    *

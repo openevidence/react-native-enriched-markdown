@@ -4,23 +4,23 @@ import android.text.Spanned
 import android.widget.TextView
 import com.facebook.react.uimanager.PixelUtil
 import com.swmansion.enriched.markdown.events.CitationLayoutEvent
-import com.swmansion.enriched.markdown.spans.CitationPlaceholderSpan
+import com.swmansion.enriched.markdown.spans.CitationChipSpan
 
 /**
- * Computes the on-screen frames (in dp) of all [CitationPlaceholderSpan] instances
+ * Computes the on-screen frames (in dp) of all [CitationChipSpan] instances
  * in the given [TextView]'s laid-out text.
  *
  * @param yOffsetPx Additional vertical pixel offset to add to each frame.
  *   Used by the GFM component where each segment view has its own top position
  *   inside the parent FrameLayout.
- * @return A list of [CitationLayoutEvent.CitationFrame], one per placeholder span,
+ * @return A list of [CitationLayoutEvent.CitationFrame], one per chip span,
  *   with coordinates in dp suitable for React Native layout.
  */
 fun TextView.computeCitationFrames(yOffsetPx: Float = 0f): List<CitationLayoutEvent.CitationFrame> {
   val textLayout = layout ?: return emptyList()
   val spanned = text as? Spanned ?: return emptyList()
 
-  val spans = spanned.getSpans(0, spanned.length, CitationPlaceholderSpan::class.java)
+  val spans = spanned.getSpans(0, spanned.length, CitationChipSpan::class.java)
   if (spans.isEmpty()) return emptyList()
 
   return spans.map { span ->

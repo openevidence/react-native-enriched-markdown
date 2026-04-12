@@ -280,6 +280,10 @@ class EnrichedMarkdown
         lastElementMarginBottom = segment.lastElementMarginBottom
         applyStyledText(segment.styledText)
         segment.imageSpans.forEach { it.registerTextView(this) }
+        (segment.styledText as? android.text.Spanned)?.let { spanned ->
+          spanned.getSpans(0, spanned.length, com.swmansion.enriched.markdown.spans.CitationChipSpan::class.java)
+            .forEach { it.registerTextView(this) }
+        }
 
         onTaskListItemPressCallback = { taskIndex, checked, itemText ->
           this@EnrichedMarkdown.onTaskListItemPressCallback?.invoke(taskIndex, checked, itemText)
