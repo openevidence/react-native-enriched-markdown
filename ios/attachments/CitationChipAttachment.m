@@ -1,165 +1,171 @@
 #import "CitationChipAttachment.h"
-#import "CitationChipView.h"
-#import "RuntimeKeys.h"
-#import <objc/runtime.h>
+#import "ENRMUIKit.h"
 
+// Chip design constants (matching React Native CitationElement)
 static const CGFloat kChipHeight = 20.0;
-static const CGFloat kLeadingMargin = 4.0;
-static const CGFloat kTrailingMargin = 2.0;
+static const CGFloat kChipMaxWidth = 90.0;
+static const CGFloat kChipPaddingH = 8.0;
+static const CGFloat kChipBorderRadius = 10.0;
+static const CGFloat kFaviconSize = 14.0;
+static const CGFloat kFaviconGap = 4.0;
+static const CGFloat kFontSize = 11.0;
+static const CGFloat kMarginLeft = 4.0;
+static const CGFloat kMarginRight = 2.0;
 
-@interface CitationChipAttachment ()
+static RCTUIColor *sChipBgColor = nil;
+static RCTUIColor *sChipTextColor = nil;
+static NSCache<NSString *, UIImage *> *sChipImageCache = nil;
+static NSCache<NSString *, UIImage *> *sFaviconCache = nil;
 
-@property (nonatomic, strong, readwrite) CitationChipView *chipView;
-@property (nonatomic, weak) NSTextContainer *textContainer;
-@property (nonatomic, weak) ENRMPlatformTextView *textView;
+@implementation CitationChipAttachment {
+  NSString *_label;
+  NSString *_faviconUrl;
+  NSString *_numbers;
+  UIImage *_faviconImage;
+  CGFloat _chipWidth;
+  BOOL _faviconLoaded;
+}
 
-@end
++ (void)initialize
+{
+  if (self == [CitationChipAttachment class]) {
+    sChipBgColor = [RCTUIColor colorWithRed:0.988 green:0.933 blue:0.910 alpha:1.0];
+    sChipTextColor = [RCTUIColor colorWithRed:0.204 green:0.196 blue:0.192 alpha:1.0];
+    sChipImageCache = [[NSCache alloc] init];
+    sChipImageCache.countLimit = 200;
+    sFaviconCache = [[NSCache alloc] init];
+    sFaviconCache.countLimit = 50;
+  }
+}
 
-@implementation CitationChipAttachment
-
-- (instancetype)initWithChipView:(CitationChipView *)chipView
+- (instancetype)initWithLabel:(NSString *)label faviconUrl:(NSString *)faviconUrl numbers:(NSString *)numbers
 {
   self = [super init];
   if (self) {
-    _chipView = chipView;
+    _label = [label copy];
+    _faviconUrl = [faviconUrl copy];
+    _numbers = [numbers copy];
+    _faviconLoaded = NO;
 
-    // Initial render (no favicon yet — or favicon if already cached)
-    RCTUIImage *initialImage = [chipView renderToImage];
-    if (initialImage) {
-      self.image = initialImage;
+    // Compute chip width
+    NSDictionary *textAttrs = @{NSFontAttributeName : [UIFont systemFontOfSize:kFontSize]};
+    CGSize textSize = [_label sizeWithAttributes:textAttrs];
+    _chipWidth = kChipPaddingH + textSize.width + kChipPaddingH;
+    if (_faviconUrl.length > 0) {
+      _chipWidth += kFaviconSize + kFaviconGap;
     }
+    _chipWidth = MIN(_chipWidth, kChipMaxWidth);
 
-    // Set initial bounds so the attachment has a size before layout asks
-    CGFloat chipWidth = chipView.chipSize.width;
-    CGFloat totalWidth = kLeadingMargin + chipWidth + kTrailingMargin;
-    self.bounds = CGRectMake(0, 0, totalWidth, kChipHeight);
-
-    // Re-render when favicon arrives
-    __weak typeof(self) weakSelf = self;
-    chipView.onFaviconLoaded = ^{
-      [weakSelf handleFaviconLoaded];
-    };
+    // Check favicon cache
+    if (_faviconUrl.length > 0) {
+      UIImage *cached = [sFaviconCache objectForKey:_faviconUrl];
+      if (cached) {
+        _faviconImage = cached;
+        _faviconLoaded = YES;
+      } else {
+        [self loadFavicon];
+      }
+    }
   }
   return self;
 }
 
-#pragma mark - NSTextAttachment overrides
+- (NSString *)textForCopy
+{
+  return [NSString stringWithFormat:@"[%@]", _numbers];
+}
+
+#pragma mark - NSTextAttachment
 
 - (CGRect)attachmentBoundsForTextContainer:(NSTextContainer *)textContainer
                       proposedLineFragment:(CGRect)lineFragment
-                             glyphPosition:(CGPoint)position
+                             glyphPosition:(CGPoint)glyphPosition
                             characterIndex:(NSUInteger)characterIndex
 {
-  self.textContainer = textContainer;
+  CGFloat totalWidth = kMarginLeft + _chipWidth + kMarginRight;
 
-  CGFloat chipWidth = self.chipView.chipSize.width;
-  // Total width = leading margin + chip + trailing margin
-  CGFloat totalWidth = kLeadingMargin + chipWidth + kTrailingMargin;
-
-  // Vertically center with surrounding text baseline
-  UIFont *appliedFont = nil;
-  NSLayoutManager *layoutManager = textContainer.layoutManager;
-  NSTextStorage *textStorage = layoutManager.textStorage;
-
-  if (textStorage && characterIndex < textStorage.length) {
-    appliedFont = [textStorage attribute:NSFontAttributeName atIndex:characterIndex effectiveRange:NULL];
+  UIFont *surroundingFont = nil;
+  NSTextStorage *storage = textContainer.layoutManager.textStorage;
+  if (storage && characterIndex < storage.length) {
+    surroundingFont = [storage attribute:NSFontAttributeName atIndex:characterIndex effectiveRange:NULL];
   }
 
-  CGFloat verticalOffset;
-  if (appliedFont) {
-    verticalOffset = (appliedFont.capHeight - kChipHeight) / 2.0;
-  } else {
-    verticalOffset = (lineFragment.size.height - kChipHeight) / 2.0;
-  }
-
-  return CGRectMake(0, verticalOffset, totalWidth, kChipHeight);
+  CGFloat yOffset = surroundingFont ? (surroundingFont.capHeight - kChipHeight) / 2.0 : -4.0;
+  return CGRectMake(0, yOffset, totalWidth, kChipHeight);
 }
 
-- (RCTUIImage *)imageForBounds:(CGRect)imageBounds
-                 textContainer:(NSTextContainer *)textContainer
-                characterIndex:(NSUInteger)characterIndex
+- (UIImage *)imageForBounds:(CGRect)imageBounds
+              textContainer:(NSTextContainer *)textContainer
+             characterIndex:(NSUInteger)charIndex
 {
-  self.textContainer = textContainer;
+  NSString *cacheKey = [NSString stringWithFormat:@"%@|%d|%.0f", _label, _faviconLoaded, imageBounds.size.width];
+  UIImage *cached = [sChipImageCache objectForKey:cacheKey];
+  if (cached) return cached;
 
-  CGFloat chipWidth = self.chipView.chipSize.width;
-  CGFloat chipHeight = self.chipView.chipSize.height;
+  UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:imageBounds.size];
+  UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext *ctx) {
+    CGContextRef cg = ctx.CGContext;
+    CGRect chipRect = CGRectMake(kMarginLeft, 0, self->_chipWidth, kChipHeight);
 
-  if (chipWidth <= 0 || chipHeight <= 0) {
-    return self.image;
-  }
+    // Pill background
+    UIBezierPath *pill = [UIBezierPath bezierPathWithRoundedRect:chipRect cornerRadius:kChipBorderRadius];
+    [sChipBgColor setFill];
+    [pill fill];
 
-  CGSize totalSize = imageBounds.size;
-  if (totalSize.width <= 0 || totalSize.height <= 0) {
-    return self.image;
-  }
+    CGFloat x = chipRect.origin.x + kChipPaddingH;
 
-  // Render the chip view into an image, then composite it into a
-  // margin-padded canvas matching the attachment bounds.
-  RCTUIImage *chipImage = [self.chipView renderToImage];
-  if (!chipImage) {
-    return self.image;
-  }
+    // Favicon
+    if (self->_faviconImage) {
+      CGFloat iconY = (kChipHeight - kFaviconSize) / 2.0;
+      CGRect iconRect = CGRectMake(x, iconY, kFaviconSize, kFaviconSize);
+      CGContextSaveGState(cg);
+      [[UIBezierPath bezierPathWithOvalInRect:iconRect] addClip];
+      [self->_faviconImage drawInRect:iconRect];
+      CGContextRestoreGState(cg);
+      x += kFaviconSize + kFaviconGap;
+    }
 
-  RCTUIGraphicsImageRenderer *renderer = ImageRendererForSize(totalSize);
-  RCTUIImage *rendered = [renderer imageWithActions:^(RCTUIGraphicsImageRendererContext *ctx) {
-    CGFloat chipY = (totalSize.height - chipHeight) / 2.0;
-    [chipImage drawInRect:CGRectMake(kLeadingMargin, chipY, chipWidth, chipHeight)];
+    // Label
+    CGFloat maxTextW = chipRect.origin.x + self->_chipWidth - kChipPaddingH - x;
+    if (maxTextW > 0) {
+      NSMutableParagraphStyle *para = [[NSMutableParagraphStyle alloc] init];
+      para.lineBreakMode = NSLineBreakByTruncatingTail;
+      NSDictionary *attrs = @{
+        NSFontAttributeName : [UIFont systemFontOfSize:kFontSize],
+        NSForegroundColorAttributeName : sChipTextColor,
+        NSParagraphStyleAttributeName : para,
+      };
+      CGFloat textY = (kChipHeight - kFontSize) / 2.0 - 1.0;
+      [self->_label drawInRect:CGRectMake(x, textY, maxTextW, kChipHeight) withAttributes:attrs];
+    }
   }];
 
-  return rendered ?: self.image;
+  [sChipImageCache setObject:image forKey:cacheKey];
+  return image;
 }
 
-#pragma mark - Favicon reload
+#pragma mark - Favicon
 
-- (void)handleFaviconLoaded
+- (void)loadFavicon
 {
-  // Re-render the chip to a new image
-  RCTUIImage *newImage = [self.chipView renderToImage];
-  if (newImage) {
-    self.image = newImage;
-  }
+  NSURL *url = [NSURL URLWithString:_faviconUrl];
+  if (!url) return;
 
-  [self refreshDisplay];
-}
-
-- (void)refreshDisplay
-{
-  ENRMPlatformTextView *tv = [self fetchAssociatedTextView];
-  if (!tv)
-    return;
-
-  NSRange range = [self findAttachmentRangeInText:tv.textStorage];
-  if (range.location != NSNotFound) {
-    [tv.layoutManager invalidateDisplayForCharacterRange:range];
-  }
-}
-
-- (ENRMPlatformTextView *)fetchAssociatedTextView
-{
-  if (self.textView)
-    return self.textView;
-  if (!self.textContainer)
-    return nil;
-  self.textView = objc_getAssociatedObject(self.textContainer, kTextViewKey);
-  return self.textView;
-}
-
-- (NSRange)findAttachmentRangeInText:(NSAttributedString *)attributedString
-{
-  __block NSRange foundRange = NSMakeRange(NSNotFound, 0);
-  if (!attributedString || attributedString.length == 0)
-    return foundRange;
-
-  [attributedString enumerateAttribute:NSAttachmentAttributeName
-                               inRange:NSMakeRange(0, attributedString.length)
-                               options:0
-                            usingBlock:^(id value, NSRange range, BOOL *stop) {
-                              if (value == self) {
-                                foundRange = range;
-                                *stop = YES;
-                              }
-                            }];
-  return foundRange;
+  __weak CitationChipAttachment *weakSelf = self;
+  dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+    NSData *data = [NSData dataWithContentsOfURL:url];
+    if (!data) return;
+    UIImage *image = [UIImage imageWithData:data];
+    if (!image) return;
+    [sFaviconCache setObject:image forKey:self->_faviconUrl];
+    dispatch_async(dispatch_get_main_queue(), ^{
+      CitationChipAttachment *strong = weakSelf;
+      if (strong) {
+        strong->_faviconImage = image;
+        strong->_faviconLoaded = YES;
+      }
+    });
+  });
 }
 
 @end

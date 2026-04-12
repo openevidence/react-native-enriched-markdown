@@ -3,20 +3,19 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class CitationChipView;
-
 /**
- * NSTextAttachment that renders a CitationChipView as an inline image.
- *
- * On creation the chip is rendered without its favicon. When the favicon
- * finishes downloading, the attachment re-renders and invalidates layout
- * so the text system redraws.
+ * NSTextAttachment that draws a citation chip inline using CoreGraphics.
+ * No UIView hierarchy is created — drawing is done directly in imageForBounds:.
+ * Chip images are cached globally by label + favicon state.
  */
 @interface CitationChipAttachment : NSTextAttachment
 
-@property (nonatomic, strong, readonly) CitationChipView *chipView;
+- (instancetype)initWithLabel:(NSString *)label
+                   faviconUrl:(NSString *)faviconUrl
+                      numbers:(NSString *)numbers;
 
-- (instancetype)initWithChipView:(CitationChipView *)chipView;
+/// Returns a copy-friendly text representation, e.g. "[1]" or "[1,2]".
+- (NSString *)textForCopy;
 
 @end
 

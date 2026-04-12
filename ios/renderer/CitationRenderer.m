@@ -1,6 +1,5 @@
 #import "CitationRenderer.h"
 #import "CitationChipAttachment.h"
-#import "CitationChipView.h"
 #import "MarkdownASTNode.h"
 #import "RenderContext.h"
 #import "RendererFactory.h"
@@ -32,28 +31,26 @@
   if (displayText.length == 0)
     return;
 
-  NSDictionary *blockAttrs = [context getTextAttributes];
+  NSUInteger start = output.length;
 
-  // ── Create the chip view and attachment ──
-  CitationChipView *chipView = [[CitationChipView alloc] initWithLabel:displayText
-                                                            faviconUrl:faviconUrl];
-  CitationChipAttachment *attachment = [[CitationChipAttachment alloc] initWithChipView:chipView];
+  // Create chip attachment (direct CoreGraphics drawing, no UIView)
+  CitationChipAttachment *attachment = [[CitationChipAttachment alloc] initWithLabel:displayText
+                                                                          faviconUrl:faviconUrl
+                                                                             numbers:numbers];
 
-  // ── Build the attachment string ──
   NSMutableAttributedString *attachmentStr =
       [[NSMutableAttributedString alloc] initWithAttributedString:[NSAttributedString attributedStringWithAttachment:attachment]];
 
-  // Apply the surrounding block font so vertical alignment calculations work
-  [attachmentStr addAttributes:blockAttrs range:NSMakeRange(0, attachmentStr.length)];
+  // Store text-for-copy as a custom attribute for clipboard substitution
+  [attachmentStr addAttribute:@"CitationCopyText" value:[attachment textForCopy] range:NSMakeRange(0, attachmentStr.length)];
 
-  // Record the range for tap handling
-  NSUInteger start = output.length;
   [output appendAttributedString:attachmentStr];
-  NSRange range = NSMakeRange(start, output.length - start);
 
-  if (range.length > 0) {
-    [context registerCitationRange:range numbers:numbers];
-  }
+  NSRange range = NSMakeRange(start, output.length - start);
+  if (range.length == 0)
+    return;
+
+  [context registerCitationRange:range numbers:numbers];
 }
 
 @end

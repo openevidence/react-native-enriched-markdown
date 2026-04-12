@@ -1,5 +1,6 @@
 #import "MarkdownExtractor.h"
 #import "BlockquoteBorder.h"
+#import "CitationChipAttachment.h"
 #import "ENRMFeatureFlags.h"
 #import "ENRMImageAttachment.h"
 #import "ENRMUIKit.h"
@@ -181,6 +182,12 @@ NSString *_Nullable extractMarkdownFromAttributedString(NSAttributedString *attr
                           return;
                         }
 #endif
+
+                        if ([attachment isKindOfClass:[CitationChipAttachment class]]) {
+                          CitationChipAttachment *citation = (CitationChipAttachment *)attachment;
+                          [result appendString:[citation textForCopy]];
+                          return;
+                        }
 
                         if ([text isEqualToString:@"\uFFFC"])
                           return;
