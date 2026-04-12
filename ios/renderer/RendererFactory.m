@@ -108,8 +108,10 @@
     case MarkdownNodeTypeSpoiler:
       return [[ENRMSpoilerRenderer alloc] initWithRendererFactory:self config:_config];
     case MarkdownNodeTypeCitation:
+      NSLog(@"[CITATION_DEBUG] RendererFactory creating CitationRenderer");
       return [[CitationRenderer alloc] initWithRendererFactory:self config:_config];
     default:
+      NSLog(@"[CITATION_DEBUG] RendererFactory: no renderer for node type %ld", (long)type);
       return nil;
   }
 }

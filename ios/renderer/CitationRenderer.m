@@ -31,33 +31,40 @@
 
   NSUInteger start = output.length;
 
-  // Build citation text from the numbers content
-  BlockStyle *blockStyle = [context getBlockStyle];
-  UIFont *blockFont = cachedFontFromBlockStyle(blockStyle, context);
-
-  CGFloat fontSize = [_config citationFontSize] > 0 ? [_config citationFontSize] : blockStyle.fontSize;
-  UIFont *citationFont = [UIFont systemFontOfSize:fontSize];
-  if (!citationFont) {
-    citationFont = blockFont;
-  }
-
-  RCTUIColor *citationColor = [_config citationColor] ?: blockStyle.color;
-
-  NSDictionary *attributes = @{
-    NSFontAttributeName : citationFont,
-    NSForegroundColorAttributeName : citationColor,
-    NSUnderlineStyleAttributeName : @(NSUnderlineStyleNone),
-    CitationAttributeName : @YES,
-  };
-
-  NSAttributedString *citationString = [[NSAttributedString alloc] initWithString:numbers attributes:attributes];
-  [output appendAttributedString:citationString];
+  // 1. Render citation text using the block's text attributes (same as TextRenderer).
+  //    This ensures the citation uses the correct font, paragraph style, and baseline
+  //    from the surrounding block context.
+  NSAttributedString *text = [[NSAttributedString alloc] initWithString:numbers
+                                                             attributes:[context getTextAttributes]];
+  [output appendAttributedString:text];
 
   NSRange range = NSMakeRange(start, output.length - start);
   if (range.length == 0)
     return;
 
-  // Register for tap handling
+  // 2. Overlay citation-specific styling on top of the block attributes.
+  RCTUIColor *citationColor = [_config citationColor];
+  if (citationColor) {
+    [output addAttribute:NSForegroundColorAttributeName value:citationColor range:range];
+  }
+  [output addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleNone) range:range];
+  [output addAttribute:CitationAttributeName value:@YES range:range];
+
+  // 3. Apply citation-specific font size if configured (otherwise keep block font).
+  CGFloat citationFontSize = [_config citationFontSize];
+  if (citationFontSize > 0) {
+    [output enumerateAttribute:NSFontAttributeName
+                       inRange:range
+                       options:0
+                    usingBlock:^(UIFont *font, NSRange subrange, BOOL *stop) {
+                      if (font) {
+                        UIFont *sizedFont = [font fontWithSize:citationFontSize];
+                        [output addAttribute:NSFontAttributeName value:sizedFont range:subrange];
+                      }
+                    }];
+  }
+
+  // 4. Register for tap handling
   [context registerCitationRange:range numbers:numbers];
 }
 

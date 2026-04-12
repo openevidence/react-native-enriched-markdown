@@ -1,7 +1,7 @@
 #include "MD4CParser.hpp"
 #include "../md4c/md4c.h"
 #include <cstring>
-#include <regex>
+#include <cstdio>
 #include <vector>
 
 namespace Markdown {
@@ -62,6 +62,36 @@ public:
     if (node && !nodeStack.empty()) {
       nodeStack.back()->addChild(node);
     }
+  }
+
+  // Map recognized inline HTML tags to AST nodes (Strong, Emphasis, etc.)
+  // Unrecognized tags are silently dropped (their text content still appears).
+  void handleInlineHtml(const std::string &tag) {
+    // Normalize: lowercase comparison, trim whitespace
+    std::string lower;
+    lower.reserve(tag.size());
+    for (char c : tag) {
+      if (c != ' ' && c != '\t' && c != '\n' && c != '\r') {
+        lower.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(c))));
+      }
+    }
+
+    // Opening tags → push node
+    if (lower == "<strong>" || lower == "<b>") {
+      pushNode(std::make_shared<MarkdownASTNode>(NodeType::Strong));
+    } else if (lower == "<em>" || lower == "<i>") {
+      pushNode(std::make_shared<MarkdownASTNode>(NodeType::Emphasis));
+    }
+    // Closing tags → pop node
+    else if (lower == "</strong>" || lower == "</b>" ||
+             lower == "</em>" || lower == "</i>") {
+      popNode();
+    }
+    // Self-closing / void tags
+    else if (lower == "<br>" || lower == "<br/>" || lower == "<br/>") {
+      addInlineNode(std::make_shared<MarkdownASTNode>(NodeType::LineBreak));
+    }
+    // Unrecognized tags: silently drop (content between them still renders)
   }
 
   std::string getAttributeText(const MD_ATTRIBUTE *attr) {
@@ -344,6 +374,17 @@ public:
       impl->currentText.append(text, size);
     }
 
+    // Handle HTML entities (&amp; &nbsp; etc.) — decode to literal text
+    if (type == MD_TEXT_ENTITY) {
+      impl->currentText.append(text, size);
+    }
+
+    // Handle inline HTML tags — map recognized tags to AST nodes
+    if (type == MD_TEXT_HTML) {
+      std::string tag(text, size);
+      impl->handleInlineHtml(tag);
+    }
+
     return 0;
   }
 };
@@ -401,7 +442,44 @@ collectDisplayMathNodes(const std::vector<std::shared_ptr<MarkdownASTNode>> &chi
 //
 // A Text node like "See evidence [[1,2]] and [[3]]." becomes:
 //   Text("See evidence "), Citation("1,2"), Text(" and "), Citation("3"), Text(".")
-static const std::regex citationRegex(R"(\[\[(\d+(?:,\s*\d+)*)\]\])");
+
+// Returns true if c is a digit or comma (valid citation content character)
+static bool isCitationChar(char c) {
+  return (c >= '0' && c <= '9') || c == ',' || c == ' ';
+}
+
+// Try to parse a citation at position pos (pointing to first '[').
+// Returns the end position (past ']]') if valid, or 0 if not a citation.
+// On success, fills `numbers` with the cleaned content (whitespace removed).
+static size_t tryCitationAt(const std::string &text, size_t pos, std::string &numbers) {
+  size_t len = text.size();
+  if (pos + 4 >= len) return 0;
+  if (text[pos] != '[' || text[pos + 1] != '[') return 0;
+
+  size_t start = pos + 2;
+  size_t end = start;
+
+  while (end < len && text[end] != ']') {
+    if (!isCitationChar(text[end])) return 0;
+    end++;
+  }
+
+  if (end >= len || end + 1 >= len) return 0;
+  if (text[end] != ']' || text[end + 1] != ']') return 0;
+  if (end == start) return 0;
+
+  bool hasDigit = false;
+  for (size_t j = start; j < end; j++) {
+    if (text[j] >= '0' && text[j] <= '9') { hasDigit = true; break; }
+  }
+  if (!hasDigit) return 0;
+
+  numbers.clear();
+  for (size_t j = start; j < end; j++) {
+    if (text[j] != ' ') numbers.push_back(text[j]);
+  }
+  return end + 2;
+}
 
 void extractCitationsFromTextNodes(MarkdownASTNode &node) {
   auto &children = node.children;
@@ -412,56 +490,65 @@ void extractCitationsFromTextNodes(MarkdownASTNode &node) {
     if (child->type == NodeType::Text && !child->content.empty()) {
       const std::string &text = child->content;
 
-      // Quick check before running regex
+      // Log ALL text nodes to see what MD4C produces
+      if (text.size() < 200) {
+        fprintf(stderr, "[CITATION_DEBUG] Text node: '%s'\n", text.c_str());
+      } else {
+        fprintf(stderr, "[CITATION_DEBUG] Text node (len=%zu): '%.100s...'\n", text.size(), text.c_str());
+      }
+
       if (text.find("[[") == std::string::npos) {
         continue;
       }
 
+      fprintf(stderr, "[CITATION_DEBUG] Found [[ in Text node!\n");
+
       std::vector<std::shared_ptr<MarkdownASTNode>> replacements;
-      std::sregex_iterator it(text.begin(), text.end(), citationRegex);
-      std::sregex_iterator end;
       size_t lastPos = 0;
+      size_t pos = 0;
+      std::string numbers;
 
-      for (; it != end; ++it) {
-        const std::smatch &match = *it;
-        size_t matchStart = static_cast<size_t>(match.position());
+      while (pos < text.size()) {
+        size_t found = text.find("[[", pos);
+        if (found == std::string::npos) break;
 
-        // Text before the citation
-        if (matchStart > lastPos) {
+        size_t citEnd = tryCitationAt(text, found, numbers);
+        if (citEnd == 0) {
+          pos = found + 2;
+          continue;
+        }
+
+        if (found > lastPos) {
           auto textNode = std::make_shared<MarkdownASTNode>(NodeType::Text);
-          textNode->content = text.substr(lastPos, matchStart - lastPos);
+          textNode->content = text.substr(lastPos, found - lastPos);
           replacements.push_back(std::move(textNode));
         }
 
-        // Citation node
         auto citationNode = std::make_shared<MarkdownASTNode>(NodeType::Citation);
-        // Clean whitespace from numbers: "1, 2" -> "1,2"
-        std::string numbers = match[1].str();
-        numbers.erase(std::remove(numbers.begin(), numbers.end(), ' '), numbers.end());
         citationNode->content = numbers;
         citationNode->setAttribute("numbers", numbers);
         replacements.push_back(std::move(citationNode));
+        fprintf(stderr, "[CITATION_DEBUG] Created Citation node: '%s'\n", numbers.c_str());
 
-        lastPos = matchStart + static_cast<size_t>(match.length());
+        lastPos = citEnd;
+        pos = citEnd;
       }
 
       if (replacements.empty()) {
-        continue; // No citations found
+        continue;
       }
 
-      // Text after the last citation
       if (lastPos < text.size()) {
         auto textNode = std::make_shared<MarkdownASTNode>(NodeType::Text);
         textNode->content = text.substr(lastPos);
         replacements.push_back(std::move(textNode));
       }
 
-      // Replace the original Text node with the new nodes
-      auto pos = children.erase(children.begin() + static_cast<ptrdiff_t>(i));
-      children.insert(pos, replacements.begin(), replacements.end());
-      i += replacements.size() - 1; // -1 because the loop will ++i
+      auto insertPos = children.erase(children.begin() + static_cast<ptrdiff_t>(i));
+      children.insert(insertPos, replacements.begin(), replacements.end());
+      i += replacements.size() - 1;
     } else {
-      // Recurse into non-text children
+      fprintf(stderr, "[CITATION_DEBUG] Recursing into node type %d with %zu children\n", static_cast<int>(child->type), child->children.size());
       extractCitationsFromTextNodes(*child);
     }
   }
@@ -540,7 +627,7 @@ std::shared_ptr<MarkdownASTNode> MD4CParser::parse(const std::string &markdown, 
   impl_->reset(estimatedDepth);
   impl_->inputText = markdown.c_str();
 
-  unsigned flags = MD_FLAG_NOHTML | MD_FLAG_STRIKETHROUGH | MD_FLAG_TABLES | MD_FLAG_TASKLISTS | MD_FLAG_SPOILER;
+  unsigned flags = MD_FLAG_STRIKETHROUGH | MD_FLAG_TABLES | MD_FLAG_TASKLISTS | MD_FLAG_SPOILER;
   if (md4cFlags.permissiveAutolinks) {
     flags |= MD_FLAG_PERMISSIVEAUTOLINKS;
   }
@@ -570,6 +657,7 @@ std::shared_ptr<MarkdownASTNode> MD4CParser::parse(const std::string &markdown, 
   impl_->flushText();
 
   if (impl_->root) {
+    fprintf(stderr, "[CITATION_DEBUG] About to run extractCitationsFromTextNodes, root has %zu children\n", impl_->root->children.size());
     extractCitationsFromTextNodes(*impl_->root);
     promoteDisplayMathFromParagraphs(*impl_->root);
   }

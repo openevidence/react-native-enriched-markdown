@@ -263,6 +263,8 @@ static inline NSString *normalizedFontWeight(NSString *fontWeight)
   _spoilerParticleDensity = 8.0;
   _spoilerParticleSpeed = 20.0;
   _spoilerSolidBorderRadius = 4.0;
+  _citationBackgroundColor = [RCTUIColor colorWithRed:0.91 green:0.94 blue:0.996 alpha:1.0]; // #E8F0FE
+  _citationColor = [RCTUIColor colorWithRed:0.102 green:0.451 blue:0.91 alpha:1.0]; // #1A73E8
   _citationFontSize = 0.0;
   _citationBorderRadius = 4.0;
   return self;

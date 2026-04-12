@@ -22,8 +22,11 @@ NSString *const CitationAttributeName = @"Citation";
                              atPoint:(CGPoint)origin
 {
   RCTUIColor *backgroundColor = _config.citationBackgroundColor;
-  if (!backgroundColor)
+  NSLog(@"[CITATION_DEBUG] CitationBackground.draw called, bgColorIsNil=%d", backgroundColor == nil);
+  if (!backgroundColor) {
+    NSLog(@"[CITATION_DEBUG] CitationBackground: bgColor is nil, skipping draw");
     return;
+  }
 
   NSTextStorage *textStorage = layoutManager.textStorage;
   NSRange charRange = [layoutManager characterRangeForGlyphRange:glyphsToShow actualGlyphRange:NULL];
@@ -41,6 +44,7 @@ NSString *const CitationAttributeName = @"Citation";
                          if (NSIntersectionRange(range, charRange).length == 0)
                            return;
 
+                         NSLog(@"[CITATION_DEBUG] CitationBackground: found Citation attr at range (%lu, %lu)", (unsigned long)range.location, (unsigned long)range.length);
                          [self drawCitationBackgroundForRange:range
                                                layoutManager:layoutManager
                                                textContainer:textContainer
