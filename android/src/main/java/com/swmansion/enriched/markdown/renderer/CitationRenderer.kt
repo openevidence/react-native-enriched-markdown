@@ -2,8 +2,8 @@ package com.swmansion.enriched.markdown.renderer
 
 import android.text.SpannableStringBuilder
 import com.swmansion.enriched.markdown.parser.MarkdownASTNode
-import com.swmansion.enriched.markdown.spans.CitationBackgroundSpan
 import com.swmansion.enriched.markdown.spans.CitationClickSpan
+import com.swmansion.enriched.markdown.spans.CitationPlaceholderSpan
 import com.swmansion.enriched.markdown.utils.text.span.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
 
 class CitationRenderer(
@@ -19,12 +19,16 @@ class CitationRenderer(
     val numbers = node.content
     if (numbers.isEmpty()) return
 
+    // Leading space
+    builder.append(" ")
+
     val start = builder.length
-    builder.append(numbers)
+    // Insert a placeholder character that the ReplacementSpan will size
+    builder.append("\uFFFC") // Object replacement character
     val end = builder.length
 
     builder.setSpan(
-      CitationBackgroundSpan(factory.styleCache),
+      CitationPlaceholderSpan(numbers),
       start,
       end,
       SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,
@@ -36,5 +40,8 @@ class CitationRenderer(
       end,
       SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,
     )
+
+    // Trailing space
+    builder.append(" ")
   }
 }

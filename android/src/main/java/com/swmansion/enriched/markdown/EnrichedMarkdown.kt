@@ -21,6 +21,7 @@ import com.swmansion.enriched.markdown.styles.StyleConfig
 import com.swmansion.enriched.markdown.utils.common.FeatureFlags
 import com.swmansion.enriched.markdown.utils.common.MarkdownSegment
 import com.swmansion.enriched.markdown.utils.common.splitASTIntoSegments
+import com.swmansion.enriched.markdown.utils.text.view.emitCitationLayoutEvent
 import com.swmansion.enriched.markdown.utils.text.view.emitLinkLongPressEvent
 import com.swmansion.enriched.markdown.utils.text.view.emitLinkPressEvent
 import com.swmansion.enriched.markdown.views.BlockSegmentView
@@ -256,6 +257,17 @@ class EnrichedMarkdown
         addView(view)
       }
       layoutSegments()
+      emitCitationLayoutAfterLayout()
+    }
+
+    private fun emitCitationLayoutAfterLayout() {
+      post {
+        val allFrames =
+          segmentViews.filterIsInstance<EnrichedMarkdownInternalText>().flatMap { textView ->
+            textView.getCitationFrames(yOffsetPx = textView.top.toFloat())
+          }
+        emitCitationLayoutEvent(allFrames)
+      }
     }
 
     private fun createTextView(segment: RenderSegment.Text) =

@@ -1,4 +1,5 @@
-import { useMemo, useCallback, useRef, useEffect } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { View } from 'react-native';
 import EnrichedMarkdownTextNativeComponent from '../EnrichedMarkdownTextNativeComponent';
 import type { MarkdownStyleInternal } from '../EnrichedMarkdownTextNativeComponent';
 import EnrichedMarkdownNativeComponent from '../EnrichedMarkdownNativeComponent';
@@ -14,12 +15,14 @@ import type {
   LinkLongPressEvent,
   TaskListItemPressEvent,
   CitationPressEvent,
+  CitationLayoutEvent,
+  CitationLayoutItem,
   OnContextMenuItemPressEvent,
 } from '../types/events';
 
 export type { MarkdownStyle, Md4cFlags };
 export type { EnrichedMarkdownTextProps, ContextMenuItem };
-export type { LinkPressEvent, LinkLongPressEvent, TaskListItemPressEvent, CitationPressEvent };
+export type { LinkPressEvent, LinkLongPressEvent, TaskListItemPressEvent, CitationPressEvent, CitationLayoutItem };
 
 const defaultMd4cFlags: Md4cFlags = {
   underline: false,
@@ -34,6 +37,7 @@ export const EnrichedMarkdownText = ({
   onLinkLongPress,
   onTaskListItemPress,
   onCitationPress,
+  renderCitation,
   enableLinkPreview,
   selectable = true,
   md4cFlags = defaultMd4cFlags,
@@ -48,8 +52,6 @@ export const EnrichedMarkdownText = ({
 }: EnrichedMarkdownTextProps) => {
   const normalizedStyleRef = useRef<MarkdownStyleInternal | null>(null);
   const normalized = normalizeMarkdownStyle(markdownStyle);
-  // normalizeMarkdownStyle returns cached objects for structurally equal inputs,
-  // so this referential check is sufficient to preserve a stable prop reference.
   if (normalizedStyleRef.current !== normalized) {
     normalizedStyleRef.current = normalized;
   }
@@ -130,6 +132,29 @@ export const EnrichedMarkdownText = ({
     [onCitationPress]
   );
 
+  // Citation overlay state — populated by native onCitationLayout events
+  const [citationFrames, setCitationFrames] = useState<CitationLayoutItem[]>(
+    []
+  );
+
+  const handleCitationLayout = useCallback(
+    (e: NativeSyntheticEvent<CitationLayoutEvent>) => {
+      try {
+        const parsed = JSON.parse(e.nativeEvent.citationsJson) as CitationLayoutItem[];
+        setCitationFrames(parsed);
+      } catch {
+        setCitationFrames([]);
+      }
+    },
+    []
+  );
+
+  // Separate native-only props from the rest spread (which may include
+  // web-only props like `dir` that the native component doesn't accept).
+  const { dir: _dir, ...nativeRest } = rest as Record<string, unknown> & {
+    dir?: string;
+  };
+
   const sharedProps = {
     markdown,
     markdownStyle: normalizedStyle,
@@ -137,6 +162,7 @@ export const EnrichedMarkdownText = ({
     onLinkLongPress: handleLinkLongPress,
     onTaskListItemPress: handleTaskListItemPress,
     onCitationPress: handleCitationPress,
+    onCitationLayout: renderCitation ? handleCitationLayout : undefined,
     enableLinkPreview: onLinkLongPress == null && (enableLinkPreview ?? true),
     selectable,
     md4cFlags: normalizedMd4cFlags,
@@ -148,14 +174,42 @@ export const EnrichedMarkdownText = ({
     style: containerStyle,
     contextMenuItems: nativeContextMenuItems,
     onContextMenuItemPress: handleContextMenuItemPress,
-    ...rest,
+    ...nativeRest,
   };
 
-  if (flavor === 'github') {
-    return <EnrichedMarkdownNativeComponent {...sharedProps} />;
+  const nativeComponent =
+    flavor === 'github' ? (
+      <EnrichedMarkdownNativeComponent {...(sharedProps as any)} />
+    ) : (
+      <EnrichedMarkdownTextNativeComponent {...(sharedProps as any)} />
+    );
+
+  // If no renderCitation prop, render the native component directly (no overlay)
+  if (!renderCitation || citationFrames.length === 0) {
+    return nativeComponent;
   }
 
-  return <EnrichedMarkdownTextNativeComponent {...sharedProps} />;
+  // Wrap in a View and overlay citation React elements at the native-reported positions
+  return (
+    <View>
+      {nativeComponent}
+      {citationFrames.map((frame, i) => (
+        <View
+          key={`cit-${i}-${frame.numbers}`}
+          pointerEvents="box-none"
+          style={{
+            position: 'absolute',
+            left: frame.x,
+            top: frame.y,
+            width: frame.width,
+            height: frame.height,
+          }}
+        >
+          {renderCitation(frame)}
+        </View>
+      ))}
+    </View>
+  );
 };
 
 export default EnrichedMarkdownText;

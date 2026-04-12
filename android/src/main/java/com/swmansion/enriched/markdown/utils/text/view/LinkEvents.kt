@@ -6,6 +6,7 @@ import android.widget.TextView
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.events.NativeGestureUtil
+import com.swmansion.enriched.markdown.events.CitationLayoutEvent
 import com.swmansion.enriched.markdown.events.CitationPressEvent
 import com.swmansion.enriched.markdown.events.LinkLongPressEvent
 import com.swmansion.enriched.markdown.events.LinkPressEvent
@@ -22,6 +23,13 @@ fun View.emitCitationPressEvent(numbers: String) {
   val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
   val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, id)
   dispatcher?.dispatchEvent(CitationPressEvent(surfaceId, id, numbers))
+}
+
+fun View.emitCitationLayoutEvent(citations: List<CitationLayoutEvent.CitationFrame>) {
+  val reactContext = context as? ReactContext ?: return
+  val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
+  val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, id)
+  dispatcher?.dispatchEvent(CitationLayoutEvent(surfaceId, id, citations))
 }
 
 fun View.emitLinkLongPressEvent(url: String) {

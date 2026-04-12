@@ -7,6 +7,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import androidx.appcompat.widget.AppCompatTextView
 import com.swmansion.enriched.markdown.accessibility.MarkdownAccessibilityHelper
+import com.swmansion.enriched.markdown.events.CitationLayoutEvent
 import com.swmansion.enriched.markdown.spoiler.SpoilerCapable
 import com.swmansion.enriched.markdown.spoiler.SpoilerMode
 import com.swmansion.enriched.markdown.spoiler.SpoilerOverlayDrawer
@@ -15,6 +16,7 @@ import com.swmansion.enriched.markdown.utils.text.view.LinkLongPressMovementMeth
 import com.swmansion.enriched.markdown.utils.text.view.applySelectableState
 import com.swmansion.enriched.markdown.utils.text.view.cancelJSTouchForCheckboxTap
 import com.swmansion.enriched.markdown.utils.text.view.cancelJSTouchForLinkTap
+import com.swmansion.enriched.markdown.utils.text.view.computeCitationFrames
 import com.swmansion.enriched.markdown.utils.text.view.createSelectionActionModeCallback
 import com.swmansion.enriched.markdown.utils.text.view.setupAsMarkdownTextView
 import com.swmansion.enriched.markdown.views.BlockSegmentView
@@ -107,6 +109,13 @@ class EnrichedMarkdownInternalText
       }
       return result
     }
+
+    /**
+     * Computes citation placeholder frames with an optional vertical offset.
+     * Used by the parent [EnrichedMarkdown] to collect frames across all segments.
+     */
+    fun getCitationFrames(yOffsetPx: Float = 0f): List<CitationLayoutEvent.CitationFrame> =
+      computeCitationFrames(yOffsetPx)
 
     fun setJustificationMode(needsJustify: Boolean) {
       if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {

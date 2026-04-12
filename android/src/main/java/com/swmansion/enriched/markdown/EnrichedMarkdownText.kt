@@ -27,6 +27,8 @@ import com.swmansion.enriched.markdown.utils.text.view.applySelectableState
 import com.swmansion.enriched.markdown.utils.text.view.cancelJSTouchForCheckboxTap
 import com.swmansion.enriched.markdown.utils.text.view.cancelJSTouchForLinkTap
 import com.swmansion.enriched.markdown.utils.text.view.createSelectionActionModeCallback
+import com.swmansion.enriched.markdown.utils.text.view.computeCitationFrames
+import com.swmansion.enriched.markdown.utils.text.view.emitCitationLayoutEvent
 import com.swmansion.enriched.markdown.utils.text.view.emitCitationPressEvent
 import com.swmansion.enriched.markdown.utils.text.view.emitLinkLongPressEvent
 import com.swmansion.enriched.markdown.utils.text.view.emitLinkPressEvent
@@ -254,6 +256,16 @@ class EnrichedMarkdownText
         }
         fadeAnimator?.animate(tailStart, styledText.length)
         previousTextLength = styledText.length
+      }
+
+      // Emit citation layout after the text view has been measured and laid out
+      emitCitationLayoutAfterLayout()
+    }
+
+    private fun emitCitationLayoutAfterLayout() {
+      post {
+        val frames = computeCitationFrames()
+        emitCitationLayoutEvent(frames)
       }
     }
 

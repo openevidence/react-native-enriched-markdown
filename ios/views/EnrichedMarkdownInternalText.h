@@ -33,6 +33,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) CGFloat lastElementMarginBottom;
 
+/// Returns citation frame rects in the given target view's coordinate space.
+- (NSArray<NSDictionary *> *)citationFramesInView:(RCTUIView *)targetView;
+
 #if TARGET_OS_OSX
 - (void)setContextMenuProvider:(ENRMContextMenuProvider)provider;
 #endif

@@ -5,6 +5,7 @@
 #import "ENRMTextRenderer.h"
 #import "ENRMUIKit.h"
 #import "EditMenuUtils.h"
+#import "RenderContext.h"
 
 #import "ENRMFeatureFlags.h"
 
@@ -577,6 +578,33 @@ using namespace facebook::react;
 {
   [super layoutSubviews];
   [self computeSegmentLayoutForWidth:self.bounds.size.width applyFrames:YES];
+  [self emitCitationLayout];
+}
+
+- (void)emitCitationLayout
+{
+  auto eventEmitter = std::static_pointer_cast<EnrichedMarkdownEventEmitter const>(_eventEmitter);
+  if (!eventEmitter) {
+    return;
+  }
+
+  NSMutableArray *citationsArray = [NSMutableArray array];
+
+  for (RCTUIView *segment in _segmentViews) {
+    if (![segment isKindOfClass:[EnrichedMarkdownInternalText class]]) {
+      continue;
+    }
+    EnrichedMarkdownInternalText *textSegment = (EnrichedMarkdownInternalText *)segment;
+    NSArray<NSDictionary *> *frames = [textSegment citationFramesInView:self];
+    [citationsArray addObjectsFromArray:frames];
+  }
+
+  NSData *jsonData = [NSJSONSerialization dataWithJSONObject:citationsArray options:0 error:nil];
+  NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+
+  EnrichedMarkdownEventEmitter::OnCitationLayout event;
+  event.citationsJson = std::string([jsonString UTF8String] ?: "[]");
+  eventEmitter->onCitationLayout(event);
 }
 
 - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps

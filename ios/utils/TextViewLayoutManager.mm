@@ -44,8 +44,9 @@
   ListMarkerDrawer *markerDrawer = [self getListMarkerDrawerWithConfig:config];
   [markerDrawer drawMarkersForGlyphRange:glyphsToShow layoutManager:self textContainer:textContainer atPoint:origin];
 
-  CitationBackground *citationBg = [self getCitationBackgroundWithConfig:config];
-  [citationBg drawBackgroundsForGlyphRange:glyphsToShow layoutManager:self textContainer:textContainer atPoint:origin];
+  // Citation backgrounds are no longer drawn natively.
+  // Citations use NSTextAttachment placeholders and their frames are emitted
+  // via onCitationLayout so JS can overlay React Native views.
 }
 
 #pragma mark - Safe Property Accessors

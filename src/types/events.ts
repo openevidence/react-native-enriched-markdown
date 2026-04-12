@@ -16,6 +16,18 @@ export interface CitationPressEvent {
   numbers: string;
 }
 
+export interface CitationLayoutItem {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  numbers: string;
+}
+
+export interface CitationLayoutEvent {
+  citationsJson: string;
+}
+
 /**
  * Native-level context menu item config sent to the native component.
  * Does not include the `onPress` callback — callbacks are managed on the JS side.

@@ -3,6 +3,7 @@
 #import "ENRMSpoilerOverlayManager.h"
 #import "ENRMTextViewSetup.h"
 #import "MarkdownAccessibilityElementBuilder.h"
+#import "RenderContext.h"
 #import "RuntimeKeys.h"
 #include <TargetConditionals.h>
 
@@ -15,6 +16,7 @@
 #endif
   BOOL _accessibilityNeedsRebuild;
   ENRMSpoilerOverlayManager *_spoilerManager;
+  RenderContext *_renderContext;
 }
 
 @synthesize textView = _textView;
@@ -63,6 +65,8 @@
 
 - (void)applyAttributedText:(NSMutableAttributedString *)text context:(RenderContext *)context
 {
+  _renderContext = context;
+
   NSLayoutManager *layoutManager = _textView.layoutManager;
   if ([layoutManager isKindOfClass:[TextViewLayoutManager class]]) {
     [layoutManager setValue:_config forKey:@"config"];
@@ -93,6 +97,44 @@
 - (CGSize)measureSize:(CGFloat)maxWidth
 {
   return ENRMMeasureMarkdownText(_textView, maxWidth, _config, _allowTrailingMargin, _lastElementMarginBottom);
+}
+
+- (NSArray<NSDictionary *> *)citationFramesInView:(RCTUIView *)targetView
+{
+  if (!_renderContext || _renderContext.citationRanges.count == 0) {
+    return @[];
+  }
+
+  NSLayoutManager *layoutManager = _textView.layoutManager;
+  NSTextContainer *textContainer = _textView.textContainer;
+  NSMutableArray<NSDictionary *> *frames = [NSMutableArray array];
+
+  // Offset from the text view to the target view's coordinate space
+  CGPoint offset = [_textView convertPoint:CGPointZero toView:targetView];
+
+  for (NSUInteger i = 0; i < _renderContext.citationRanges.count; i++) {
+    NSRange charRange = [_renderContext.citationRanges[i] rangeValue];
+    if (NSMaxRange(charRange) > ENRMGetAttributedText(_textView).length) {
+      continue;
+    }
+
+    NSRange glyphRange = [layoutManager glyphRangeForCharacterRange:charRange actualCharacterRange:NULL];
+    CGRect rect = [layoutManager boundingRectForGlyphRange:glyphRange inTextContainer:textContainer];
+
+    rect.origin.x += offset.x;
+    rect.origin.y += offset.y;
+
+    NSString *numbers = _renderContext.citationNumbers[i];
+    [frames addObject:@{
+      @"x" : @(rect.origin.x),
+      @"y" : @(rect.origin.y),
+      @"width" : @(rect.size.width),
+      @"height" : @(rect.size.height),
+      @"numbers" : numbers ?: @"",
+    }];
+  }
+
+  return frames;
 }
 
 - (void)layoutSubviews

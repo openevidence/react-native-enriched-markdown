@@ -4,6 +4,7 @@ import android.view.View
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.UIManagerHelper
+import com.swmansion.enriched.markdown.events.CitationLayoutEvent
 import com.swmansion.enriched.markdown.events.CitationPressEvent
 import com.swmansion.enriched.markdown.events.ContextMenuItemPressEvent
 import com.swmansion.enriched.markdown.events.LinkLongPressEvent
@@ -22,6 +23,8 @@ fun markdownEventTypeConstants(): MutableMap<String, Any> {
     mapOf("registrationName" to ContextMenuItemPressEvent.EVENT_NAME)
   map[CitationPressEvent.EVENT_NAME] =
     mapOf("registrationName" to CitationPressEvent.EVENT_NAME)
+  map[CitationLayoutEvent.EVENT_NAME] =
+    mapOf("registrationName" to CitationLayoutEvent.EVENT_NAME)
   return map
 }
 

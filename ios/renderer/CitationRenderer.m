@@ -1,11 +1,11 @@
 #import "CitationRenderer.h"
-#import "CitationBackground.h"
 #import "MarkdownASTNode.h"
 #import "RenderContext.h"
 #import "RendererFactory.h"
 #import "StyleConfig.h"
 
-static const CGFloat kFaviconSize = 12.0;
+static const CGFloat kPlaceholderWidth = 90.0;
+static const CGFloat kPlaceholderHeight = 20.0;
 
 @implementation CitationRenderer {
   RendererFactory *_rendererFactory;
@@ -26,89 +26,45 @@ static const CGFloat kFaviconSize = 12.0;
 
 - (void)renderNode:(MarkdownASTNode *)node into:(NSMutableAttributedString *)output context:(RenderContext *)context
 {
-  NSString *displayText = node.content ?: @"";
-  NSString *numbers = node.attributes[@"numbers"] ?: displayText;
-  NSString *faviconUrl = node.attributes[@"faviconUrl"] ?: @"";
-
-  if (displayText.length == 0)
+  NSString *numbers = node.attributes[@"numbers"] ?: node.content ?: @"";
+  if (numbers.length == 0)
     return;
 
   NSDictionary *blockAttrs = [context getTextAttributes];
 
-  // ── Leading margin (outside chip range) ──
-  NSAttributedString *leadingMargin = [[NSAttributedString alloc] initWithString:@"  " attributes:blockAttrs];
-  [output appendAttributedString:leadingMargin];
+  // Small leading space (outside attachment)
+  [output appendAttributedString:[[NSAttributedString alloc] initWithString:@" " attributes:blockAttrs]];
 
   NSUInteger start = output.length;
 
-  // ── Build citation attributes ──
-  NSMutableDictionary *attrs = [blockAttrs mutableCopy];
-  RCTUIColor *citationColor = [_config citationColor];
-  if (citationColor) {
-    attrs[NSForegroundColorAttributeName] = citationColor;
-  }
-  attrs[NSUnderlineStyleAttributeName] = @(NSUnderlineStyleNone);
-  attrs[CitationAttributeName] = @YES;
+  // Create placeholder attachment with fixed chip dimensions
+  NSTextAttachment *attachment = [[NSTextAttachment alloc] init];
+  // Create a transparent 1x1 image so the attachment renders as empty space
+#if !TARGET_OS_OSX
+  UIGraphicsBeginImageContextWithOptions(CGSizeMake(1, 1), NO, 0);
+  UIImage *transparentImage = UIGraphicsGetImageFromCurrentImageContext();
+  UIGraphicsEndImageContext();
+  attachment.image = transparentImage;
+#else
+  NSImage *transparentImage = [[NSImage alloc] initWithSize:NSMakeSize(1, 1)];
+  attachment.image = transparentImage;
+#endif
 
-  CGFloat citationFontSize = [_config citationFontSize];
-  if (citationFontSize > 0) {
-    UIFont *currentFont = attrs[NSFontAttributeName];
-    if (currentFont) {
-      attrs[NSFontAttributeName] = [currentFont fontWithSize:citationFontSize];
-    }
-  }
+  // Set bounds: verticalOffset centers the attachment with the text baseline
+  UIFont *font = blockAttrs[NSFontAttributeName];
+  CGFloat yOffset = font ? (font.capHeight - kPlaceholderHeight) / 2.0 : -4.0;
+  attachment.bounds = CGRectMake(0, yOffset, kPlaceholderWidth, kPlaceholderHeight);
 
-  // ── Favicon ──
-  if (faviconUrl.length > 0) {
-    NSTextAttachment *faviconAttachment = [[NSTextAttachment alloc] init];
-    UIFont *font = attrs[NSFontAttributeName];
-    CGFloat yOffset = font ? (font.capHeight - kFaviconSize) / 2.0 : -2.0;
-    faviconAttachment.bounds = CGRectMake(0, yOffset, kFaviconSize, kFaviconSize);
+  NSAttributedString *attachmentStr = [NSAttributedString attributedStringWithAttachment:attachment];
+  [output appendAttributedString:attachmentStr];
 
-    NSMutableAttributedString *iconStr =
-        [[NSMutableAttributedString alloc] initWithAttributedString:[NSAttributedString attributedStringWithAttachment:faviconAttachment]];
-    [iconStr addAttribute:CitationAttributeName value:@YES range:NSMakeRange(0, iconStr.length)];
-    [output appendAttributedString:iconStr];
-
-    // Gap after favicon: regular space with citation attrs so it gets chip background
-    NSAttributedString *gap = [[NSAttributedString alloc] initWithString:@" " attributes:attrs];
-    [output appendAttributedString:gap];
-
-    // Async load favicon image
-    NSURL *url = [NSURL URLWithString:faviconUrl];
-    if (url) {
-      __weak NSTextAttachment *weakAttachment = faviconAttachment;
-      dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
-        NSData *data = [NSData dataWithContentsOfURL:url];
-        if (data) {
-          UIImage *image = [UIImage imageWithData:data];
-          if (image) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-              NSTextAttachment *strong = weakAttachment;
-              if (strong) {
-                strong.image = image;
-              }
-            });
-          }
-        }
-      });
-    }
-  }
-
-  // ── Label text ──
-  NSAttributedString *labelStr = [[NSAttributedString alloc] initWithString:displayText attributes:attrs];
-  [output appendAttributedString:labelStr];
-
-  // Mark the full chip range for tap handling and background drawing
   NSRange range = NSMakeRange(start, output.length - start);
-  if (range.length == 0)
-    return;
 
+  // Register for citation tracking (used to compute frames after layout)
   [context registerCitationRange:range numbers:numbers];
 
-  // ── Trailing margin (outside chip range) ──
-  NSAttributedString *trailingMargin = [[NSAttributedString alloc] initWithString:@"  " attributes:blockAttrs];
-  [output appendAttributedString:trailingMargin];
+  // Small trailing space
+  [output appendAttributedString:[[NSAttributedString alloc] initWithString:@" " attributes:blockAttrs]];
 }
 
 @end
