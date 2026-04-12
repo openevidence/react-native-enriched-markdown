@@ -8,6 +8,7 @@ import android.text.method.LinkMovementMethod
 import android.view.MotionEvent
 import android.view.ViewConfiguration
 import android.widget.TextView
+import com.swmansion.enriched.markdown.spans.CitationClickSpan
 import com.swmansion.enriched.markdown.spans.LinkSpan
 import com.swmansion.enriched.markdown.spans.SpoilerSpan
 import com.swmansion.enriched.markdown.spoiler.SpoilerCapable
@@ -34,7 +35,8 @@ class LinkLongPressMovementMethod : LinkMovementMethod() {
         startY = event.y
 
         val span = findLinkSpan(widget, buffer, event)
-        isLinkTouchActive = span != null
+        val citationSpan = findCitationSpan(widget, buffer, event)
+        isLinkTouchActive = span != null || citationSpan != null
         span?.let { scheduleLongPress(widget, it) }
       }
 
@@ -125,6 +127,15 @@ class LinkLongPressMovementMethod : LinkMovementMethod() {
   ): LinkSpan? {
     val offset = charOffsetAt(widget, event) ?: return null
     return buffer.getSpans(offset, offset, LinkSpan::class.java).firstOrNull()
+  }
+
+  private fun findCitationSpan(
+    widget: TextView,
+    buffer: Spannable,
+    event: MotionEvent,
+  ): CitationClickSpan? {
+    val offset = charOffsetAt(widget, event) ?: return null
+    return buffer.getSpans(offset, offset, CitationClickSpan::class.java).firstOrNull()
   }
 
   private fun handleSpoilerTap(

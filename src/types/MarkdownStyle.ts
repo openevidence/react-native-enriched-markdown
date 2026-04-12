@@ -180,6 +180,21 @@ interface SpoilerStyle {
   solid?: SpoilerSolidStyle;
 }
 
+interface CitationStyle {
+  /** Background color of the citation chip. */
+  backgroundColor?: string;
+  /** Text color of the citation chip. */
+  color?: string;
+  /**
+   * Font size for citation text.
+   * Set to 0 to inherit from the current block style.
+   * @default 0
+   */
+  fontSize?: number;
+  /** Corner radius of the citation chip background. */
+  borderRadius?: number;
+}
+
 export interface MarkdownStyle {
   paragraph?: ParagraphStyle;
   h1?: HeadingStyle;
@@ -205,6 +220,7 @@ export interface MarkdownStyle {
   math?: MathStyle;
   inlineMath?: InlineMathStyle;
   spoiler?: SpoilerStyle;
+  citation?: CitationStyle;
 }
 
 /**

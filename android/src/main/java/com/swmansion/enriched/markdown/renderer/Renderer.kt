@@ -31,6 +31,10 @@ class Renderer {
       ) { span -> reportImageSpan(span) }
   }
 
+  fun setOnCitationPress(callback: ((String) -> Unit)?) {
+    cachedFactory?.onCitationPress = callback
+  }
+
   fun renderDocument(
     document: MarkdownASTNode,
     onLinkPress: ((String) -> Unit)? = null,

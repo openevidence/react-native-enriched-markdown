@@ -93,6 +93,29 @@ function LatexMathInlineRenderer({
   );
 }
 
+function CitationRenderer({
+  node,
+  styles,
+  callbacks,
+}: RendererProps) {
+  const numbers = node.content ?? node.attributes?.numbers ?? '';
+
+  const handleClick = () => {
+    callbacks.onCitationPress?.({ numbers });
+  };
+
+  return (
+    <span
+      role="button"
+      tabIndex={0}
+      style={styles.citation}
+      onClick={handleClick}
+    >
+      {numbers}
+    </span>
+  );
+}
+
 export const inlineRenderers: RendererMap = {
   Text: TextRenderer,
   LineBreak: LineBreakRenderer,
@@ -103,4 +126,5 @@ export const inlineRenderers: RendererMap = {
   Code: CodeRenderer,
   Link: LinkRenderer,
   LatexMathInline: LatexMathInlineRenderer,
+  Citation: CitationRenderer,
 };

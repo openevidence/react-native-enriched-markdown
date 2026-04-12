@@ -27,6 +27,7 @@ ENRMRenderResult *ENRMRenderASTNodes(NSArray<MarkdownASTNode *> *nodes, StyleCon
 
   NSMutableAttributedString *attributedText = [renderer renderRoot:root context:context];
   [context applyLinkAttributesToString:attributedText];
+  [context applyCitationAttributesToString:attributedText];
 
   ENRMRenderResult *result = [[ENRMRenderResult alloc] init];
   result.attributedText = attributedText;

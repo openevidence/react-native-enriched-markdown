@@ -12,6 +12,10 @@ export interface TaskListItemPressEvent {
   text: string;
 }
 
+export interface CitationPressEvent {
+  numbers: string;
+}
+
 /**
  * Native-level context menu item config sent to the native component.
  * Does not include the `onPress` callback — callbacks are managed on the JS side.

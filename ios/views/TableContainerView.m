@@ -137,6 +137,7 @@
   NSMutableAttributedString *attributedText = [renderer renderRoot:temporaryRoot context:context];
 
   [context applyLinkAttributesToString:attributedText];
+  [context applyCitationAttributesToString:attributedText];
 
   if (alignment != NSTextAlignmentLeft && attributedText.length > 0) {
     NSRange fullRange = NSMakeRange(0, attributedText.length);

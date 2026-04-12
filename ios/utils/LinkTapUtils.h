@@ -14,6 +14,9 @@ NSString *_Nullable linkURLAtTapLocation(ENRMPlatformTextView *textView, ENRMTap
 /// Returns the link URL at the given character range, or nil if none found.
 NSString *_Nullable linkURLAtRange(ENRMPlatformTextView *textView, NSRange characterRange);
 
+/// Returns the citation numbers string at the tap location, or nil if no citation was tapped.
+NSString *_Nullable citationNumbersAtTapLocation(ENRMPlatformTextView *textView, ENRMTapRecognizer *recognizer);
+
 /// Returns YES if the point (in textView coordinates) is on a link or task list checkbox.
 BOOL isPointOnInteractiveElement(ENRMPlatformTextView *textView, CGPoint point);
 

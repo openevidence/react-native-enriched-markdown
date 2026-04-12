@@ -238,6 +238,12 @@ const DEFAULT_NORMALIZED_STYLE: MarkdownStyleInternal = Object.freeze({
     particleSpeed: 20,
     solidBorderRadius: 4,
   },
+  citation: {
+    backgroundColor: normalizeColor('#E8F0FE')!,
+    color: normalizeColor('#1A73E8')!,
+    fontSize: 0,
+    borderRadius: 4,
+  },
 });
 
 const refCache = new WeakMap<MarkdownStyle, MarkdownStyleInternal>();

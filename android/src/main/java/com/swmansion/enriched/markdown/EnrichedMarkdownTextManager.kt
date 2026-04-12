@@ -12,6 +12,7 @@ import com.facebook.react.viewmanagers.EnrichedMarkdownTextManagerDelegate
 import com.facebook.react.viewmanagers.EnrichedMarkdownTextManagerInterface
 import com.facebook.yoga.YogaMeasureMode
 import com.swmansion.enriched.markdown.spoiler.SpoilerMode
+import com.swmansion.enriched.markdown.utils.common.emitCitationPress
 import com.swmansion.enriched.markdown.utils.common.emitContextMenuItemPress
 import com.swmansion.enriched.markdown.utils.common.emitLinkLongPress
 import com.swmansion.enriched.markdown.utils.common.emitLinkPress
@@ -60,6 +61,10 @@ class EnrichedMarkdownTextManager :
 
     view?.setOnLinkLongPressCallback { url ->
       emitLinkLongPress(view, url)
+    }
+
+    view?.setOnCitationPressCallback { numbers ->
+      emitCitationPress(view, numbers)
     }
 
     view?.setOnTaskListItemPressCallback { taskIndex, checked, itemText ->

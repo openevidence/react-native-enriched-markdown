@@ -234,6 +234,14 @@ class StyleConfig(
     SpoilerStyle.fromReadableMap(map, styleParser)
   }
 
+  val citationStyle: CitationStyle by lazy {
+    val map =
+      requireNotNull(style.getMap("citation")) {
+        "Citation style not found. JS should always provide defaults."
+      }
+    CitationStyle.fromReadableMap(map, styleParser)
+  }
+
   val tableTypeface: Typeface? by lazy {
     val fontFamily = tableStyle.fontFamily.takeIf { it.isNotEmpty() }
     val fontWeight = parseFontWeight(tableStyle.fontWeight)
@@ -297,7 +305,8 @@ class StyleConfig(
       taskListStyle == other.taskListStyle &&
       mathStyle == other.mathStyle &&
       inlineMathStyle == other.inlineMathStyle &&
-      spoilerStyle == other.spoilerStyle
+      spoilerStyle == other.spoilerStyle &&
+      citationStyle == other.citationStyle
   }
 
   override fun hashCode(): Int {
@@ -320,6 +329,7 @@ class StyleConfig(
     result = 31 * result + mathStyle.hashCode()
     result = 31 * result + inlineMathStyle.hashCode()
     result = 31 * result + spoilerStyle.hashCode()
+    result = 31 * result + citationStyle.hashCode()
     return result
   }
 }

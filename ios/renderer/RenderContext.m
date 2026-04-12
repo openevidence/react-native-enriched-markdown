@@ -17,6 +17,8 @@
   if (self = [super init]) {
     _linkRanges = [NSMutableArray array];
     _linkURLs = [NSMutableArray array];
+    _citationRanges = [NSMutableArray array];
+    _citationNumbers = [NSMutableArray array];
     _headingRanges = [NSMutableArray array];
     _headingLevels = [NSMutableArray array];
     _imageRanges = [NSMutableArray array];
@@ -113,6 +115,25 @@
     if (NSMaxRange(range) > length)
       continue;
     [attributedString addAttribute:@"linkURL" value:self.linkURLs[i] range:range];
+  }
+}
+
+- (void)registerCitationRange:(NSRange)range numbers:(NSString *)numbers
+{
+  if (range.length == 0)
+    return;
+  [self.citationRanges addObject:[NSValue valueWithRange:range]];
+  [self.citationNumbers addObject:numbers ?: @""];
+}
+
+- (void)applyCitationAttributesToString:(NSMutableAttributedString *)attributedString
+{
+  NSUInteger length = attributedString.length;
+  for (NSUInteger i = 0; i < self.citationRanges.count; i++) {
+    NSRange range = [self.citationRanges[i] rangeValue];
+    if (NSMaxRange(range) > length)
+      continue;
+    [attributedString addAttribute:@"citationNumbers" value:self.citationNumbers[i] range:range];
   }
 }
 
@@ -243,6 +264,8 @@
 {
   [_linkRanges removeAllObjects];
   [_linkURLs removeAllObjects];
+  [_citationRanges removeAllObjects];
+  [_citationNumbers removeAllObjects];
   [_headingRanges removeAllObjects];
   [_headingLevels removeAllObjects];
   [_imageRanges removeAllObjects];

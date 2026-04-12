@@ -144,6 +144,13 @@ interface SpoilerStyleInternal {
   solidBorderRadius: number;
 }
 
+interface CitationStyleInternal {
+  backgroundColor: string;
+  color: string;
+  fontSize: number;
+  borderRadius: number;
+}
+
 export interface MarkdownStyleInternal {
   paragraph: ParagraphStyleInternal;
   h1: HeadingStyleInternal;
@@ -169,4 +176,5 @@ export interface MarkdownStyleInternal {
   math: MathStyleInternal;
   inlineMath: InlineMathStyleInternal;
   spoiler: SpoilerStyleInternal;
+  citation: CitationStyleInternal;
 }

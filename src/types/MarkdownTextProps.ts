@@ -4,6 +4,7 @@ import type {
   LinkPressEvent,
   LinkLongPressEvent,
   TaskListItemPressEvent,
+  CitationPressEvent,
 } from './events';
 
 /**
@@ -69,6 +70,12 @@ export interface EnrichedMarkdownTextProps extends Omit<ViewProps, 'style'> {
    * @platform ios, android, web
    */
   onTaskListItemPress?: (event: TaskListItemPressEvent) => void;
+  /**
+   * Callback fired when a citation chip (e.g. `[[1,2]]`) is tapped.
+   * Receives the citation numbers as a comma-separated string.
+   * @platform ios, android, web
+   */
+  onCitationPress?: (event: CitationPressEvent) => void;
   /**
    * Controls whether the system link preview is shown on long press (iOS only).
    *

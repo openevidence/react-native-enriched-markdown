@@ -1,6 +1,7 @@
 #include "MD4CParser.hpp"
 #include "../md4c/md4c.h"
 #include <cstring>
+#include <regex>
 #include <vector>
 
 namespace Markdown {
@@ -394,6 +395,78 @@ collectDisplayMathNodes(const std::vector<std::shared_ptr<MarkdownASTNode>> &chi
   return result;
 }
 
+// Post-processing: extract [[N,M,...]] citation patterns from Text nodes and
+// replace them with Citation nodes. This mirrors the web pipeline's remarkCitations
+// plugin which creates OECitationMdNode from [[N]] patterns.
+//
+// A Text node like "See evidence [[1,2]] and [[3]]." becomes:
+//   Text("See evidence "), Citation("1,2"), Text(" and "), Citation("3"), Text(".")
+static const std::regex citationRegex(R"(\[\[(\d+(?:,\s*\d+)*)\]\])");
+
+void extractCitationsFromTextNodes(MarkdownASTNode &node) {
+  auto &children = node.children;
+
+  for (size_t i = 0; i < children.size(); ++i) {
+    auto &child = children[i];
+
+    if (child->type == NodeType::Text && !child->content.empty()) {
+      const std::string &text = child->content;
+
+      // Quick check before running regex
+      if (text.find("[[") == std::string::npos) {
+        continue;
+      }
+
+      std::vector<std::shared_ptr<MarkdownASTNode>> replacements;
+      std::sregex_iterator it(text.begin(), text.end(), citationRegex);
+      std::sregex_iterator end;
+      size_t lastPos = 0;
+
+      for (; it != end; ++it) {
+        const std::smatch &match = *it;
+        size_t matchStart = static_cast<size_t>(match.position());
+
+        // Text before the citation
+        if (matchStart > lastPos) {
+          auto textNode = std::make_shared<MarkdownASTNode>(NodeType::Text);
+          textNode->content = text.substr(lastPos, matchStart - lastPos);
+          replacements.push_back(std::move(textNode));
+        }
+
+        // Citation node
+        auto citationNode = std::make_shared<MarkdownASTNode>(NodeType::Citation);
+        // Clean whitespace from numbers: "1, 2" -> "1,2"
+        std::string numbers = match[1].str();
+        numbers.erase(std::remove(numbers.begin(), numbers.end(), ' '), numbers.end());
+        citationNode->content = numbers;
+        citationNode->setAttribute("numbers", numbers);
+        replacements.push_back(std::move(citationNode));
+
+        lastPos = matchStart + static_cast<size_t>(match.length());
+      }
+
+      if (replacements.empty()) {
+        continue; // No citations found
+      }
+
+      // Text after the last citation
+      if (lastPos < text.size()) {
+        auto textNode = std::make_shared<MarkdownASTNode>(NodeType::Text);
+        textNode->content = text.substr(lastPos);
+        replacements.push_back(std::move(textNode));
+      }
+
+      // Replace the original Text node with the new nodes
+      auto pos = children.erase(children.begin() + static_cast<ptrdiff_t>(i));
+      children.insert(pos, replacements.begin(), replacements.end());
+      i += replacements.size() - 1; // -1 because the loop will ++i
+    } else {
+      // Recurse into non-text children
+      extractCitationsFromTextNodes(*child);
+    }
+  }
+}
+
 // md4c wraps $$...$$ (display math) as inline spans inside a Paragraph. When they
 // appear on consecutive lines without a blank separator, md4c merges them — along
 // with any preceding text — into a single Paragraph with LineBreak nodes between them.
@@ -497,6 +570,7 @@ std::shared_ptr<MarkdownASTNode> MD4CParser::parse(const std::string &markdown, 
   impl_->flushText();
 
   if (impl_->root) {
+    extractCitationsFromTextNodes(*impl_->root);
     promoteDisplayMathFromParagraphs(*impl_->root);
   }
 

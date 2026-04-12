@@ -5,6 +5,7 @@ import type {
   LinkPressEvent,
   LinkLongPressEvent,
   TaskListItemPressEvent,
+  CitationPressEvent,
 } from '../types/events';
 import type { KaTeXInstance } from './katex';
 
@@ -34,7 +35,8 @@ export type NodeType =
   | 'TableHeaderCell'
   | 'TableCell'
   | 'LatexMathInline'
-  | 'LatexMathDisplay';
+  | 'LatexMathDisplay'
+  | 'Citation';
 
 export interface NodeAttributes {
   level?: string;
@@ -52,6 +54,8 @@ export interface NodeAttributes {
   headRowCount?: string;
   bodyRowCount?: string;
   align?: 'left' | 'center' | 'right' | 'default';
+  /** Comma-separated citation numbers, e.g. "1,2,3". */
+  numbers?: string;
 }
 
 export interface ASTNode {
@@ -68,6 +72,7 @@ export interface RendererCallbacks {
   onLinkPress?: (event: LinkPressEvent) => void;
   onLinkLongPress?: (event: LinkLongPressEvent) => void;
   onTaskListItemPress?: (event: TaskListItemPressEvent) => void;
+  onCitationPress?: (event: CitationPressEvent) => void;
 }
 
 export interface RenderCapabilities {

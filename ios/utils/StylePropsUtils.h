@@ -1064,5 +1064,29 @@ BOOL applyMarkdownStyleToConfig(StyleConfig *config, const MarkdownStyle &newSty
     changed = YES;
   }
 
+  // ── Citation ─────────────────────────────────────────────────────────────
+
+  if (newStyle.citation.backgroundColor != oldStyle.citation.backgroundColor) {
+    RCTUIColor *color = RCTUIColorFromSharedColor(newStyle.citation.backgroundColor);
+    [config setCitationBackgroundColor:color];
+    changed = YES;
+  }
+
+  if (newStyle.citation.color != oldStyle.citation.color) {
+    RCTUIColor *color = RCTUIColorFromSharedColor(newStyle.citation.color);
+    [config setCitationColor:color];
+    changed = YES;
+  }
+
+  if (newStyle.citation.fontSize != oldStyle.citation.fontSize) {
+    [config setCitationFontSize:newStyle.citation.fontSize];
+    changed = YES;
+  }
+
+  if (newStyle.citation.borderRadius != oldStyle.citation.borderRadius) {
+    [config setCitationBorderRadius:newStyle.citation.borderRadius];
+    changed = YES;
+  }
+
   return changed;
 }

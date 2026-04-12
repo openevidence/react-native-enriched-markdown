@@ -13,12 +13,13 @@ import type {
   LinkPressEvent,
   LinkLongPressEvent,
   TaskListItemPressEvent,
+  CitationPressEvent,
   OnContextMenuItemPressEvent,
 } from '../types/events';
 
 export type { MarkdownStyle, Md4cFlags };
 export type { EnrichedMarkdownTextProps, ContextMenuItem };
-export type { LinkPressEvent, LinkLongPressEvent, TaskListItemPressEvent };
+export type { LinkPressEvent, LinkLongPressEvent, TaskListItemPressEvent, CitationPressEvent };
 
 const defaultMd4cFlags: Md4cFlags = {
   underline: false,
@@ -32,6 +33,7 @@ export const EnrichedMarkdownText = ({
   onLinkPress,
   onLinkLongPress,
   onTaskListItemPress,
+  onCitationPress,
   enableLinkPreview,
   selectable = true,
   md4cFlags = defaultMd4cFlags,
@@ -120,12 +122,21 @@ export const EnrichedMarkdownText = ({
     [onTaskListItemPress]
   );
 
+  const handleCitationPress = useCallback(
+    (e: NativeSyntheticEvent<CitationPressEvent>) => {
+      const { numbers } = e.nativeEvent;
+      onCitationPress?.({ numbers });
+    },
+    [onCitationPress]
+  );
+
   const sharedProps = {
     markdown,
     markdownStyle: normalizedStyle,
     onLinkPress: handleLinkPress,
     onLinkLongPress: handleLinkLongPress,
     onTaskListItemPress: handleTaskListItemPress,
+    onCitationPress: handleCitationPress,
     enableLinkPreview: onLinkLongPress == null && (enableLinkPreview ?? true),
     selectable,
     md4cFlags: normalizedMd4cFlags,

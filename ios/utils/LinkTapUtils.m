@@ -21,6 +21,16 @@ NSString *_Nullable linkURLAtRange(ENRMPlatformTextView *textView, NSRange chara
   return [attrText attribute:@"linkURL" atIndex:characterRange.location effectiveRange:NULL];
 }
 
+NSString *_Nullable citationNumbersAtTapLocation(ENRMPlatformTextView *textView, ENRMTapRecognizer *recognizer)
+{
+  NSUInteger characterIndex = ENRMCharacterIndexForTap(textView, recognizer);
+  if (characterIndex == NSNotFound)
+    return nil;
+
+  NSAttributedString *attrText = ENRMGetAttributedText(textView);
+  return [attrText attribute:@"citationNumbers" atIndex:characterIndex effectiveRange:NULL];
+}
+
 BOOL isPointOnInteractiveElement(ENRMPlatformTextView *textView, CGPoint point)
 {
   NSUInteger charIndex = ENRMCharacterIndexAtPoint(textView, point);
@@ -28,5 +38,6 @@ BOOL isPointOnInteractiveElement(ENRMPlatformTextView *textView, CGPoint point)
     return NO;
 
   NSDictionary *attrs = [ENRMGetAttributedText(textView) attributesAtIndex:charIndex effectiveRange:NULL];
-  return attrs[@"linkURL"] != nil || [attrs[@"TaskItem"] boolValue] || attrs[SpoilerAttributeName] != nil;
+  return attrs[@"linkURL"] != nil || attrs[@"citationNumbers"] != nil || [attrs[@"TaskItem"] boolValue] ||
+         attrs[SpoilerAttributeName] != nil;
 }

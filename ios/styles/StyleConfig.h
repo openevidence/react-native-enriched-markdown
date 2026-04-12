@@ -364,5 +364,14 @@
 - (void)setSpoilerParticleSpeed:(CGFloat)newValue;
 - (CGFloat)spoilerSolidBorderRadius;
 - (void)setSpoilerSolidBorderRadius:(CGFloat)newValue;
+// Citation properties
+- (RCTUIColor *)citationBackgroundColor;
+- (void)setCitationBackgroundColor:(RCTUIColor *)newValue;
+- (RCTUIColor *)citationColor;
+- (void)setCitationColor:(RCTUIColor *)newValue;
+- (CGFloat)citationFontSize;
+- (void)setCitationFontSize:(CGFloat)newValue;
+- (CGFloat)citationBorderRadius;
+- (void)setCitationBorderRadius:(CGFloat)newValue;
 
 @end

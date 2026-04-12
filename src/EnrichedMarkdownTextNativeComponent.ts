@@ -144,6 +144,13 @@ interface SpoilerStyleInternal {
   solidBorderRadius: CodegenTypes.Float;
 }
 
+interface CitationStyleInternal {
+  backgroundColor: ColorValue;
+  color: ColorValue;
+  fontSize: CodegenTypes.Float;
+  borderRadius: CodegenTypes.Float;
+}
+
 export interface MarkdownStyleInternal {
   paragraph: ParagraphStyleInternal;
   h1: HeadingStyleInternal;
@@ -169,6 +176,7 @@ export interface MarkdownStyleInternal {
   math: MathStyleInternal;
   inlineMath: InlineMathStyleInternal;
   spoiler: SpoilerStyleInternal;
+  citation: CitationStyleInternal;
 }
 
 export interface LinkPressEvent {
@@ -183,6 +191,10 @@ export interface TaskListItemPressEvent {
   index: CodegenTypes.Int32;
   checked: boolean;
   text: string;
+}
+
+export interface CitationPressEvent {
+  numbers: string;
 }
 
 export interface ContextMenuItemConfig {
@@ -245,6 +257,11 @@ export interface NativeProps extends ViewProps {
    * Receives the 0-based task index, current checked state, and the item's plain text.
    */
   onTaskListItemPress?: CodegenTypes.BubblingEventHandler<TaskListItemPressEvent>;
+  /**
+   * Callback fired when a citation chip is tapped.
+   * Receives the citation numbers as a comma-separated string (e.g. "1,2,3").
+   */
+  onCitationPress?: CodegenTypes.BubblingEventHandler<CitationPressEvent>;
   /**
    * Controls whether the system link preview is shown on long press (iOS only).
    *

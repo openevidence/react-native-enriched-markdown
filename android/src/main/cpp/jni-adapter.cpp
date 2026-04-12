@@ -66,6 +66,8 @@ static jint nodeTypeToJavaOrdinal(NodeType type) {
       return 25;
     case NodeType::Spoiler:
       return 26;
+    case NodeType::Citation:
+      return 27;
     default:
       return 0;
   }

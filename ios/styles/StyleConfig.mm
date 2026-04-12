@@ -226,6 +226,11 @@ static inline NSString *normalizedFontWeight(NSString *fontWeight)
   CGFloat _spoilerParticleDensity;
   CGFloat _spoilerParticleSpeed;
   CGFloat _spoilerSolidBorderRadius;
+  // Citation properties
+  RCTUIColor *_citationBackgroundColor;
+  RCTUIColor *_citationColor;
+  CGFloat _citationFontSize;
+  CGFloat _citationBorderRadius;
 }
 
 - (instancetype)init
@@ -258,6 +263,8 @@ static inline NSString *normalizedFontWeight(NSString *fontWeight)
   _spoilerParticleDensity = 8.0;
   _spoilerParticleSpeed = 20.0;
   _spoilerSolidBorderRadius = 4.0;
+  _citationFontSize = 0.0;
+  _citationBorderRadius = 4.0;
   return self;
 }
 
@@ -498,6 +505,10 @@ static inline NSString *normalizedFontWeight(NSString *fontWeight)
   copy->_spoilerParticleDensity = _spoilerParticleDensity;
   copy->_spoilerParticleSpeed = _spoilerParticleSpeed;
   copy->_spoilerSolidBorderRadius = _spoilerSolidBorderRadius;
+  copy->_citationBackgroundColor = [_citationBackgroundColor copy];
+  copy->_citationColor = [_citationColor copy];
+  copy->_citationFontSize = _citationFontSize;
+  copy->_citationBorderRadius = _citationBorderRadius;
 
   return copy;
 }
@@ -2391,6 +2402,48 @@ static const CGFloat kDefaultMinGap = 4.0;
 - (void)setSpoilerSolidBorderRadius:(CGFloat)newValue
 {
   _spoilerSolidBorderRadius = newValue;
+}
+
+#pragma mark - Citation
+
+- (RCTUIColor *)citationBackgroundColor
+{
+  return _citationBackgroundColor;
+}
+
+- (void)setCitationBackgroundColor:(RCTUIColor *)newValue
+{
+  _citationBackgroundColor = newValue;
+}
+
+- (RCTUIColor *)citationColor
+{
+  return _citationColor;
+}
+
+- (void)setCitationColor:(RCTUIColor *)newValue
+{
+  _citationColor = newValue;
+}
+
+- (CGFloat)citationFontSize
+{
+  return _citationFontSize;
+}
+
+- (void)setCitationFontSize:(CGFloat)newValue
+{
+  _citationFontSize = newValue;
+}
+
+- (CGFloat)citationBorderRadius
+{
+  return _citationBorderRadius;
+}
+
+- (void)setCitationBorderRadius:(CGFloat)newValue
+{
+  _citationBorderRadius = newValue;
 }
 
 @end

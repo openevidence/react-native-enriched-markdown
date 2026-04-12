@@ -31,6 +31,8 @@ class RendererFactory(
 
   val styleCache = SpanStyleCache(config.style)
 
+  var onCitationPress: ((String) -> Unit)? = null
+
   private val activeImageSpans = HashMap<String, WeakReference<ImageSpan>>()
 
   fun resetForNewRender() {
@@ -87,6 +89,7 @@ class RendererFactory(
       put(MarkdownASTNode.NodeType.LineBreak, lineBreakRenderer)
       put(MarkdownASTNode.NodeType.ThematicBreak, ThematicBreakRenderer(config))
       put(MarkdownASTNode.NodeType.Spoiler, SpoilerRenderer())
+      put(MarkdownASTNode.NodeType.Citation, CitationRenderer(config))
       if (FeatureFlags.IS_MATH_ENABLED) {
         try {
           val mathInlineRendererClass = Class.forName("com.swmansion.enriched.markdown.renderer.MathInlineRenderer")

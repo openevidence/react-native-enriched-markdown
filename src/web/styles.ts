@@ -244,6 +244,19 @@ function linkStyle(style: MarkdownStyleInternal): CSSProperties {
   };
 }
 
+function citationStyle(style: MarkdownStyleInternal): CSSProperties {
+  const citation = style.citation;
+  return {
+    backgroundColor: citation.backgroundColor,
+    color: citation.color,
+    fontSize: citation.fontSize || undefined,
+    borderRadius: citation.borderRadius,
+    padding: '1px 4px',
+    cursor: 'pointer',
+    textDecoration: 'none',
+  };
+}
+
 function strikethroughStyle(style: MarkdownStyleInternal): CSSProperties {
   return {
     textDecorationLine: 'line-through',
@@ -401,6 +414,7 @@ export interface Styles {
   emphasis: CSSProperties;
   code: CSSProperties;
   link: CSSProperties;
+  citation: CSSProperties;
   strikethrough: CSSProperties;
   underline: CSSProperties;
   mathInline: CSSProperties;
@@ -443,6 +457,7 @@ export function buildStyles(style: MarkdownStyleInternal): Styles {
     emphasis: emphasisStyle(style),
     code: codeStyle(style),
     link: linkStyle(style),
+    citation: citationStyle(style),
     strikethrough: strikethroughStyle(style),
     underline: underlineStyle(style),
     mathInline: mathInlineStyle(style),

@@ -1,5 +1,6 @@
 #import "RendererFactory.h"
 #import "BlockquoteRenderer.h"
+#import "CitationRenderer.h"
 #import "CodeBlockRenderer.h"
 #import "CodeRenderer.h"
 #import "ENRMImageRenderer.h"
@@ -106,6 +107,8 @@
 #endif
     case MarkdownNodeTypeSpoiler:
       return [[ENRMSpoilerRenderer alloc] initWithRendererFactory:self config:_config];
+    case MarkdownNodeTypeCitation:
+      return [[CitationRenderer alloc] initWithRendererFactory:self config:_config];
     default:
       return nil;
   }

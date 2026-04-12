@@ -77,6 +77,7 @@ class EnrichedMarkdown
 
     private var onLinkPressCallback: ((String) -> Unit)? = null
     private var onLinkLongPressCallback: ((String) -> Unit)? = null
+    private var onCitationPressCallback: ((String) -> Unit)? = null
     private var onTaskListItemPressCallback: ((Int, Boolean, String) -> Unit)? = null
     private var contextMenuItemTexts: List<String> = emptyList()
     var onContextMenuItemPressCallback: ((itemText: String, selectedText: String, selectionStart: Int, selectionEnd: Int) -> Unit)? = null
@@ -156,6 +157,10 @@ class EnrichedMarkdown
       onLinkLongPressCallback = callback
     }
 
+    fun setOnCitationPressCallback(callback: (String) -> Unit) {
+      onCitationPressCallback = callback
+    }
+
     fun setOnTaskListItemPressCallback(callback: ((taskIndex: Int, checked: Boolean, itemText: String) -> Unit)?) {
       onTaskListItemPressCallback = callback
     }
@@ -222,7 +227,10 @@ class EnrichedMarkdown
       style: StyleConfig,
     ): RenderSegment.Text {
       val documentWrapper = MarkdownASTNode(type = MarkdownASTNode.NodeType.Document, children = nodes)
-      val renderer = Renderer().apply { configure(style, context) }
+      val renderer = Renderer().apply {
+        configure(style, context)
+        setOnCitationPress(onCitationPressCallback)
+      }
 
       return RenderSegment.Text(
         styledText = renderer.renderDocument(documentWrapper, onLinkPressCallback, onLinkLongPressCallback),

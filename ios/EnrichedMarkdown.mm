@@ -769,6 +769,15 @@ Class<RCTComponentViewProtocol> EnrichedMarkdownCls(void)
     return;
   }
 
+  NSString *numbers = citationNumbersAtTapLocation(textView, recognizer);
+  if (numbers) {
+    auto eventEmitter = std::static_pointer_cast<EnrichedMarkdownEventEmitter const>(_eventEmitter);
+    if (eventEmitter) {
+      eventEmitter->onCitationPress({.numbers = std::string([numbers UTF8String])});
+    }
+    return;
+  }
+
   ENRMClearSelection(textView);
 }
 

@@ -27,6 +27,7 @@ import com.swmansion.enriched.markdown.utils.text.view.applySelectableState
 import com.swmansion.enriched.markdown.utils.text.view.cancelJSTouchForCheckboxTap
 import com.swmansion.enriched.markdown.utils.text.view.cancelJSTouchForLinkTap
 import com.swmansion.enriched.markdown.utils.text.view.createSelectionActionModeCallback
+import com.swmansion.enriched.markdown.utils.text.view.emitCitationPressEvent
 import com.swmansion.enriched.markdown.utils.text.view.emitLinkLongPressEvent
 import com.swmansion.enriched.markdown.utils.text.view.emitLinkPressEvent
 import com.swmansion.enriched.markdown.utils.text.view.setupAsMarkdownTextView
@@ -48,6 +49,7 @@ class EnrichedMarkdownText
     private val renderer = Renderer()
     private var onLinkPressCallback: ((String) -> Unit)? = null
     private var onLinkLongPressCallback: ((String) -> Unit)? = null
+    private var onCitationPressCallback: ((String) -> Unit)? = null
     private val checkboxTouchHelper = CheckboxTouchHelper(this)
 
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -213,6 +215,7 @@ class EnrichedMarkdownText
             }
 
           renderer.configure(style, context)
+          renderer.setOnCitationPress(onCitationPressCallback)
           val styledText = renderer.renderDocument(ast, onLinkPressCallback, onLinkLongPressCallback)
 
           mainHandler.post {
@@ -270,12 +273,20 @@ class EnrichedMarkdownText
       emitLinkLongPressEvent(url)
     }
 
+    fun emitOnCitationPress(numbers: String) {
+      emitCitationPressEvent(numbers)
+    }
+
     fun setOnLinkPressCallback(callback: (String) -> Unit) {
       onLinkPressCallback = callback
     }
 
     fun setOnLinkLongPressCallback(callback: (String) -> Unit) {
       onLinkLongPressCallback = callback
+    }
+
+    fun setOnCitationPressCallback(callback: (String) -> Unit) {
+      onCitationPressCallback = callback
     }
 
     fun setOnTaskListItemPressCallback(callback: ((taskIndex: Int, checked: Boolean, itemText: String) -> Unit)?) {
