@@ -448,37 +448,66 @@ static bool isCitationChar(char c) {
   return (c >= '0' && c <= '9') || c == ',' || c == ' ';
 }
 
-// Try to parse a citation at position pos (pointing to first '[').
-// Returns the end position (past ']]') if valid, or 0 if not a citation.
-// On success, fills `numbers` with the cleaned content (whitespace removed).
-static size_t tryCitationAt(const std::string &text, size_t pos, std::string &numbers) {
+// Citation format: [[numbers|label|faviconUrl]]
+// - numbers: comma-separated digits (e.g. "1,2,3")
+// - label: display text for the chip (e.g. "Radiographics")
+// - faviconUrl: optional URL for favicon image
+// All fields separated by '|'. Label and faviconUrl may be empty.
+// Falls back to simple [[numbers]] format (no pipes) for backward compat.
+struct CitationParseResult {
+  std::string numbers;
+  std::string label;
+  std::string faviconUrl;
+};
+
+static size_t tryCitationAt(const std::string &text, size_t pos, CitationParseResult &result) {
   size_t len = text.size();
   if (pos + 4 >= len) return 0;
   if (text[pos] != '[' || text[pos + 1] != '[') return 0;
 
+  // Find the closing ]]
   size_t start = pos + 2;
   size_t end = start;
-
-  while (end < len && text[end] != ']') {
-    if (!isCitationChar(text[end])) return 0;
+  while (end < len) {
+    if (end + 1 < len && text[end] == ']' && text[end + 1] == ']') break;
     end++;
   }
+  if (end >= len || text[end] != ']') return 0;
 
-  if (end >= len || end + 1 >= len) return 0;
-  if (text[end] != ']' || text[end + 1] != ']') return 0;
-  if (end == start) return 0;
+  // Content between [[ and ]]
+  std::string content = text.substr(start, end - start);
+  if (content.empty()) return 0;
 
+  // Split on '|' delimiter
+  std::string numbersPart;
+  result.label.clear();
+  result.faviconUrl.clear();
+
+  size_t pipe1 = content.find('|');
+  if (pipe1 != std::string::npos) {
+    numbersPart = content.substr(0, pipe1);
+    size_t pipe2 = content.find('|', pipe1 + 1);
+    if (pipe2 != std::string::npos) {
+      result.label = content.substr(pipe1 + 1, pipe2 - pipe1 - 1);
+      result.faviconUrl = content.substr(pipe2 + 1);
+    } else {
+      result.label = content.substr(pipe1 + 1);
+    }
+  } else {
+    numbersPart = content;
+  }
+
+  // Validate numbers part: must contain at least one digit
   bool hasDigit = false;
-  for (size_t j = start; j < end; j++) {
-    if (text[j] >= '0' && text[j] <= '9') { hasDigit = true; break; }
+  result.numbers.clear();
+  for (char c : numbersPart) {
+    if (c >= '0' && c <= '9') { hasDigit = true; result.numbers.push_back(c); }
+    else if (c == ',') { result.numbers.push_back(c); }
+    // skip spaces
   }
   if (!hasDigit) return 0;
 
-  numbers.clear();
-  for (size_t j = start; j < end; j++) {
-    if (text[j] != ' ') numbers.push_back(text[j]);
-  }
-  return end + 2;
+  return end + 2; // past the closing ]]
 }
 
 void extractCitationsFromTextNodes(MarkdownASTNode &node) {
@@ -506,13 +535,13 @@ void extractCitationsFromTextNodes(MarkdownASTNode &node) {
       std::vector<std::shared_ptr<MarkdownASTNode>> replacements;
       size_t lastPos = 0;
       size_t pos = 0;
-      std::string numbers;
+      CitationParseResult citResult;
 
       while (pos < text.size()) {
         size_t found = text.find("[[", pos);
         if (found == std::string::npos) break;
 
-        size_t citEnd = tryCitationAt(text, found, numbers);
+        size_t citEnd = tryCitationAt(text, found, citResult);
         if (citEnd == 0) {
           pos = found + 2;
           continue;
@@ -525,10 +554,16 @@ void extractCitationsFromTextNodes(MarkdownASTNode &node) {
         }
 
         auto citationNode = std::make_shared<MarkdownASTNode>(NodeType::Citation);
-        citationNode->content = numbers;
-        citationNode->setAttribute("numbers", numbers);
+        // Use label as display content if available, otherwise numbers
+        citationNode->content = citResult.label.empty() ? citResult.numbers : citResult.label;
+        citationNode->setAttribute("numbers", citResult.numbers);
+        if (!citResult.label.empty()) {
+          citationNode->setAttribute("label", citResult.label);
+        }
+        if (!citResult.faviconUrl.empty()) {
+          citationNode->setAttribute("faviconUrl", citResult.faviconUrl);
+        }
         replacements.push_back(std::move(citationNode));
-        fprintf(stderr, "[CITATION_DEBUG] Created Citation node: '%s'\n", numbers.c_str());
 
         lastPos = citEnd;
         pos = citEnd;

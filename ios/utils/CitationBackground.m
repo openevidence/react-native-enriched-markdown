@@ -3,6 +3,9 @@
 
 NSString *const CitationAttributeName = @"Citation";
 
+static const CGFloat kChipHPad = 7.0;
+static const CGFloat kChipVPad = 1.5;
+
 @implementation CitationBackground {
   StyleConfig *_config;
 }
@@ -22,11 +25,8 @@ NSString *const CitationAttributeName = @"Citation";
                              atPoint:(CGPoint)origin
 {
   RCTUIColor *backgroundColor = _config.citationBackgroundColor;
-  NSLog(@"[CITATION_DEBUG] CitationBackground.draw called, bgColorIsNil=%d", backgroundColor == nil);
-  if (!backgroundColor) {
-    NSLog(@"[CITATION_DEBUG] CitationBackground: bgColor is nil, skipping draw");
+  if (!backgroundColor)
     return;
-  }
 
   NSTextStorage *textStorage = layoutManager.textStorage;
   NSRange charRange = [layoutManager characterRangeForGlyphRange:glyphsToShow actualGlyphRange:NULL];
@@ -34,6 +34,7 @@ NSString *const CitationAttributeName = @"Citation";
     return;
 
   CGFloat cornerRadius = [_config citationBorderRadius];
+  CGFloat containerWidth = textContainer.size.width;
 
   [textStorage enumerateAttribute:CitationAttributeName
                           inRange:NSMakeRange(0, textStorage.length)
@@ -44,47 +45,62 @@ NSString *const CitationAttributeName = @"Citation";
                          if (NSIntersectionRange(range, charRange).length == 0)
                            return;
 
-                         NSLog(@"[CITATION_DEBUG] CitationBackground: found Citation attr at range (%lu, %lu)", (unsigned long)range.location, (unsigned long)range.length);
-                         [self drawCitationBackgroundForRange:range
-                                               layoutManager:layoutManager
-                                               textContainer:textContainer
-                                                     atPoint:origin
-                                             backgroundColor:backgroundColor
-                                                cornerRadius:cornerRadius];
+                         [self drawChipForRange:range
+                                 layoutManager:layoutManager
+                                 textContainer:textContainer
+                                   textStorage:textStorage
+                                       atPoint:origin
+                               backgroundColor:backgroundColor
+                                  cornerRadius:cornerRadius
+                                containerWidth:containerWidth];
                        }];
 }
 
-- (void)drawCitationBackgroundForRange:(NSRange)range
-                         layoutManager:(NSLayoutManager *)layoutManager
-                         textContainer:(NSTextContainer *)textContainer
-                               atPoint:(CGPoint)origin
-                       backgroundColor:(RCTUIColor *)backgroundColor
-                          cornerRadius:(CGFloat)cornerRadius
+- (void)drawChipForRange:(NSRange)range
+           layoutManager:(NSLayoutManager *)layoutManager
+           textContainer:(NSTextContainer *)textContainer
+             textStorage:(NSTextStorage *)textStorage
+                 atPoint:(CGPoint)origin
+         backgroundColor:(RCTUIColor *)backgroundColor
+            cornerRadius:(CGFloat)cornerRadius
+          containerWidth:(CGFloat)containerWidth
 {
   NSRange glyphRange = [layoutManager glyphRangeForCharacterRange:range actualCharacterRange:NULL];
   if (glyphRange.location == NSNotFound || glyphRange.length == 0)
     return;
 
-  [layoutManager
-      enumerateLineFragmentsForGlyphRange:glyphRange
-                               usingBlock:^(CGRect rect, CGRect usedRect, NSTextContainer *tc, NSRange lineRange,
-                                            BOOL *stop) {
-                                 NSRange intersect = NSIntersectionRange(lineRange, glyphRange);
-                                 if (intersect.length == 0)
-                                   return;
+  CGRect textRect = [layoutManager boundingRectForGlyphRange:glyphRange inTextContainer:textContainer];
 
-                                 CGRect textRect = [layoutManager boundingRectForGlyphRange:intersect
-                                                                            inTextContainer:textContainer];
-                                 CGRect finalRect = CGRectMake(textRect.origin.x + origin.x,
-                                                               textRect.origin.y + origin.y,
-                                                               textRect.size.width,
-                                                               textRect.size.height);
+  // Compute chip height from capHeight (visible text height for uppercase/numbers)
+  // instead of ascender-descender (which includes empty descender space).
+  UIFont *font = [textStorage attribute:NSFontAttributeName atIndex:range.location effectiveRange:NULL];
+  CGFloat visibleTextHeight = font ? font.capHeight : textRect.size.height * 0.7;
+  CGFloat chipHeight = visibleTextHeight + kChipVPad * 2;
 
-                                 UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:finalRect
-                                                                                 cornerRadius:cornerRadius];
-                                 [backgroundColor setFill];
-                                 [path fill];
-                               }];
+  // Center the chip vertically within the line fragment
+  CGFloat lineH = textRect.size.height;
+  CGFloat chipY = textRect.origin.y + origin.y + (lineH - chipHeight) / 2.0;
+
+  // Horizontal: expand by padding but clamp to container bounds
+  CGFloat chipX = textRect.origin.x + origin.x - kChipHPad;
+  CGFloat chipW = textRect.size.width + kChipHPad * 2;
+
+  // Clamp left edge so the chip is never clipped by the text container
+  if (chipX < origin.x) {
+    CGFloat overflow = origin.x - chipX;
+    chipX = origin.x;
+    chipW -= overflow;
+  }
+  // Clamp right edge
+  if (chipX + chipW > origin.x + containerWidth) {
+    chipW = origin.x + containerWidth - chipX;
+  }
+
+  CGRect chipRect = CGRectMake(chipX, chipY, chipW, chipHeight);
+
+  UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:chipRect cornerRadius:cornerRadius];
+  [backgroundColor setFill];
+  [path fill];
 }
 
 @end

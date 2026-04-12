@@ -239,10 +239,10 @@ const DEFAULT_NORMALIZED_STYLE: MarkdownStyleInternal = Object.freeze({
     solidBorderRadius: 4,
   },
   citation: {
-    backgroundColor: normalizeColor('#E8F0FE')!,
-    color: normalizeColor('#1A73E8')!,
-    fontSize: 0,
-    borderRadius: 4,
+    backgroundColor: normalizeColor('#FCEDE8')!,
+    color: normalizeColor('#323130')!,
+    fontSize: 11,
+    borderRadius: 999,
   },
 });
 
