@@ -98,9 +98,29 @@ static NSCache<NSString *, UIImage *> *sFaviconCache = nil;
               textContainer:(NSTextContainer *)textContainer
              characterIndex:(NSUInteger)charIndex
 {
-  NSString *cacheKey = [NSString stringWithFormat:@"%@|%d|%.0f", _label, _faviconLoaded, imageBounds.size.width];
+  // Respect the foreground-color alpha so citation chips fade in with
+  // surrounding text during streaming animation.
+  CGFloat alpha = 1.0;
+  NSTextStorage *storage = textContainer.layoutManager.textStorage;
+  if (storage && charIndex < storage.length) {
+    RCTUIColor *fgColor = [storage attribute:NSForegroundColorAttributeName
+                                     atIndex:charIndex
+                              effectiveRange:NULL];
+    if (fgColor) {
+      [fgColor getRed:NULL green:NULL blue:NULL alpha:&alpha];
+    }
+  }
+
+  // Quantize alpha to 10 steps so we don't explode the cache with per-frame entries.
+  CGFloat quantized = round(alpha * 10.0) / 10.0;
+
+  NSString *cacheKey =
+      [NSString stringWithFormat:@"%@|%d|%.0f|%.1f", _label, _faviconLoaded, imageBounds.size.width, quantized];
   UIImage *cached = [sChipImageCache objectForKey:cacheKey];
   if (cached) return cached;
+
+  RCTUIColor *bgColor = [sChipBgColor colorWithAlphaComponent:quantized];
+  RCTUIColor *textColor = [sChipTextColor colorWithAlphaComponent:quantized];
 
   UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:imageBounds.size];
   UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext *ctx) {
@@ -109,7 +129,7 @@ static NSCache<NSString *, UIImage *> *sFaviconCache = nil;
 
     // Pill background
     UIBezierPath *pill = [UIBezierPath bezierPathWithRoundedRect:chipRect cornerRadius:kChipBorderRadius];
-    [sChipBgColor setFill];
+    [bgColor setFill];
     [pill fill];
 
     CGFloat x = chipRect.origin.x + kChipPaddingH;
@@ -119,6 +139,7 @@ static NSCache<NSString *, UIImage *> *sFaviconCache = nil;
       CGFloat iconY = (kChipHeight - kFaviconSize) / 2.0;
       CGRect iconRect = CGRectMake(x, iconY, kFaviconSize, kFaviconSize);
       CGContextSaveGState(cg);
+      CGContextSetAlpha(cg, quantized);
       [[UIBezierPath bezierPathWithOvalInRect:iconRect] addClip];
       [self->_faviconImage drawInRect:iconRect];
       CGContextRestoreGState(cg);
@@ -132,7 +153,7 @@ static NSCache<NSString *, UIImage *> *sFaviconCache = nil;
       para.lineBreakMode = NSLineBreakByTruncatingTail;
       NSDictionary *attrs = @{
         NSFontAttributeName : [UIFont systemFontOfSize:kFontSize],
-        NSForegroundColorAttributeName : sChipTextColor,
+        NSForegroundColorAttributeName : textColor,
         NSParagraphStyleAttributeName : para,
       };
       CGFloat textY = (kChipHeight - kFontSize) / 2.0 - 1.0;

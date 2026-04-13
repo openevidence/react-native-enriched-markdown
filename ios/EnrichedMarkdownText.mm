@@ -363,7 +363,13 @@ using namespace facebook::react;
   _textView.attributedText = attributedText;
   _renderedMarkdown = [_cachedMarkdown copy];
 
-  [_textView.layoutManager invalidateLayoutForCharacterRange:NSMakeRange(0, attributedText.length)
+  // During streaming, only invalidate from the tail onward — text before
+  // tailStart is identical and its layout is already computed.  For
+  // non-streaming updates (full replacement) invalidate everything.
+  NSRange invalidRange = (_streamingAnimation && tailStart > 0 && tailStart < attributedText.length)
+      ? NSMakeRange(tailStart, attributedText.length - tailStart)
+      : NSMakeRange(0, attributedText.length);
+  [_textView.layoutManager invalidateLayoutForCharacterRange:invalidRange
                                         actualCharacterRange:NULL];
 
   // When bounds width is zero (recycled view not yet laid out), skip layout

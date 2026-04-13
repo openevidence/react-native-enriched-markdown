@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { EnrichedMarkdownText } from './native/EnrichedMarkdownText';
 import type { EnrichedMarkdownTextProps } from './types/MarkdownTextProps';
 import {
@@ -77,13 +77,20 @@ export const EnrichedMarkdownWithComponents = memo(function EnrichedMarkdownWith
         }
 
         return (
-          <Component
-            key={`rc-${index}`}
-            componentId={segment.componentId}
-            data={segment.props}
-          />
+          <View key={`rc-${index}`} style={styles.componentWrap}>
+            <Component
+              componentId={segment.componentId}
+              data={segment.props}
+            />
+          </View>
         );
       })}
     </View>
   );
+});
+
+const styles = StyleSheet.create({
+  componentWrap: {
+    marginBottom: 16,
+  },
 });

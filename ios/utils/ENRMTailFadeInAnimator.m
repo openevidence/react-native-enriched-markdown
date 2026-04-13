@@ -74,7 +74,9 @@ typedef struct {
 
 - (void)animateFrom:(NSUInteger)tailStart to:(NSUInteger)tailEnd
 {
-  // Do NOT cancel previous animations — each chunk fades in independently.
+  // Do NOT cancel previous animations — each tail fades in independently.
+  // The word-level buffer delivers small tails (typically 1-2 words per tick),
+  // so each call naturally produces a word-granularity animation.
   NSTextStorage *storage = _textView.textStorage;
   if (!storage || tailEnd <= tailStart || tailEnd > storage.length)
     return;
@@ -137,8 +139,8 @@ typedef struct {
   CFTimeInterval now = CACurrentMediaTime();
 
   for (ENRMFadeGroup *group in _activeGroups) {
-    CGFloat t = fmin((now - group->startTime) / kFadeDuration, 1.0);
-    CGFloat alpha = 1.0 - (1.0 - t) * (1.0 - t); // same ease-out curve
+    CGFloat t = fmax(0.0, fmin((now - group->startTime) / kFadeDuration, 1.0));
+    CGFloat alpha = 1.0 - (1.0 - t) * (1.0 - t); // ease-out quadratic
 
     for (NSUInteger i = 0; i < group->count; i++) {
       ENRMColorEntry entry = group->entries[i];
@@ -170,7 +172,7 @@ typedef struct {
 
   for (NSUInteger gi = 0; gi < _activeGroups.count; gi++) {
     ENRMFadeGroup *group = _activeGroups[gi];
-    CGFloat t = fmin((now - group->startTime) / kFadeDuration, 1.0);
+    CGFloat t = fmax(0.0, fmin((now - group->startTime) / kFadeDuration, 1.0));
     CGFloat alpha = 1.0 - (1.0 - t) * (1.0 - t); // ease-out quadratic
 
     [self applyGroup:group alpha:alpha storage:storage];
