@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 import { EnrichedMarkdownText } from './native/EnrichedMarkdownText';
 import type { EnrichedMarkdownTextProps } from './types/MarkdownTextProps';
@@ -42,7 +42,7 @@ export interface EnrichedMarkdownWithComponentsProps
  *   onLinkPress={handleLinkPress}
  * />
  */
-export function EnrichedMarkdownWithComponents({
+export const EnrichedMarkdownWithComponents = memo(function EnrichedMarkdownWithComponents({
   markdown,
   components,
   ...rest
@@ -86,4 +86,4 @@ export function EnrichedMarkdownWithComponents({
       })}
     </View>
   );
-}
+});

@@ -3,23 +3,51 @@
 #import <QuartzCore/QuartzCore.h>
 #include <TargetConditionals.h>
 
-static const NSTimeInterval kFadeDuration = 0.20;
+static const NSTimeInterval kFadeDuration = 0.60;
 
 typedef struct {
   NSRange range;
   __unsafe_unretained RCTUIColor *color;
 } ENRMColorEntry;
 
+/// One chunk of text being faded in independently.
+@interface ENRMFadeGroup : NSObject {
+@public
+  CFTimeInterval startTime;
+  NSArray<RCTUIColor *> *retainedColors;
+  ENRMColorEntry *entries;
+  NSUInteger count;
+}
+- (void)cleanup;
+@end
+
+@implementation ENRMFadeGroup
+
+- (void)cleanup
+{
+  if (entries) {
+    free(entries);
+    entries = NULL;
+  }
+  retainedColors = nil;
+  count = 0;
+}
+
+- (void)dealloc
+{
+  [self cleanup];
+}
+
+@end
+
+#pragma mark -
+
 @implementation ENRMTailFadeInAnimator {
   __weak ENRMPlatformTextView *_textView;
 #if !TARGET_OS_OSX
   CADisplayLink *_displayLink;
 #endif
-  CFTimeInterval _startTime;
-
-  NSArray<RCTUIColor *> *_retainedColors;
-  ENRMColorEntry *_colorEntries;
-  NSUInteger _entriesCount;
+  NSMutableArray<ENRMFadeGroup *> *_activeGroups;
 }
 
 - (instancetype)initWithTextView:(ENRMPlatformTextView *)textView
@@ -27,102 +55,51 @@ typedef struct {
   self = [super init];
   if (self) {
     _textView = textView;
+    _activeGroups = [NSMutableArray array];
   }
   return self;
 }
 
 - (void)dealloc
 {
-  [self cleanupEntries];
+  for (ENRMFadeGroup *group in _activeGroups) {
+    [group cleanup];
+  }
 #if !TARGET_OS_OSX
   [_displayLink invalidate];
 #endif
 }
 
+#pragma mark - Public API
+
 - (void)animateFrom:(NSUInteger)tailStart to:(NSUInteger)tailEnd
 {
-  [self cancel];
-
+  // Do NOT cancel previous animations — each chunk fades in independently.
   NSTextStorage *storage = _textView.textStorage;
   if (!storage || tailEnd <= tailStart || tailEnd > storage.length)
     return;
 
   NSRange range = NSMakeRange(tailStart, tailEnd - tailStart);
 
-  [self snapshotColorsInRange:range storage:storage];
-  [self updateAlpha:0.0];
-
-#if !TARGET_OS_OSX
-  _startTime = CACurrentMediaTime();
-  _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(step:)];
-  // 0 tells the system to use the display's maximum frame rate — 60 Hz on standard displays and 120 Hz on ProMotion ones
-  _displayLink.preferredFramesPerSecond = 0;
-  [_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
-#else
-  // TODO: Implement the tail fade-in animation on macOS.
-  // CADisplayLink doesn't exist on macOS; the equivalent is CVDisplayLink (Core Video)
-  // or an NSTimer driven at the display refresh rate. The iOS step:/eased-progress
-  // logic below can be reused directly once a display-sync callback is wired up.
-  [self updateAlpha:1.0];
-  [self cleanupEntries];
-#endif
-}
-
-#if !TARGET_OS_OSX
-- (void)step:(CADisplayLink *)link
-{
-  CFTimeInterval elapsed = CACurrentMediaTime() - _startTime;
-  CGFloat progress = fmin(elapsed / kFadeDuration, 1.0);
-
-  CGFloat eased = 1.0 - (1.0 - progress) * (1.0 - progress);
-
-  [self updateAlpha:eased];
-
-  if (progress >= 1.0) {
-    [self cancel];
-  }
-}
-#endif
-
-- (void)updateAlpha:(CGFloat)alpha
-{
-  NSTextStorage *storage = _textView.textStorage;
-  if (!storage || _entriesCount == 0)
+  ENRMFadeGroup *group = [self snapshotGroup:range storage:storage];
+  if (!group)
     return;
 
-  [storage beginEditing];
-  for (NSUInteger i = 0; i < _entriesCount; i++) {
-    ENRMColorEntry entry = _colorEntries[i];
-    if (NSMaxRange(entry.range) <= storage.length) {
-      RCTUIColor *fadedColor = [entry.color colorWithAlphaComponent:alpha];
-      [storage addAttribute:NSForegroundColorAttributeName value:fadedColor range:entry.range];
-    }
+  group->startTime = CACurrentMediaTime();
+  [_activeGroups addObject:group];
+
+#if !TARGET_OS_OSX
+  if (!_displayLink) {
+    _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(step:)];
+    _displayLink.preferredFramesPerSecond = 0;
+    [_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
   }
-  [storage endEditing];
-}
-
-- (void)snapshotColorsInRange:(NSRange)range storage:(NSTextStorage *)storage
-{
-  [self cleanupEntries];
-
-  NSMutableArray<RCTUIColor *> *colors = [NSMutableArray array];
-  NSMutableArray<NSValue *> *ranges = [NSMutableArray array];
-  [storage enumerateAttribute:NSForegroundColorAttributeName
-                      inRange:range
-                      options:0
-                   usingBlock:^(RCTUIColor *color, NSRange subRange, BOOL *stop) {
-                     [colors addObject:color ?: [RCTUIColor labelColor]];
-                     [ranges addObject:[NSValue valueWithRange:subRange]];
-                   }];
-
-  _entriesCount = colors.count;
-  _retainedColors = [colors copy];
-  _colorEntries = malloc(sizeof(ENRMColorEntry) * _entriesCount);
-
-  for (NSUInteger i = 0; i < _entriesCount; i++) {
-    _colorEntries[i].color = _retainedColors[i];
-    _colorEntries[i].range = [ranges[i] rangeValue];
-  }
+#else
+  // macOS: no display link — jump straight to fully visible.
+  [self setGroup:group alpha:1.0];
+  [group cleanup];
+  [_activeGroups removeLastObject];
+#endif
 }
 
 - (void)cancel
@@ -132,20 +109,124 @@ typedef struct {
   _displayLink = nil;
 #endif
 
-  if (_entriesCount > 0) {
-    [self updateAlpha:1.0];
-    [self cleanupEntries];
+  if (_activeGroups.count == 0)
+    return;
+
+  // Finalize all active groups to full opacity.
+  NSTextStorage *storage = _textView.textStorage;
+  if (storage) {
+    [storage beginEditing];
+    for (ENRMFadeGroup *group in _activeGroups) {
+      [self applyGroup:group alpha:1.0 storage:storage];
+      [group cleanup];
+    }
+    [storage endEditing];
+  } else {
+    for (ENRMFadeGroup *group in _activeGroups) {
+      [group cleanup];
+    }
+  }
+  [_activeGroups removeAllObjects];
+}
+
+#pragma mark - Display Link
+
+#if !TARGET_OS_OSX
+- (void)step:(CADisplayLink *)__unused link
+{
+  NSTextStorage *storage = _textView.textStorage;
+  if (!storage) {
+    [self cancel];
+    return;
+  }
+
+  CFTimeInterval now = CACurrentMediaTime();
+
+  [storage beginEditing];
+
+  // Track which groups completed this frame.
+  NSMutableIndexSet *completed = [NSMutableIndexSet indexSet];
+
+  for (NSUInteger gi = 0; gi < _activeGroups.count; gi++) {
+    ENRMFadeGroup *group = _activeGroups[gi];
+    CGFloat t = fmin((now - group->startTime) / kFadeDuration, 1.0);
+    CGFloat alpha = 1.0 - (1.0 - t) * (1.0 - t); // ease-out quadratic
+
+    [self applyGroup:group alpha:alpha storage:storage];
+
+    if (t >= 1.0) {
+      [completed addIndex:gi];
+    }
+  }
+
+  [storage endEditing];
+
+  // Remove completed groups in reverse order to keep indices valid.
+  [completed enumerateIndexesWithOptions:NSEnumerationReverse
+                              usingBlock:^(NSUInteger idx, __unused BOOL *stop) {
+                                [self->_activeGroups[idx] cleanup];
+                                [self->_activeGroups removeObjectAtIndex:idx];
+                              }];
+
+  if (_activeGroups.count == 0) {
+    [_displayLink invalidate];
+    _displayLink = nil;
+  }
+}
+#endif
+
+#pragma mark - Internals
+
+- (ENRMFadeGroup *)snapshotGroup:(NSRange)range storage:(NSTextStorage *)storage
+{
+  NSMutableArray<RCTUIColor *> *colors = [NSMutableArray array];
+  NSMutableArray<NSValue *> *ranges = [NSMutableArray array];
+
+  [storage enumerateAttribute:NSForegroundColorAttributeName
+                      inRange:range
+                      options:0
+                   usingBlock:^(RCTUIColor *color, NSRange subRange, __unused BOOL *stop) {
+                     [colors addObject:color ?: [RCTUIColor labelColor]];
+                     [ranges addObject:[NSValue valueWithRange:subRange]];
+                   }];
+
+  if (colors.count == 0)
+    return nil;
+
+  ENRMFadeGroup *group = [[ENRMFadeGroup alloc] init];
+  group->count = colors.count;
+  group->retainedColors = [colors copy];
+  group->entries = malloc(sizeof(ENRMColorEntry) * group->count);
+
+  for (NSUInteger i = 0; i < group->count; i++) {
+    group->entries[i].color = group->retainedColors[i];
+    group->entries[i].range = [ranges[i] rangeValue];
+  }
+
+  return group;
+}
+
+/// Apply a single alpha value to every entry in a group.
+- (void)applyGroup:(ENRMFadeGroup *)group alpha:(CGFloat)alpha storage:(NSTextStorage *)storage
+{
+  for (NSUInteger i = 0; i < group->count; i++) {
+    ENRMColorEntry entry = group->entries[i];
+    if (NSMaxRange(entry.range) <= storage.length) {
+      RCTUIColor *fadedColor = [entry.color colorWithAlphaComponent:alpha];
+      [storage addAttribute:NSForegroundColorAttributeName value:fadedColor range:entry.range];
+    }
   }
 }
 
-- (void)cleanupEntries
+/// Convenience: apply alpha when only one group needs an immediate update.
+- (void)setGroup:(ENRMFadeGroup *)group alpha:(CGFloat)alpha
 {
-  if (_colorEntries) {
-    free(_colorEntries);
-    _colorEntries = NULL;
-  }
-  _retainedColors = nil;
-  _entriesCount = 0;
+  NSTextStorage *storage = _textView.textStorage;
+  if (!storage || group->count == 0)
+    return;
+  [storage beginEditing];
+  [self applyGroup:group alpha:alpha storage:storage];
+  [storage endEditing];
 }
 
 @end

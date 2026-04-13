@@ -336,6 +336,23 @@ using namespace facebook::react;
   _accessibilityElements = nil;
   _accessibilityNeedsRebuild = YES;
 
+  // Pre-zero the foreground-color alpha on the streaming tail BEFORE the text
+  // is set on the view.  This eliminates the single-frame flash where new
+  // content would appear at full opacity before the animator could zero it.
+  if (_streamingAnimation && tailStart < attributedText.length) {
+    NSRange tailRange = NSMakeRange(tailStart, attributedText.length - tailStart);
+    [attributedText enumerateAttribute:NSForegroundColorAttributeName
+                               inRange:tailRange
+                               options:0
+                            usingBlock:^(RCTUIColor *color, NSRange subRange, __unused BOOL *stop) {
+                              RCTUIColor *transparent =
+                                  [(color ?: [RCTUIColor labelColor]) colorWithAlphaComponent:0.0];
+                              [attributedText addAttribute:NSForegroundColorAttributeName
+                                                    value:transparent
+                                                    range:subRange];
+                            }];
+  }
+
   _textView.attributedText = attributedText;
   _renderedMarkdown = [_cachedMarkdown copy];
 

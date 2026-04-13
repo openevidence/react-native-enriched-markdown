@@ -69,6 +69,6 @@ class TailFadeInAnimator(
   }
 
   companion object {
-    private const val FADE_DURATION_MS = 150L
+    private const val FADE_DURATION_MS = 600L
   }
 }
