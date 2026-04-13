@@ -336,21 +336,28 @@ using namespace facebook::react;
   _accessibilityElements = nil;
   _accessibilityNeedsRebuild = YES;
 
-  // Pre-zero the foreground-color alpha on the streaming tail BEFORE the text
-  // is set on the view.  This eliminates the single-frame flash where new
-  // content would appear at full opacity before the animator could zero it.
-  if (_streamingAnimation && tailStart < attributedText.length) {
-    NSRange tailRange = NSMakeRange(tailStart, attributedText.length - tailStart);
-    [attributedText enumerateAttribute:NSForegroundColorAttributeName
-                               inRange:tailRange
-                               options:0
-                            usingBlock:^(RCTUIColor *color, NSRange subRange, __unused BOOL *stop) {
-                              RCTUIColor *transparent =
-                                  [(color ?: [RCTUIColor labelColor]) colorWithAlphaComponent:0.0];
-                              [attributedText addAttribute:NSForegroundColorAttributeName
-                                                    value:transparent
-                                                    range:subRange];
-                            }];
+  // When streaming, prepare the attributed text so the very first frame has
+  // correct alpha values everywhere — no flash, no jump.
+  if (_streamingAnimation) {
+    // 1) Pre-zero the new tail so it starts invisible.
+    if (tailStart < attributedText.length) {
+      NSRange tailRange = NSMakeRange(tailStart, attributedText.length - tailStart);
+      [attributedText enumerateAttribute:NSForegroundColorAttributeName
+                                 inRange:tailRange
+                                 options:0
+                              usingBlock:^(RCTUIColor *color, NSRange subRange, __unused BOOL *stop) {
+                                RCTUIColor *transparent =
+                                    [(color ?: [RCTUIColor labelColor]) colorWithAlphaComponent:0.0];
+                                [attributedText addAttribute:NSForegroundColorAttributeName
+                                                      value:transparent
+                                                      range:subRange];
+                              }];
+    }
+
+    // 2) Carry forward in-progress fade groups.  The parser produces fresh
+    //    colors at full opacity; overwrite them with each group's current
+    //    animated alpha so the transition is seamless across text replacements.
+    [_fadeAnimator preApplyToAttributedString:attributedText];
   }
 
   _textView.attributedText = attributedText;

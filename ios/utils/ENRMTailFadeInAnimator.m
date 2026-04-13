@@ -129,6 +129,27 @@ typedef struct {
   [_activeGroups removeAllObjects];
 }
 
+- (void)preApplyToAttributedString:(NSMutableAttributedString *)attributedText
+{
+  if (_activeGroups.count == 0)
+    return;
+
+  CFTimeInterval now = CACurrentMediaTime();
+
+  for (ENRMFadeGroup *group in _activeGroups) {
+    CGFloat t = fmin((now - group->startTime) / kFadeDuration, 1.0);
+    CGFloat alpha = 1.0 - (1.0 - t) * (1.0 - t); // same ease-out curve
+
+    for (NSUInteger i = 0; i < group->count; i++) {
+      ENRMColorEntry entry = group->entries[i];
+      if (NSMaxRange(entry.range) <= attributedText.length) {
+        RCTUIColor *fadedColor = [entry.color colorWithAlphaComponent:alpha];
+        [attributedText addAttribute:NSForegroundColorAttributeName value:fadedColor range:entry.range];
+      }
+    }
+  }
+}
+
 #pragma mark - Display Link
 
 #if !TARGET_OS_OSX
