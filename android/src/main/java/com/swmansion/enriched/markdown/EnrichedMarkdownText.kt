@@ -238,30 +238,12 @@ class EnrichedMarkdownText
     private fun applyRenderedText(styledText: CharSequence) {
       val tailStart = previousTextLength
 
-      Log.d(TAG, "applyRenderedText: len=${styledText.length} tailStart=$tailStart streaming=$streamingAnimation type=${styledText.javaClass.simpleName}")
-
-      // Pre-process the spannable for streaming animation BEFORE setting text.
-      val spannable = styledText as? android.text.Spannable
-      if (streamingAnimation && spannable != null && tailStart < styledText.length) {
-        if (fadeAnimator == null) {
-          fadeAnimator = TailFadeInAnimator(this)
-        }
-        fadeAnimator?.preApplyToSpannable(spannable)
-        fadeAnimator?.prepareAndAnimate(spannable, tailStart, styledText.length)
-      }
-
-      // Use BufferType.EDITABLE so the text buffer is an Editable backed by
-      // DynamicLayout. DynamicLayout watches for span changes and automatically
-      // invalidates affected lines — required for the fade-in animator to
-      // modify ForegroundColorSpans and have changes appear without re-calling
-      // setText. Editable extends Spannable, so the movement method also works.
+      // Use BufferType.EDITABLE so the text buffer implements Spannable
+      // (required for the movement method — TextView checks mText instanceof
+      // Spannable before calling mMovement.onTouchEvent).
       setText(styledText, android.widget.TextView.BufferType.EDITABLE)
 
-      val textAfterSet = text
-      Log.d(TAG, "applyRenderedText: after setText textType=${textAfterSet?.javaClass?.simpleName} isSpannable=${textAfterSet is android.text.Spannable} movementMethod=${movementMethod?.javaClass?.simpleName}")
-
       if (movementMethod !is LinkLongPressMovementMethod) {
-        Log.d(TAG, "applyRenderedText: resetting movementMethod from ${movementMethod?.javaClass?.simpleName}")
         movementMethod = LinkLongPressMovementMethod.createInstance()
       }
 
@@ -269,20 +251,28 @@ class EnrichedMarkdownText
         span.registerTextView(this)
       }
 
-      val spanned = styledText as? android.text.Spanned
-      val citationCount = spanned?.getSpans(0, spanned.length, com.swmansion.enriched.markdown.spans.CitationChipSpan::class.java)?.size ?: 0
-      val linkCount = spanned?.getSpans(0, spanned.length, com.swmansion.enriched.markdown.spans.LinkSpan::class.java)?.size ?: 0
-      Log.d(TAG, "applyRenderedText: citations=$citationCount links=$linkCount")
-
-      spanned?.getSpans(0, spanned.length, com.swmansion.enriched.markdown.spans.CitationChipSpan::class.java)
-        ?.forEach { it.registerTextView(this) }
+      (styledText as? android.text.Spanned)?.let { spanned ->
+        spanned.getSpans(0, spanned.length, com.swmansion.enriched.markdown.spans.CitationChipSpan::class.java)
+          .forEach { it.registerTextView(this) }
+      }
 
       spoilerOverlayDrawer = SpoilerOverlayDrawer.setupIfNeeded(this, styledText, spoilerOverlayDrawer, spoilerMode)
 
       layoutManager.invalidateLayout()
       accessibilityHelper.invalidateAccessibilityItems()
 
+      // Always track text length so the tail start is correct when animation
+      // is enabled mid-stream (props arrive in arbitrary order from React).
       previousTextLength = styledText.length
+
+      // Start fade-in animation for the new tail AFTER setText so the layout
+      // is available for coordinate calculations in drawOverlay.
+      if (streamingAnimation && tailStart < styledText.length) {
+        if (fadeAnimator == null) {
+          fadeAnimator = TailFadeInAnimator(this)
+        }
+        fadeAnimator?.animate(tailStart, styledText.length)
+      }
     }
 
     fun setContextMenuItems(items: List<String>) {
@@ -333,6 +323,41 @@ class EnrichedMarkdownText
     override fun onDraw(canvas: Canvas) {
       super.onDraw(canvas)
       spoilerOverlayDrawer?.draw(canvas)
+      // Draw the fade-in overlay on top of the text. The overlay covers new
+      // tail text with an opaque background-colored rectangle that fades out,
+      // creating a reveal effect. This bypasses the span system entirely.
+      val animator = fadeAnimator
+      if (animator != null && animator.hasActiveAnimations) {
+        val l = layout
+        if (l != null) {
+          animator.drawOverlay(canvas, l, resolveFadeOverlayColor(), totalPaddingLeft, totalPaddingTop)
+        }
+      }
+    }
+
+    /**
+     * The background color used for the fade-in overlay. Resolved lazily
+     * by walking up the view hierarchy to find the first opaque background.
+     */
+    private var fadeOverlayColor: Int = 0
+
+    private fun resolveFadeOverlayColor(): Int {
+      if (fadeOverlayColor != 0) return fadeOverlayColor
+      var v: android.view.View? = this
+      while (v != null) {
+        val bg = v.background
+        if (bg is android.graphics.drawable.ColorDrawable) {
+          val c = bg.color
+          if ((c ushr 24) > 0) {
+            fadeOverlayColor = c or (0xFF shl 24) // force fully opaque
+            return fadeOverlayColor
+          }
+        }
+        v = v.parent as? android.view.View
+      }
+      // Fallback to white
+      fadeOverlayColor = 0xFFFFFFFF.toInt()
+      return fadeOverlayColor
     }
 
     private fun stopSpoilerAnimations() {

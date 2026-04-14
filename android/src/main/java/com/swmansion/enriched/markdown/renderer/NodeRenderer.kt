@@ -96,7 +96,14 @@ class RendererFactory(
           val constructor = mathInlineRendererClass.getConstructor(RendererConfig::class.java, Context::class.java)
           put(MarkdownASTNode.NodeType.LatexMathInline, constructor.newInstance(config, context) as NodeRenderer)
         } catch (_: Exception) {
-          // math not available
+          // math inline not available
+        }
+        try {
+          val mathDisplayRendererClass = Class.forName("com.swmansion.enriched.markdown.renderer.MathDisplayRenderer")
+          val constructor = mathDisplayRendererClass.getConstructor(RendererConfig::class.java, Context::class.java)
+          put(MarkdownASTNode.NodeType.LatexMathDisplay, constructor.newInstance(config, context) as NodeRenderer)
+        } catch (_: Exception) {
+          // math display not available
         }
       }
     }

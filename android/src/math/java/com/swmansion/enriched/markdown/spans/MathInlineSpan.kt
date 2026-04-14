@@ -15,12 +15,14 @@ class MathInlineSpan(
   internal val latex: String,
   internal val fontSize: Float,
   private val textColor: Int,
+  private val maxWidth: Int = 0,
 ) : ReplacementSpan() {
   private var cachedBitmap: Bitmap? = null
   private var cachedWidth = 0
   private var mathAscent = 0f
   private var mathDescent = 0f
   private var renderFailed = false
+  private var scaleFactor = 1f
 
   private fun prepareResources() {
     if (cachedBitmap != null && !cachedBitmap!!.isRecycled) return
@@ -42,7 +44,6 @@ class MathInlineSpan(
       val width = mathView.measuredWidth.coerceAtLeast(1)
       val height = mathView.measuredHeight.coerceAtLeast(1)
 
-      cachedWidth = width
       calculateMetrics(mathView, height)
 
       mathView.layout(0, 0, width, height)
@@ -50,6 +51,17 @@ class MathInlineSpan(
       val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
       mathView.draw(Canvas(bitmap))
       cachedBitmap = bitmap
+
+      // Scale down if the rendered math exceeds maxWidth
+      if (maxWidth > 0 && width > maxWidth) {
+        scaleFactor = maxWidth.toFloat() / width
+        cachedWidth = maxWidth
+        mathAscent *= scaleFactor
+        mathDescent *= scaleFactor
+      } else {
+        scaleFactor = 1f
+        cachedWidth = width
+      }
     } catch (e: Exception) {
       Log.e(TAG, "MathInlineSpan render failed for latex='$latex': ${e.message}", e)
       renderFailed = true
@@ -88,6 +100,8 @@ class MathInlineSpan(
   ): Int {
     prepareResources()
 
+    Log.d(TAG, "getSize: latex='${latex.take(30)}' width=$cachedWidth hasBitmap=${cachedBitmap != null} failed=$renderFailed")
+
     fm?.apply {
       ascent = -mathAscent.roundToInt()
       top = ascent
@@ -113,9 +127,16 @@ class MathInlineSpan(
     val bmp = cachedBitmap
     if (bmp != null) {
       val bitmapY = y - mathAscent
-      canvas.drawBitmap(bmp, x, bitmapY, paint)
+      if (scaleFactor < 1f) {
+        canvas.save()
+        canvas.translate(x, bitmapY)
+        canvas.scale(scaleFactor, scaleFactor)
+        canvas.drawBitmap(bmp, 0f, 0f, paint)
+        canvas.restore()
+      } else {
+        canvas.drawBitmap(bmp, x, bitmapY, paint)
+      }
     } else if (renderFailed) {
-      // Fallback: draw the raw LaTeX so the user sees content instead of blank space
       canvas.drawText(latex, x, y.toFloat(), paint)
     }
   }
