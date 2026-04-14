@@ -152,7 +152,12 @@ class CitationChipSpan(
 
     val chipWidth = computeChipWidth()
     val chipX = x + leftMarginPx
-    val chipY = (top + bottom - chipHeightPx) / 2f
+    // Align to the text baseline: center the chip between ascent and descent.
+    // Using the baseline (y param) avoids misalignment on the last line of a
+    // paragraph where top/bottom include extra spacing from the text view.
+    val fm = paint.fontMetricsInt
+    val fontHeight = fm.descent - fm.ascent
+    val chipY = y.toFloat() + fm.ascent + (fontHeight - chipHeightPx) / 2f
 
     // Draw pill background
     val borderRadius = chipHeightPx / 2f

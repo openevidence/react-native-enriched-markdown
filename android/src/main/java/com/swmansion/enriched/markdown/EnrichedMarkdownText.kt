@@ -7,9 +7,12 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.text.Layout
+import android.text.Selection
+import android.text.Spannable
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
+import android.view.ViewConfiguration
 import androidx.appcompat.widget.AppCompatTextView
 import com.facebook.react.bridge.ReadableMap
 import com.swmansion.enriched.markdown.accessibility.MarkdownAccessibilityHelper
@@ -27,8 +30,6 @@ import com.swmansion.enriched.markdown.utils.text.view.applySelectableState
 import com.swmansion.enriched.markdown.utils.text.view.cancelJSTouchForCheckboxTap
 import com.swmansion.enriched.markdown.utils.text.view.cancelJSTouchForLinkTap
 import com.swmansion.enriched.markdown.utils.text.view.createSelectionActionModeCallback
-import com.swmansion.enriched.markdown.utils.text.view.computeCitationFrames
-import com.swmansion.enriched.markdown.utils.text.view.emitCitationLayoutEvent
 import com.swmansion.enriched.markdown.utils.text.view.emitCitationPressEvent
 import com.swmansion.enriched.markdown.utils.text.view.emitLinkLongPressEvent
 import com.swmansion.enriched.markdown.utils.text.view.emitLinkPressEvent
@@ -85,6 +86,11 @@ class EnrichedMarkdownText
     private var streamingAnimation: Boolean = false
     private var previousTextLength: Int = 0
     private var fadeAnimator: TailFadeInAnimator? = null
+
+    // Swipe detection to prevent Editor from starting text selection during scrolling
+    private var touchStartX = 0f
+    private var touchStartY = 0f
+    private var isScrollGesture = false
     override var spoilerOverlayDrawer: SpoilerOverlayDrawer? = null
       private set
     var spoilerMode: SpoilerMode = SpoilerMode.PARTICLES
@@ -164,12 +170,9 @@ class EnrichedMarkdownText
     fun setStreamingAnimation(enabled: Boolean) {
       if (streamingAnimation == enabled) return
       streamingAnimation = enabled
-      if (enabled) {
-        previousTextLength = text?.length ?: 0
-      } else {
+      if (!enabled) {
         fadeAnimator?.cancelAll()
         fadeAnimator = null
-        previousTextLength = 0
       }
     }
 
@@ -255,22 +258,15 @@ class EnrichedMarkdownText
       layoutManager.invalidateLayout()
       accessibilityHelper.invalidateAccessibilityItems()
 
-      if (streamingAnimation) {
+      // Always track text length so the tail start is correct when animation
+      // is enabled mid-stream (props arrive in arbitrary order from React).
+      previousTextLength = styledText.length
+
+      if (streamingAnimation && tailStart < styledText.length) {
         if (fadeAnimator == null) {
           fadeAnimator = TailFadeInAnimator(this)
         }
         fadeAnimator?.animate(tailStart, styledText.length)
-        previousTextLength = styledText.length
-      }
-
-      // Emit citation layout after the text view has been measured and laid out
-      emitCitationLayoutAfterLayout()
-    }
-
-    private fun emitCitationLayoutAfterLayout() {
-      post {
-        val frames = computeCitationFrames()
-        emitCitationLayoutEvent(frames)
       }
     }
 
@@ -330,6 +326,43 @@ class EnrichedMarkdownText
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
+      when (event.action) {
+        MotionEvent.ACTION_DOWN -> {
+          touchStartX = event.rawX
+          touchStartY = event.rawY
+          isScrollGesture = false
+        }
+        MotionEvent.ACTION_MOVE -> {
+          val mm = movementMethod
+          val linkActive = mm is LinkLongPressMovementMethod && mm.isLinkTouchActive
+          if (!isScrollGesture && !hasSelection() && !linkActive) {
+            val slop = ViewConfiguration.get(context).scaledTouchSlop
+            if (kotlin.math.abs(event.rawY - touchStartY) > slop ||
+              kotlin.math.abs(event.rawX - touchStartX) > slop
+            ) {
+              isScrollGesture = true
+            }
+          }
+          if (isScrollGesture) {
+            // Allow parent scroll views to intercept this gesture
+            parent?.requestDisallowInterceptTouchEvent(false)
+            // Don't let the Editor process MOVE events during scrolling
+            return true
+          }
+        }
+        MotionEvent.ACTION_UP -> {
+          if (isScrollGesture) {
+            isScrollGesture = false
+            (text as? Spannable)?.let { Selection.removeSelection(it) }
+            return true
+          }
+        }
+        MotionEvent.ACTION_CANCEL -> {
+          isScrollGesture = false
+          (text as? Spannable)?.let { Selection.removeSelection(it) }
+        }
+      }
+
       if (checkboxTouchHelper.onTouchEvent(event)) {
         if (event.action == MotionEvent.ACTION_DOWN) {
           cancelJSTouchForCheckboxTap(event)

@@ -80,9 +80,14 @@ class LinkLongPressMovementMethod : LinkMovementMethod() {
 
     val result = super.onTouchEvent(widget, buffer, event)
 
-    // LinkMovementMethod sets a Selection highlight around the link on ACTION_DOWN,
-    // which causes a visible selection color on the link text while pressed.
-    // We remove that selection immediately so the user never sees it.
+    // When NOT touching a link/citation, undo any requestDisallowInterceptTouchEvent(true)
+    // set by LinkMovementMethod/Touch.onTouchEvent so parent scroll views can intercept
+    // swipe gestures. When a link IS active, keep requestDisallow(true) so the parent
+    // doesn't steal the ACTION_UP that fires onClick.
+    if (!isLinkTouchActive) {
+      widget.parent?.requestDisallowInterceptTouchEvent(false)
+    }
+
     if (event.action == MotionEvent.ACTION_DOWN) {
       Selection.removeSelection(buffer)
     }

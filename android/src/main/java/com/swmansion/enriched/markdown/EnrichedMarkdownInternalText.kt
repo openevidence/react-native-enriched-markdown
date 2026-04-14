@@ -3,11 +3,13 @@ package com.swmansion.enriched.markdown
 import android.content.Context
 import android.graphics.Canvas
 import android.text.Layout
+import android.text.Selection
+import android.text.Spannable
 import android.util.AttributeSet
 import android.view.MotionEvent
+import android.view.ViewConfiguration
 import androidx.appcompat.widget.AppCompatTextView
 import com.swmansion.enriched.markdown.accessibility.MarkdownAccessibilityHelper
-import com.swmansion.enriched.markdown.events.CitationLayoutEvent
 import com.swmansion.enriched.markdown.spoiler.SpoilerCapable
 import com.swmansion.enriched.markdown.spoiler.SpoilerMode
 import com.swmansion.enriched.markdown.spoiler.SpoilerOverlayDrawer
@@ -16,7 +18,6 @@ import com.swmansion.enriched.markdown.utils.text.view.LinkLongPressMovementMeth
 import com.swmansion.enriched.markdown.utils.text.view.applySelectableState
 import com.swmansion.enriched.markdown.utils.text.view.cancelJSTouchForCheckboxTap
 import com.swmansion.enriched.markdown.utils.text.view.cancelJSTouchForLinkTap
-import com.swmansion.enriched.markdown.utils.text.view.computeCitationFrames
 import com.swmansion.enriched.markdown.utils.text.view.createSelectionActionModeCallback
 import com.swmansion.enriched.markdown.utils.text.view.setupAsMarkdownTextView
 import com.swmansion.enriched.markdown.views.BlockSegmentView
@@ -35,6 +36,11 @@ class EnrichedMarkdownInternalText
     var lastElementMarginBottom: Float = 0f
 
     private val checkboxTouchHelper = CheckboxTouchHelper(this)
+
+    // Swipe detection to prevent Editor from starting text selection during scrolling
+    private var touchStartX = 0f
+    private var touchStartY = 0f
+    private var isScrollGesture = false
 
     var onTaskListItemPressCallback: ((taskIndex: Int, checked: Boolean, itemText: String) -> Unit)?
       get() = checkboxTouchHelper.onCheckboxTap
@@ -97,6 +103,41 @@ class EnrichedMarkdownInternalText
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
+      when (event.action) {
+        MotionEvent.ACTION_DOWN -> {
+          touchStartX = event.rawX
+          touchStartY = event.rawY
+          isScrollGesture = false
+        }
+        MotionEvent.ACTION_MOVE -> {
+          val mm = movementMethod
+          val linkActive = mm is LinkLongPressMovementMethod && mm.isLinkTouchActive
+          if (!isScrollGesture && !hasSelection() && !linkActive) {
+            val slop = ViewConfiguration.get(context).scaledTouchSlop
+            if (kotlin.math.abs(event.rawY - touchStartY) > slop ||
+              kotlin.math.abs(event.rawX - touchStartX) > slop
+            ) {
+              isScrollGesture = true
+            }
+          }
+          if (isScrollGesture) {
+            parent?.requestDisallowInterceptTouchEvent(false)
+            return true
+          }
+        }
+        MotionEvent.ACTION_UP -> {
+          if (isScrollGesture) {
+            isScrollGesture = false
+            (text as? Spannable)?.let { Selection.removeSelection(it) }
+            return true
+          }
+        }
+        MotionEvent.ACTION_CANCEL -> {
+          isScrollGesture = false
+          (text as? Spannable)?.let { Selection.removeSelection(it) }
+        }
+      }
+
       if (checkboxTouchHelper.onTouchEvent(event)) {
         if (event.action == MotionEvent.ACTION_DOWN) {
           cancelJSTouchForCheckboxTap(event)
@@ -109,13 +150,6 @@ class EnrichedMarkdownInternalText
       }
       return result
     }
-
-    /**
-     * Computes citation placeholder frames with an optional vertical offset.
-     * Used by the parent [EnrichedMarkdown] to collect frames across all segments.
-     */
-    fun getCitationFrames(yOffsetPx: Float = 0f): List<CitationLayoutEvent.CitationFrame> =
-      computeCitationFrames(yOffsetPx)
 
     fun setJustificationMode(needsJustify: Boolean) {
       if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {

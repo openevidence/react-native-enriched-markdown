@@ -1,12 +1,23 @@
 package com.swmansion.enriched.markdown.spans
 
 import android.text.TextPaint
-import android.text.style.CharacterStyle
+import android.text.style.MetricAffectingSpan
 import androidx.annotation.FloatRange
 
-class FadeInSpan : CharacterStyle() {
+/**
+ * Span that modulates the alpha of the text paint color.
+ *
+ * Extends MetricAffectingSpan (not CharacterStyle) because Android's TextLine
+ * only queries MetricAffectingSpan.class when building the span set that receives
+ * updateDrawState calls. A plain CharacterStyle would never be drawn.
+ */
+class FadeInSpan : MetricAffectingSpan() {
   @set:FloatRange(from = 0.0, to = 1.0)
   var alpha: Float = 0f
+
+  override fun updateMeasureState(textPaint: TextPaint) {
+    // No-op: fade should not affect text measurement / layout.
+  }
 
   override fun updateDrawState(tp: TextPaint) {
     tp.color = multiplyAlpha(tp.color, alpha)

@@ -48,7 +48,7 @@ fun createSelectionActionModeCallback(
       menu.removeGroup(MENU_ITEM_CUSTOM_GROUP)
 
       if (textView.selectionStart >= 0 && textView.selectionEnd > textView.selectionStart) {
-        menu.add(Menu.NONE, MENU_ITEM_COPY_MARKDOWN, Menu.NONE, "Copy as Markdown")
+        // menu.add(Menu.NONE, MENU_ITEM_COPY_MARKDOWN, Menu.NONE, "Copy as Markdown")
 
         val customItems = getCustomItemTexts()
         customItems.forEachIndexed { index, text ->

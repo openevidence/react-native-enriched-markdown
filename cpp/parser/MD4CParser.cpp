@@ -443,11 +443,6 @@ collectDisplayMathNodes(const std::vector<std::shared_ptr<MarkdownASTNode>> &chi
 // A Text node like "See evidence [[1,2]] and [[3]]." becomes:
 //   Text("See evidence "), Citation("1,2"), Text(" and "), Citation("3"), Text(".")
 
-// Returns true if c is a digit or comma (valid citation content character)
-static bool isCitationChar(char c) {
-  return (c >= '0' && c <= '9') || c == ',' || c == ' ';
-}
-
 // Citation format: [[numbers|label|faviconUrl]]
 // - numbers: comma-separated digits (e.g. "1,2,3")
 // - label: display text for the chip (e.g. "Radiographics")

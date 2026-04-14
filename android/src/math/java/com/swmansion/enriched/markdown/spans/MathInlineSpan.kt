@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.text.style.ReplacementSpan
+import android.util.Log
 import android.view.View.MeasureSpec
 import com.agog.mathdisplay.MTMathView
 import kotlin.math.roundToInt
@@ -49,7 +50,8 @@ class MathInlineSpan(
       val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
       mathView.draw(Canvas(bitmap))
       cachedBitmap = bitmap
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+      Log.e(TAG, "MathInlineSpan render failed for latex='$latex': ${e.message}", e)
       renderFailed = true
       val estimatedHeight = fontSize * 1.2f
       cachedWidth = (fontSize * latex.length * 0.6f).toInt().coerceAtLeast(1)
@@ -108,13 +110,19 @@ class MathInlineSpan(
     paint: Paint,
   ) {
     prepareResources()
-    cachedBitmap?.let {
+    val bmp = cachedBitmap
+    if (bmp != null) {
       val bitmapY = y - mathAscent
-      canvas.drawBitmap(it, x, bitmapY, paint)
+      canvas.drawBitmap(bmp, x, bitmapY, paint)
+    } else if (renderFailed) {
+      // Fallback: draw the raw LaTeX so the user sees content instead of blank space
+      canvas.drawText(latex, x, y.toFloat(), paint)
     }
   }
 
   companion object {
+    private const val TAG = "MathInlineSpan"
+
     private val DISPLAY_LIST_FIELD =
       runCatching {
         MTMathView::class.java.getDeclaredField("displayList").apply { isAccessible = true }

@@ -50,8 +50,29 @@ class TableContainerView(
   var onLinkPress: ((String) -> Unit)? = null
   var onLinkLongPress: ((String) -> Unit)? = null
 
+  private var scrollTouchStartX = 0f
+  private var scrollTouchStartY = 0f
+
   private val scrollView =
-    HorizontalScrollView(context).apply {
+    object : HorizontalScrollView(context) {
+      override fun onInterceptTouchEvent(ev: android.view.MotionEvent): Boolean {
+        when (ev.action) {
+          android.view.MotionEvent.ACTION_DOWN -> {
+            scrollTouchStartX = ev.x
+            scrollTouchStartY = ev.y
+          }
+          android.view.MotionEvent.ACTION_MOVE -> {
+            val dx = kotlin.math.abs(ev.x - scrollTouchStartX)
+            val dy = kotlin.math.abs(ev.y - scrollTouchStartY)
+            if (dx > dy) {
+              // Horizontal swipe — prevent parent (vertical scroll) from stealing it
+              parent?.requestDisallowInterceptTouchEvent(true)
+            }
+          }
+        }
+        return super.onInterceptTouchEvent(ev)
+      }
+    }.apply {
       isHorizontalScrollBarEnabled = true
       overScrollMode = View.OVER_SCROLL_NEVER
       addView(GridContainerView(context))
