@@ -69,7 +69,10 @@ class EnrichedMarkdownInternalText
     }
 
     fun applyStyledText(styledText: CharSequence) {
-      text = styledText
+      // Use BufferType.EDITABLE so the text buffer uses DynamicLayout, which
+      // watches for span changes. Editable extends Spannable, so the movement
+      // method also works (TextView checks mText instanceof Spannable).
+      setText(styledText, android.widget.TextView.BufferType.EDITABLE)
 
       if (movementMethod !is LinkLongPressMovementMethod) {
         movementMethod = LinkLongPressMovementMethod.createInstance()
@@ -102,6 +105,32 @@ class EnrichedMarkdownInternalText
       onContextMenuItemPress = onPress
     }
 
+    private fun charOffsetAt(x: Float, y: Float): Int {
+      val l = layout ?: return -1
+      val lx = (x.toInt() - totalPaddingLeft + scrollX).toFloat()
+      val ly = y.toInt() - totalPaddingTop + scrollY
+      val line = l.getLineForVertical(ly)
+      return l.getOffsetForHorizontal(line, lx)
+    }
+
+    private fun isInteractiveOffset(offset: Int): Boolean {
+      if (offset < 0) return false
+      val spanned = text as? android.text.Spanned ?: return false
+      if (spanned.getSpans(offset, offset, com.swmansion.enriched.markdown.spans.LinkSpan::class.java).isNotEmpty()) return true
+      if (spanned.getSpans(offset, offset, com.swmansion.enriched.markdown.spans.CitationChipSpan::class.java).isNotEmpty()) return true
+      return false
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+      if (event.action == MotionEvent.ACTION_DOWN) {
+        val offset = charOffsetAt(event.x, event.y)
+        if (isInteractiveOffset(offset)) {
+          parent?.requestDisallowInterceptTouchEvent(true)
+        }
+      }
+      return super.dispatchTouchEvent(event)
+    }
+
     override fun onTouchEvent(event: MotionEvent): Boolean {
       when (event.action) {
         MotionEvent.ACTION_DOWN -> {
@@ -118,6 +147,7 @@ class EnrichedMarkdownInternalText
               kotlin.math.abs(event.rawX - touchStartX) > slop
             ) {
               isScrollGesture = true
+              parent?.requestDisallowInterceptTouchEvent(false)
             }
           }
           if (isScrollGesture) {

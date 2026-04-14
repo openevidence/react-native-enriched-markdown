@@ -3,6 +3,7 @@ package com.swmansion.enriched.markdown.spans
 import android.content.Context
 import android.text.TextPaint
 import android.text.style.ClickableSpan
+import android.util.Log
 import android.view.View
 import com.swmansion.enriched.markdown.EnrichedMarkdownText
 import com.swmansion.enriched.markdown.renderer.BlockStyle
@@ -21,6 +22,7 @@ class LinkSpan(
   private var longPressTriggered = false
 
   override fun onClick(widget: View) {
+    Log.d("ENRM_LinkSpan", "onClick url=$url longPressTriggered=$longPressTriggered hasCallback=${onLinkPress != null} widgetType=${widget.javaClass.simpleName}")
     if (longPressTriggered) {
       longPressTriggered = false
       return

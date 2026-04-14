@@ -11,6 +11,7 @@ import android.graphics.Typeface
 import android.text.TextPaint
 import android.text.TextUtils
 import android.text.style.ReplacementSpan
+import android.util.Log
 import android.util.TypedValue
 import android.widget.TextView
 import com.swmansion.enriched.markdown.EnrichedMarkdownText
@@ -100,6 +101,7 @@ class CitationChipSpan(
   }
 
   fun onClick(widget: TextView) {
+    Log.d("ENRM_CitationSpan", "onClick numbers=$numbers hasCallback=${onCitationPress != null} widgetType=${widget.javaClass.simpleName}")
     onCitationPress?.invoke(numbers)
       ?: (widget as? EnrichedMarkdownText)?.emitOnCitationPress(numbers)
   }

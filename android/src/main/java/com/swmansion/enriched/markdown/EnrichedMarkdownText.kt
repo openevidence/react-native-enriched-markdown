@@ -238,9 +238,30 @@ class EnrichedMarkdownText
     private fun applyRenderedText(styledText: CharSequence) {
       val tailStart = previousTextLength
 
-      text = styledText
+      Log.d(TAG, "applyRenderedText: len=${styledText.length} tailStart=$tailStart streaming=$streamingAnimation type=${styledText.javaClass.simpleName}")
+
+      // Pre-process the spannable for streaming animation BEFORE setting text.
+      val spannable = styledText as? android.text.Spannable
+      if (streamingAnimation && spannable != null && tailStart < styledText.length) {
+        if (fadeAnimator == null) {
+          fadeAnimator = TailFadeInAnimator(this)
+        }
+        fadeAnimator?.preApplyToSpannable(spannable)
+        fadeAnimator?.prepareAndAnimate(spannable, tailStart, styledText.length)
+      }
+
+      // Use BufferType.EDITABLE so the text buffer is an Editable backed by
+      // DynamicLayout. DynamicLayout watches for span changes and automatically
+      // invalidates affected lines — required for the fade-in animator to
+      // modify ForegroundColorSpans and have changes appear without re-calling
+      // setText. Editable extends Spannable, so the movement method also works.
+      setText(styledText, android.widget.TextView.BufferType.EDITABLE)
+
+      val textAfterSet = text
+      Log.d(TAG, "applyRenderedText: after setText textType=${textAfterSet?.javaClass?.simpleName} isSpannable=${textAfterSet is android.text.Spannable} movementMethod=${movementMethod?.javaClass?.simpleName}")
 
       if (movementMethod !is LinkLongPressMovementMethod) {
+        Log.d(TAG, "applyRenderedText: resetting movementMethod from ${movementMethod?.javaClass?.simpleName}")
         movementMethod = LinkLongPressMovementMethod.createInstance()
       }
 
@@ -248,26 +269,20 @@ class EnrichedMarkdownText
         span.registerTextView(this)
       }
 
-      (styledText as? android.text.Spanned)?.let { spanned ->
-        spanned.getSpans(0, spanned.length, com.swmansion.enriched.markdown.spans.CitationChipSpan::class.java)
-          .forEach { it.registerTextView(this) }
-      }
+      val spanned = styledText as? android.text.Spanned
+      val citationCount = spanned?.getSpans(0, spanned.length, com.swmansion.enriched.markdown.spans.CitationChipSpan::class.java)?.size ?: 0
+      val linkCount = spanned?.getSpans(0, spanned.length, com.swmansion.enriched.markdown.spans.LinkSpan::class.java)?.size ?: 0
+      Log.d(TAG, "applyRenderedText: citations=$citationCount links=$linkCount")
+
+      spanned?.getSpans(0, spanned.length, com.swmansion.enriched.markdown.spans.CitationChipSpan::class.java)
+        ?.forEach { it.registerTextView(this) }
 
       spoilerOverlayDrawer = SpoilerOverlayDrawer.setupIfNeeded(this, styledText, spoilerOverlayDrawer, spoilerMode)
 
       layoutManager.invalidateLayout()
       accessibilityHelper.invalidateAccessibilityItems()
 
-      // Always track text length so the tail start is correct when animation
-      // is enabled mid-stream (props arrive in arbitrary order from React).
       previousTextLength = styledText.length
-
-      if (streamingAnimation && tailStart < styledText.length) {
-        if (fadeAnimator == null) {
-          fadeAnimator = TailFadeInAnimator(this)
-        }
-        fadeAnimator?.animate(tailStart, styledText.length)
-      }
     }
 
     fun setContextMenuItems(items: List<String>) {
@@ -325,6 +340,44 @@ class EnrichedMarkdownText
       spoilerOverlayDrawer = null
     }
 
+    /**
+     * Returns the character offset in the text for the given touch coordinates,
+     * or -1 if the layout is not available.
+     */
+    private fun charOffsetAt(x: Float, y: Float): Int {
+      val l = layout ?: return -1
+      val lx = (x.toInt() - totalPaddingLeft + scrollX).toFloat()
+      val ly = y.toInt() - totalPaddingTop + scrollY
+      val line = l.getLineForVertical(ly)
+      return l.getOffsetForHorizontal(line, lx)
+    }
+
+    /**
+     * Returns true if the given character offset falls on an interactive span
+     * (link, citation, or checkbox).
+     */
+    private fun isInteractiveOffset(offset: Int): Boolean {
+      if (offset < 0) return false
+      val spanned = text as? android.text.Spanned ?: return false
+      if (spanned.getSpans(offset, offset, com.swmansion.enriched.markdown.spans.LinkSpan::class.java).isNotEmpty()) return true
+      if (spanned.getSpans(offset, offset, com.swmansion.enriched.markdown.spans.CitationChipSpan::class.java).isNotEmpty()) return true
+      return false
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+      // Only claim the gesture when ACTION_DOWN lands on an interactive span
+      // (link or citation). This prevents the parent from intercepting before
+      // we receive ACTION_UP, while still allowing scroll/swipe gestures when
+      // tapping on plain text.
+      if (event.action == MotionEvent.ACTION_DOWN) {
+        val offset = charOffsetAt(event.x, event.y)
+        if (isInteractiveOffset(offset)) {
+          parent?.requestDisallowInterceptTouchEvent(true)
+        }
+      }
+      return super.dispatchTouchEvent(event)
+    }
+
     override fun onTouchEvent(event: MotionEvent): Boolean {
       when (event.action) {
         MotionEvent.ACTION_DOWN -> {
@@ -341,12 +394,12 @@ class EnrichedMarkdownText
               kotlin.math.abs(event.rawX - touchStartX) > slop
             ) {
               isScrollGesture = true
+              // Release the claim so the parent can scroll
+              parent?.requestDisallowInterceptTouchEvent(false)
             }
           }
           if (isScrollGesture) {
-            // Allow parent scroll views to intercept this gesture
             parent?.requestDisallowInterceptTouchEvent(false)
-            // Don't let the Editor process MOVE events during scrolling
             return true
           }
         }
@@ -377,6 +430,6 @@ class EnrichedMarkdownText
     }
 
     companion object {
-      private const val TAG = "EnrichedMarkdownMeasure"
+      private const val TAG = "ENRM_Text"
     }
   }

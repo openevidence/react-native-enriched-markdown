@@ -10,8 +10,10 @@ import com.swmansion.enriched.markdown.accessibility.MarkdownAccessibilityHelper
 fun AppCompatTextView.setupAsMarkdownTextView(accessibilityHelper: MarkdownAccessibilityHelper) {
   setBackgroundColor(Color.TRANSPARENT)
   includeFontPadding = false
-  movementMethod = LinkLongPressMovementMethod.createInstance()
+  // setTextIsSelectable must be called BEFORE setting movementMethod because
+  // it internally overrides movementMethod to ArrowKeyMovementMethod.
   setTextIsSelectable(true)
+  movementMethod = LinkLongPressMovementMethod.createInstance()
   customSelectionActionModeCallback = createSelectionActionModeCallback(this)
   // SmartSelectSprite crashes with "Center point is not inside any of the
   // rectangles!" when Layout.getSelection returns empty rects near an
@@ -33,8 +35,17 @@ fun AppCompatTextView.setupAsMarkdownTextView(accessibilityHelper: MarkdownAcces
 }
 
 fun AppCompatTextView.applySelectableState(selectable: Boolean) {
-  if (isTextSelectable == selectable) return
+  if (isTextSelectable == selectable) {
+    // Even when the selectable state hasn't changed, ensure the movement
+    // method is correct — setTextIsSelectable overrides it on every call.
+    if (movementMethod !is LinkLongPressMovementMethod) {
+      movementMethod = LinkLongPressMovementMethod.createInstance()
+    }
+    return
+  }
   setTextIsSelectable(selectable)
+  // setTextIsSelectable overrides movementMethod to ArrowKeyMovementMethod,
+  // so we must set our custom movement method AFTER.
   movementMethod = LinkLongPressMovementMethod.createInstance()
   if (!selectable && !isClickable) isClickable = true
 }

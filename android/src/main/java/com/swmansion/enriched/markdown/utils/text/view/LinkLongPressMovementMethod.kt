@@ -5,6 +5,7 @@ import android.os.Looper
 import android.text.Selection
 import android.text.Spannable
 import android.text.method.LinkMovementMethod
+import android.util.Log
 import android.view.MotionEvent
 import android.view.ViewConfiguration
 import android.widget.TextView
@@ -34,9 +35,11 @@ class LinkLongPressMovementMethod : LinkMovementMethod() {
         startX = event.x
         startY = event.y
 
+        val offset = charOffsetAt(widget, event)
         val span = findLinkSpan(widget, buffer, event)
         val citationSpan = findCitationSpan(widget, buffer, event)
         isLinkTouchActive = span != null || citationSpan != null
+        Log.d(TAG, "MM DOWN: offset=$offset link=${span != null}(${span?.url}) citation=${citationSpan != null}(${citationSpan?.numbers}) active=$isLinkTouchActive bufferType=${buffer.javaClass.simpleName} bufferLen=${buffer.length}")
         span?.let { scheduleLongPress(widget, it) }
       }
 
@@ -51,6 +54,9 @@ class LinkLongPressMovementMethod : LinkMovementMethod() {
       }
 
       MotionEvent.ACTION_UP -> {
+        val offset = charOffsetAt(widget, event)
+        val citationSpan = findCitationSpan(widget, buffer, event)
+        Log.d(TAG, "MM UP: offset=$offset citation=${citationSpan != null}(${citationSpan?.numbers})")
         cancelLongPress()
         isLinkTouchActive = false
         if (widget.hasSelection()) {
@@ -61,8 +67,8 @@ class LinkLongPressMovementMethod : LinkMovementMethod() {
           return true
         }
         // CitationChipSpan is not a ClickableSpan, so handle its tap here
-        val citationSpan = findCitationSpan(widget, buffer, event)
         if (citationSpan != null) {
+          Log.d(TAG, "MM UP: calling citationSpan.onClick")
           citationSpan.onClick(widget)
           Selection.removeSelection(buffer)
           return true
@@ -70,6 +76,7 @@ class LinkLongPressMovementMethod : LinkMovementMethod() {
       }
 
       MotionEvent.ACTION_CANCEL -> {
+        Log.d(TAG, "MM CANCEL")
         cancelLongPress()
         isLinkTouchActive = false
         if (widget.hasSelection()) {
@@ -80,10 +87,10 @@ class LinkLongPressMovementMethod : LinkMovementMethod() {
 
     val result = super.onTouchEvent(widget, buffer, event)
 
-    // When NOT touching a link/citation, undo any requestDisallowInterceptTouchEvent(true)
-    // set by LinkMovementMethod/Touch.onTouchEvent so parent scroll views can intercept
-    // swipe gestures. When a link IS active, keep requestDisallow(true) so the parent
-    // doesn't steal the ACTION_UP that fires onClick.
+    if (event.action == MotionEvent.ACTION_UP) {
+      Log.d(TAG, "MM UP: super result=$result")
+    }
+
     if (!isLinkTouchActive) {
       widget.parent?.requestDisallowInterceptTouchEvent(false)
     }
@@ -204,6 +211,8 @@ class LinkLongPressMovementMethod : LinkMovementMethod() {
   }
 
   companion object {
+    private const val TAG = "ENRM_Movement"
+
     @JvmStatic
     fun createInstance(): LinkLongPressMovementMethod = LinkLongPressMovementMethod()
   }
