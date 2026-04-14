@@ -4,7 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.text.Spannable
-import android.view.animation.LinearInterpolator
+import android.view.animation.PathInterpolator
 import android.widget.TextView
 import com.swmansion.enriched.markdown.spans.FadeInSpan
 import java.lang.ref.WeakReference
@@ -31,7 +31,7 @@ class TailFadeInAnimator(
     val animator =
       ValueAnimator.ofFloat(0f, 1f).apply {
         duration = FADE_DURATION_MS
-        interpolator = LinearInterpolator()
+        interpolator = PathInterpolator(0.42f, 0f, 0.58f, 1f) // ease-in-out (CSS equivalent)
 
         addUpdateListener { anim ->
           fadeSpan.alpha = anim.animatedValue as Float

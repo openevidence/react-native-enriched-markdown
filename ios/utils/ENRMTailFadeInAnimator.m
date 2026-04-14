@@ -140,7 +140,7 @@ typedef struct {
 
   for (ENRMFadeGroup *group in _activeGroups) {
     CGFloat t = fmax(0.0, fmin((now - group->startTime) / kFadeDuration, 1.0));
-    CGFloat alpha = 1.0 - (1.0 - t) * (1.0 - t); // ease-out quadratic
+    CGFloat alpha = t * t * (3.0 - 2.0 * t); // smoothstep (ease-in-out)
 
     for (NSUInteger i = 0; i < group->count; i++) {
       ENRMColorEntry entry = group->entries[i];
@@ -173,7 +173,7 @@ typedef struct {
   for (NSUInteger gi = 0; gi < _activeGroups.count; gi++) {
     ENRMFadeGroup *group = _activeGroups[gi];
     CGFloat t = fmax(0.0, fmin((now - group->startTime) / kFadeDuration, 1.0));
-    CGFloat alpha = 1.0 - (1.0 - t) * (1.0 - t); // ease-out quadratic
+    CGFloat alpha = t * t * (3.0 - 2.0 * t); // smoothstep (ease-in-out)
 
     [self applyGroup:group alpha:alpha storage:storage];
 
