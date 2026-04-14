@@ -8,8 +8,9 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.Typeface
+import android.os.Handler
+import android.os.Looper
 import android.text.TextPaint
-import android.text.TextUtils
 import android.text.style.ReplacementSpan
 import android.util.Log
 import android.util.TypedValue
@@ -18,7 +19,6 @@ import com.swmansion.enriched.markdown.EnrichedMarkdownText
 import com.swmansion.enriched.markdown.renderer.SpanStyleCache
 import com.swmansion.enriched.markdown.utils.text.ImageDownloader
 import java.lang.ref.WeakReference
-import kotlin.math.min
 import kotlin.math.roundToInt
 
 /**
@@ -44,7 +44,6 @@ class CitationChipSpan(
 
   // dp to px
   private val chipHeightPx = (CHIP_HEIGHT_DP * density).roundToInt()
-  private val maxChipWidthPx = (MAX_CHIP_WIDTH_DP * density).roundToInt()
   private val hPaddingPx = HORIZONTAL_PADDING_DP * density
   private val faviconSizePx = FAVICON_SIZE_DP * density
   private val faviconGapPx = FAVICON_GAP_DP * density
@@ -57,8 +56,9 @@ class CitationChipSpan(
   )
 
   private val hasFavicon = faviconUrl.isNotEmpty()
-  private var faviconBitmap: Bitmap? = null
+  @Volatile private var faviconBitmap: Bitmap? = null
   private var viewRef: WeakReference<TextView>? = null
+  private val mainHandler = Handler(Looper.getMainLooper())
 
   // Paint objects reused across draw calls
   private val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -84,20 +84,52 @@ class CitationChipSpan(
     ImageDownloader.download(context, faviconUrl) { bitmap ->
       if (bitmap != null) {
         val size = faviconSizePx.roundToInt()
-        faviconBitmap = if (bitmap.width != size || bitmap.height != size) {
+        val scaled = if (bitmap.width != size || bitmap.height != size) {
           Bitmap.createScaledBitmap(bitmap, size, size, true)
         } else {
           bitmap
         }
-        // Invalidate display only — the view just needs to redraw, not relayout,
-        // since chip bounds already include favicon space.
-        viewRef?.get()?.invalidate()
+        faviconBitmap = scaled
+        // Always invalidate on the main thread. The callback may arrive on a
+        // background thread (synchronous ImageCache hit) or the main thread
+        // (OkHttp network response). Post to main to guarantee we invalidate
+        // after registerTextView has run (which also runs on main thread).
+        mainHandler.post { invalidateChipDisplay() }
       }
     }
   }
 
   fun registerTextView(view: TextView) {
     viewRef = WeakReference(view)
+    // If the favicon was already loaded, invalidate now.
+    if (faviconBitmap != null) {
+      invalidateChipDisplay()
+    }
+  }
+
+  /**
+   * Forces the text view to re-draw the chip. With DynamicLayout (EDITABLE
+   * buffer), we need to poke the text so the layout re-queries spans. A plain
+   * invalidate() is not enough because DynamicLayout caches span rendering.
+   */
+  private fun invalidateChipDisplay() {
+    val tv = viewRef?.get() ?: return
+    val editable = tv.text as? android.text.Editable
+    if (editable != null) {
+      // Find our span in the text and trigger a span change notification
+      // by removing and re-adding it. DynamicLayout's SpanWatcher will
+      // pick up the change and invalidate the affected line.
+      val start = editable.getSpanStart(this)
+      val end = editable.getSpanEnd(this)
+      if (start >= 0 && end >= 0) {
+        val flags = editable.getSpanFlags(this)
+        editable.removeSpan(this)
+        editable.setSpan(this, start, end, flags)
+        return
+      }
+    }
+    // Fallback: just invalidate the view
+    tv.invalidate()
   }
 
   fun onClick(widget: TextView) {
@@ -195,36 +227,29 @@ class CitationChipSpan(
       drawX += faviconSizePx + faviconGapPx
     }
 
-    // Draw label text, truncated with ellipsis if too wide
-    val availableTextWidth = chipX + chipWidth - hPaddingPx - drawX
-    if (availableTextWidth > 0) {
-      val truncated = TextUtils.ellipsize(
-        label, textPaint, availableTextWidth, TextUtils.TruncateAt.END
-      )
-      // Vertically center text in chip
-      val textMetrics = textPaint.fontMetrics
-      val textHeight = textMetrics.descent - textMetrics.ascent
-      val textY = chipY + (chipHeightPx - textHeight) / 2f - textMetrics.ascent
-      canvas.drawText(truncated, 0, truncated.length, drawX, textY, textPaint)
-    }
+    // Draw label text — no truncation needed since the chip is sized to fit
+    val textMetrics = textPaint.fontMetrics
+    val textHeight = textMetrics.descent - textMetrics.ascent
+    val textY = chipY + (chipHeightPx - textHeight) / 2f - textMetrics.ascent
+    canvas.drawText(label, drawX, textY, textPaint)
   }
 
   /**
-   * Computes the chip width (without margins), capped at [MAX_CHIP_WIDTH_DP].
+   * Computes the chip width (without margins).
+   * No max-width cap: the JS preprocessing already truncates labels to a
+   * reasonable length (~14 chars + " + N" suffix), so the chip grows to fit.
    */
   private fun computeChipWidth(): Float {
     val labelWidth = textPaint.measureText(label)
-    val contentWidth = if (hasFavicon) {
+    return if (hasFavicon) {
       hPaddingPx + faviconSizePx + faviconGapPx + labelWidth + hPaddingPx
     } else {
       hPaddingPx + labelWidth + hPaddingPx
     }
-    return min(contentWidth, maxChipWidthPx.toFloat())
   }
 
   companion object {
     private const val CHIP_HEIGHT_DP = 20f
-    private const val MAX_CHIP_WIDTH_DP = 90f
     private const val HORIZONTAL_PADDING_DP = 8f
     private const val FAVICON_SIZE_DP = 14f
     private const val FAVICON_GAP_DP = 4f
