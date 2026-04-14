@@ -24,6 +24,7 @@ static NSCache<NSString *, UIImage *> *sFaviconCache = nil;
   UIImage *_faviconImage;
   CGFloat _chipWidth;
   BOOL _faviconLoaded;
+  __weak NSLayoutManager *_layoutManager;
 }
 
 + (void)initialize
@@ -98,6 +99,9 @@ static NSCache<NSString *, UIImage *> *sFaviconCache = nil;
               textContainer:(NSTextContainer *)textContainer
              characterIndex:(NSUInteger)charIndex
 {
+  // Capture layout manager so loadFavicon can invalidate display later.
+  _layoutManager = textContainer.layoutManager;
+
   // Respect the foreground-color alpha so citation chips fade in with
   // surrounding text during streaming animation.
   CGFloat alpha = 1.0;
@@ -181,9 +185,15 @@ static NSCache<NSString *, UIImage *> *sFaviconCache = nil;
     [sFaviconCache setObject:image forKey:self->_faviconUrl];
     dispatch_async(dispatch_get_main_queue(), ^{
       CitationChipAttachment *strong = weakSelf;
-      if (strong) {
-        strong->_faviconImage = image;
-        strong->_faviconLoaded = YES;
+      if (!strong) return;
+      strong->_faviconImage = image;
+      strong->_faviconLoaded = YES;
+      // Invalidate DISPLAY only (not layout) so the text system re-composites
+      // the attachment image without recalculating glyph metrics. The chip
+      // bounds are unchanged (chipWidth always includes favicon space).
+      NSLayoutManager *lm = strong->_layoutManager;
+      if (lm && lm.textStorage.length > 0) {
+        [lm invalidateDisplayForCharacterRange:NSMakeRange(0, lm.textStorage.length)];
       }
     });
   });

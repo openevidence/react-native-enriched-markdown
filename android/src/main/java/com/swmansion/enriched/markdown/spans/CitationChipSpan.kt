@@ -8,7 +8,6 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.Typeface
-import android.text.Spannable
 import android.text.TextPaint
 import android.text.TextUtils
 import android.text.style.ReplacementSpan
@@ -83,30 +82,16 @@ class CitationChipSpan(
   private fun loadFavicon() {
     ImageDownloader.download(context, faviconUrl) { bitmap ->
       if (bitmap != null) {
-        // Scale bitmap to favicon size
         val size = faviconSizePx.roundToInt()
         faviconBitmap = if (bitmap.width != size || bitmap.height != size) {
           Bitmap.createScaledBitmap(bitmap, size, size, true)
         } else {
           bitmap
         }
-        requestRedraw()
+        // Invalidate display only — the view just needs to redraw, not relayout,
+        // since chip bounds already include favicon space.
+        viewRef?.get()?.invalidate()
       }
-    }
-  }
-
-  private fun requestRedraw() {
-    val view = viewRef?.get() ?: return
-    val text = view.text
-    if (text is Spannable) {
-      val start = text.getSpanStart(this)
-      val end = text.getSpanEnd(this)
-      if (start != -1 && end != -1) {
-        // Re-set the span to trigger a relayout/redraw
-        text.setSpan(this, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-      }
-    } else {
-      view.invalidate()
     }
   }
 
