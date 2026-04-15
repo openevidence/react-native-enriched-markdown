@@ -80,7 +80,7 @@ UIMenu *buildEditMenuForSelection(NSAttributedString *attributedText, NSRange ra
   NSArray<NSString *> *imageURLs = imageURLsInRange(attributedText, range);
 
   UIAction *copyAction = createCopyAction(selectedText, markdown, styleConfig);
-  UIAction *copyMarkdownAction = createCopyMarkdownAction(markdown);
+  // UIAction *copyMarkdownAction = createCopyMarkdownAction(markdown);
   UIAction *copyImageURLAction = createCopyImageURLAction(imageURLs);
 
   NSMutableArray<UIMenuElement *> *result = [NSMutableArray array];
@@ -93,7 +93,7 @@ UIMenu *buildEditMenuForSelection(NSAttributedString *attributedText, NSRange ra
       if ([menu.identifier isEqualToString:kMenuIdentifierStandardEdit]) {
         // Replace standard Copy with our enhanced version
         [result addObject:createEnhancedStandardEditMenu(menu, copyAction)];
-        addOptionalAction(result, copyMarkdownAction);
+        // addOptionalAction(result, copyMarkdownAction);
         addOptionalAction(result, copyImageURLAction);
         foundStandardEditMenu = YES;
         continue;
@@ -104,7 +104,7 @@ UIMenu *buildEditMenuForSelection(NSAttributedString *attributedText, NSRange ra
 
   if (!foundStandardEditMenu) {
     [result insertObject:copyAction atIndex:0];
-    insertOptionalAction(result, copyMarkdownAction, 1);
+    // insertOptionalAction(result, copyMarkdownAction, 1);
     addOptionalAction(result, copyImageURLAction);
   }
 
