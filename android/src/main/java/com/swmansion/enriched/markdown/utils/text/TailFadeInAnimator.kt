@@ -109,6 +109,10 @@ class TailFadeInAnimator(
 
   fun cancelAll() {
     activeGroups.clear()
+    if (frameCallbackRegistered) {
+      Choreographer.getInstance().removeFrameCallback(frameCallback)
+      frameCallbackRegistered = false
+    }
   }
 
   // --- Choreographer frame callback ---

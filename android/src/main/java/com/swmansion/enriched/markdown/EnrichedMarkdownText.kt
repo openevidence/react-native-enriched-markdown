@@ -29,6 +29,8 @@ import com.swmansion.enriched.markdown.utils.text.view.LinkLongPressMovementMeth
 import com.swmansion.enriched.markdown.utils.text.view.applySelectableState
 import com.swmansion.enriched.markdown.utils.text.view.cancelJSTouchForCheckboxTap
 import com.swmansion.enriched.markdown.utils.text.view.cancelJSTouchForLinkTap
+import com.swmansion.enriched.markdown.utils.text.view.charOffsetAt
+import com.swmansion.enriched.markdown.utils.text.view.isInteractiveOffset
 import com.swmansion.enriched.markdown.utils.text.view.createSelectionActionModeCallback
 import com.swmansion.enriched.markdown.utils.text.view.emitCitationPressEvent
 import com.swmansion.enriched.markdown.utils.text.view.emitLinkLongPressEvent
@@ -126,6 +128,9 @@ class EnrichedMarkdownText
 
     override fun onConfigurationChanged(newConfig: Configuration) {
       super.onConfigurationChanged(newConfig)
+
+      // Reset cached overlay color so it's re-resolved for the new theme
+      fadeOverlayColor = 0
 
       if (!allowFontScaling) {
         return
@@ -256,6 +261,10 @@ class EnrichedMarkdownText
           .forEach { it.registerTextView(this) }
       }
 
+      // Register MathInlineSpan views so they can compute scale-to-fit using view width.
+      // Uses reflection because MathInlineSpan is in the optional math source set.
+      registerMathSpans(styledText)
+
       spoilerOverlayDrawer = SpoilerOverlayDrawer.setupIfNeeded(this, styledText, spoilerOverlayDrawer, spoilerMode)
 
       layoutManager.invalidateLayout()
@@ -316,6 +325,9 @@ class EnrichedMarkdownText
     }
 
     override fun onDetachedFromWindow() {
+      fadeAnimator?.cancelAll()
+      fadeAnimator = null
+      executor.shutdownNow()
       stopSpoilerAnimations()
       super.onDetachedFromWindow()
     }
@@ -363,30 +375,6 @@ class EnrichedMarkdownText
     private fun stopSpoilerAnimations() {
       spoilerOverlayDrawer?.stop()
       spoilerOverlayDrawer = null
-    }
-
-    /**
-     * Returns the character offset in the text for the given touch coordinates,
-     * or -1 if the layout is not available.
-     */
-    private fun charOffsetAt(x: Float, y: Float): Int {
-      val l = layout ?: return -1
-      val lx = (x.toInt() - totalPaddingLeft + scrollX).toFloat()
-      val ly = y.toInt() - totalPaddingTop + scrollY
-      val line = l.getLineForVertical(ly)
-      return l.getOffsetForHorizontal(line, lx)
-    }
-
-    /**
-     * Returns true if the given character offset falls on an interactive span
-     * (link, citation, or checkbox).
-     */
-    private fun isInteractiveOffset(offset: Int): Boolean {
-      if (offset < 0) return false
-      val spanned = text as? android.text.Spanned ?: return false
-      if (spanned.getSpans(offset, offset, com.swmansion.enriched.markdown.spans.LinkSpan::class.java).isNotEmpty()) return true
-      if (spanned.getSpans(offset, offset, com.swmansion.enriched.markdown.spans.CitationChipSpan::class.java).isNotEmpty()) return true
-      return false
     }
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
@@ -454,7 +442,31 @@ class EnrichedMarkdownText
       return result
     }
 
+    private fun registerMathSpans(styledText: CharSequence) {
+      val spanned = styledText as? android.text.Spanned ?: return
+      val cls = mathSpanClass ?: return
+      val method = mathRegisterMethod ?: return
+      try {
+        val spans = spanned.getSpans(0, spanned.length, cls)
+        for (span in spans) {
+          method.invoke(span, this)
+        }
+      } catch (_: Exception) {
+        // math module not available or reflection failed
+      }
+    }
+
     companion object {
       private const val TAG = "ENRM_Text"
+
+      private val mathSpanClass: Class<*>? by lazy {
+        runCatching { Class.forName("com.swmansion.enriched.markdown.spans.MathInlineSpan") }.getOrNull()
+      }
+
+      private val mathRegisterMethod: java.lang.reflect.Method? by lazy {
+        mathSpanClass?.let { cls ->
+          runCatching { cls.getMethod("registerTextView", android.widget.TextView::class.java) }.getOrNull()
+        }
+      }
     }
   }

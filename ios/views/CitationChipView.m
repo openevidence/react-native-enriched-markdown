@@ -2,17 +2,10 @@
 #import "ENRMImageDownloader.h"
 
 static const CGFloat kChipHeight = 20.0;
-static const CGFloat kChipMaxWidth = 90.0;
 static const CGFloat kHorizontalPadding = 8.0;
 static const CGFloat kFaviconSize = 14.0;
 static const CGFloat kFaviconGap = 4.0;
 static const CGFloat kLabelFontSize = 11.0;
-
-// Max width available for the label when a favicon is present:
-//   maxWidth - 2*hPad - faviconSize - gap = 90 - 16 - 14 - 4 = 56
-// When no favicon: 90 - 16 = 74
-static const CGFloat kLabelMaxWidthWithFavicon = 56.0;
-static const CGFloat kLabelMaxWidthNoFavicon = 74.0;
 
 @implementation CitationChipView {
 #if !TARGET_OS_OSX
@@ -107,25 +100,25 @@ static const CGFloat kLabelMaxWidthNoFavicon = 74.0;
 
 - (void)computeLayout
 {
-  CGFloat maxLabelWidth = _hasFavicon ? kLabelMaxWidthWithFavicon : kLabelMaxWidthNoFavicon;
+  // Measure label with no max width cap — JS preprocessing already truncates
+  // labels to a reasonable length (~14 chars + " + N" suffix).
+  CGFloat labelMaxWidth = CGFLOAT_MAX;
 
-  // Measure label
 #if !TARGET_OS_OSX
-  CGSize labelSize = [_label sizeThatFits:CGSizeMake(maxLabelWidth, kChipHeight)];
+  CGSize labelSize = [_label sizeThatFits:CGSizeMake(labelMaxWidth, kChipHeight)];
 #else
-  CGSize labelSize = [_label.cell cellSizeForBounds:NSMakeRect(0, 0, maxLabelWidth, kChipHeight)];
+  CGSize labelSize = [_label.cell cellSizeForBounds:NSMakeRect(0, 0, labelMaxWidth, kChipHeight)];
 #endif
-  CGFloat labelWidth = MIN(labelSize.width, maxLabelWidth);
+  CGFloat labelWidth = labelSize.width;
   CGFloat labelHeight = labelSize.height;
 
   // Compute total width
-  CGFloat contentWidth;
+  CGFloat totalWidth;
   if (_hasFavicon) {
-    contentWidth = kHorizontalPadding + kFaviconSize + kFaviconGap + labelWidth + kHorizontalPadding;
+    totalWidth = kHorizontalPadding + kFaviconSize + kFaviconGap + labelWidth + kHorizontalPadding;
   } else {
-    contentWidth = kHorizontalPadding + labelWidth + kHorizontalPadding;
+    totalWidth = kHorizontalPadding + labelWidth + kHorizontalPadding;
   }
-  CGFloat totalWidth = MIN(contentWidth, kChipMaxWidth);
 
   _chipSize = CGSizeMake(totalWidth, kChipHeight);
   self.frame = CGRectMake(0, 0, totalWidth, kChipHeight);

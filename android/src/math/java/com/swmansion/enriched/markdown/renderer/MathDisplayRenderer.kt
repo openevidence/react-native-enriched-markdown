@@ -27,7 +27,10 @@ class MathDisplayRenderer(
     val latex = extractLatex(node)
     if (latex.isEmpty()) return
 
-    val style = config.style.mathStyle
+    val mathStyle = config.style.mathStyle
+    // Use paragraph color for the math text so it respects dark mode.
+    // The math-specific color may not be theme-aware in all apps.
+    val textColor = config.style.paragraphStyle.color
 
     // Ensure we start on a new line
     if (builder.isNotEmpty() && builder[builder.length - 1] != '\n') {
@@ -40,16 +43,12 @@ class MathDisplayRenderer(
     builder.append("\uFFFC")
     val spanEnd = builder.length
 
-    // Use the screen width as an upper bound so wide equations scale down
-    // to fit rather than overflowing horizontally.
-    val maxWidth = context.resources.displayMetrics.widthPixels
-
     val span = MathInlineSpan(
       context = context,
       latex = latex,
-      fontSize = style.fontSize,
-      textColor = style.color,
-      maxWidth = maxWidth,
+      fontSize = mathStyle.fontSize,
+      textColor = textColor,
+      scaleToFit = true,
     )
     builder.setSpan(span, spanStart, spanEnd, SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE)
 

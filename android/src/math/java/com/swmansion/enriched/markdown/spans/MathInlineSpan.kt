@@ -15,14 +15,23 @@ class MathInlineSpan(
   internal val latex: String,
   internal val fontSize: Float,
   private val textColor: Int,
-  private val maxWidth: Int = 0,
+  /** If true, scale the bitmap to fit the text view width during draw. */
+  private val scaleToFit: Boolean = false,
 ) : ReplacementSpan() {
   private var cachedBitmap: Bitmap? = null
+  private var naturalWidth = 0
   private var cachedWidth = 0
+  private var naturalAscent = 0f
+  private var naturalDescent = 0f
   private var mathAscent = 0f
   private var mathDescent = 0f
   private var renderFailed = false
   private var scaleFactor = 1f
+  private var viewRef: java.lang.ref.WeakReference<android.widget.TextView>? = null
+
+  fun registerTextView(view: android.widget.TextView) {
+    viewRef = java.lang.ref.WeakReference(view)
+  }
 
   private fun prepareResources() {
     if (cachedBitmap != null && !cachedBitmap!!.isRecycled) return
@@ -51,17 +60,10 @@ class MathInlineSpan(
       val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
       mathView.draw(Canvas(bitmap))
       cachedBitmap = bitmap
-
-      // Scale down if the rendered math exceeds maxWidth
-      if (maxWidth > 0 && width > maxWidth) {
-        scaleFactor = maxWidth.toFloat() / width
-        cachedWidth = maxWidth
-        mathAscent *= scaleFactor
-        mathDescent *= scaleFactor
-      } else {
-        scaleFactor = 1f
-        cachedWidth = width
-      }
+      naturalWidth = width
+      cachedWidth = width
+      naturalAscent = mathAscent
+      naturalDescent = mathDescent
     } catch (e: Exception) {
       Log.e(TAG, "MathInlineSpan render failed for latex='$latex': ${e.message}", e)
       renderFailed = true
@@ -91,6 +93,24 @@ class MathInlineSpan(
     }
   }
 
+  /**
+   * Computes the scale factor so the bitmap fits within the given [availableWidth].
+   * Only applied when [scaleToFit] is true.
+   */
+  private fun computeScale(availableWidth: Int) {
+    if (!scaleToFit || naturalWidth <= 0 || availableWidth <= 0 || naturalWidth <= availableWidth) {
+      scaleFactor = 1f
+      cachedWidth = naturalWidth
+      mathAscent = naturalAscent
+      mathDescent = naturalDescent
+      return
+    }
+    scaleFactor = availableWidth.toFloat() / naturalWidth
+    cachedWidth = availableWidth
+    mathAscent = naturalAscent * scaleFactor
+    mathDescent = naturalDescent * scaleFactor
+  }
+
   override fun getSize(
     paint: Paint,
     text: CharSequence?,
@@ -100,7 +120,15 @@ class MathInlineSpan(
   ): Int {
     prepareResources()
 
-    Log.d(TAG, "getSize: latex='${latex.take(30)}' width=$cachedWidth hasBitmap=${cachedBitmap != null} failed=$renderFailed")
+    // Compute scale using the text view's content width so the layout
+    // system knows the actual (scaled) width for positioning.
+    if (scaleToFit && naturalWidth > 0) {
+      val tv = viewRef?.get()
+      if (tv != null) {
+        val availableWidth = tv.width - tv.totalPaddingLeft - tv.totalPaddingRight
+        computeScale(availableWidth)
+      }
+    }
 
     fm?.apply {
       ascent = -mathAscent.roundToInt()

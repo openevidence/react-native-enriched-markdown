@@ -514,18 +514,9 @@ void extractCitationsFromTextNodes(MarkdownASTNode &node) {
     if (child->type == NodeType::Text && !child->content.empty()) {
       const std::string &text = child->content;
 
-      // Log ALL text nodes to see what MD4C produces
-      if (text.size() < 200) {
-        fprintf(stderr, "[CITATION_DEBUG] Text node: '%s'\n", text.c_str());
-      } else {
-        fprintf(stderr, "[CITATION_DEBUG] Text node (len=%zu): '%.100s...'\n", text.size(), text.c_str());
-      }
-
       if (text.find("[[") == std::string::npos) {
         continue;
       }
-
-      fprintf(stderr, "[CITATION_DEBUG] Found [[ in Text node!\n");
 
       std::vector<std::shared_ptr<MarkdownASTNode>> replacements;
       size_t lastPos = 0;
@@ -578,7 +569,6 @@ void extractCitationsFromTextNodes(MarkdownASTNode &node) {
       children.insert(insertPos, replacements.begin(), replacements.end());
       i += replacements.size() - 1;
     } else {
-      fprintf(stderr, "[CITATION_DEBUG] Recursing into node type %d with %zu children\n", static_cast<int>(child->type), child->children.size());
       extractCitationsFromTextNodes(*child);
     }
   }
@@ -687,7 +677,6 @@ std::shared_ptr<MarkdownASTNode> MD4CParser::parse(const std::string &markdown, 
   impl_->flushText();
 
   if (impl_->root) {
-    fprintf(stderr, "[CITATION_DEBUG] About to run extractCitationsFromTextNodes, root has %zu children\n", impl_->root->children.size());
     extractCitationsFromTextNodes(*impl_->root);
     promoteDisplayMathFromParagraphs(*impl_->root);
   }

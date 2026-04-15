@@ -1,40 +1,47 @@
-<img src="https://github.com/user-attachments/assets/27d269ca-4004-423f-b90a-745edadd7307" alt="react-native-enriched-markdown by Software Mansion" width="100%">
-
 # react-native-enriched-markdown
 
-`react-native-enriched-markdown` is a powerful React Native library that renders Markdown content as native text and provides a rich text input with Markdown output. It supports iOS, Android, macOS, and Web, and requires the New Architecture (Fabric) for native platforms.
+> **OpenEvidence fork** of [`software-mansion-labs/react-native-enriched-markdown`](https://github.com/software-mansion-labs/react-native-enriched-markdown).
+
+A React Native library that renders Markdown content as native text and provides a rich text input with Markdown output. Supports iOS, Android, macOS, and Web. Requires the New Architecture (Fabric) for native platforms.
+
+## Changes in this fork
+
+- **Citation chips** — inline `[[numbers|label|faviconUrl]]` syntax rendered as styled chips with favicons and grouped count suffixes, with an `onCitationPress` callback
+- **Tail fade-in streaming animation** — new text appended during streaming fades in at word-level granularity with smoothstep easing over 600ms
+- **Display math (CommonMark)** — block-level LaTeX (`$$...$$`) now renders in the CommonMark flavor path (previously GitHub-only)
+- **Android touch handling fix** — links and citations correctly respond to taps even when parent views intercept `ACTION_CANCEL`; scroll and drawer gestures are preserved for plain-text areas
+
+## Features
 
 ### EnrichedMarkdownText
 
-- ⚡ Fully native text rendering (no WebView)
-- 🌐 Web support via [react-native-web](https://necolas.github.io/react-native-web/) + [md4c](https://github.com/mity/md4c) compiled to WebAssembly
-- 🎯 High-performance Markdown parsing with [md4c](https://github.com/mity/md4c)
-- 📐 CommonMark standard compliant
-- 📊 GitHub Flavored Markdown (GFM)
-- 🧮 LaTeX math rendering (block `$$...$$` with `flavor="github"`, inline `$...$` in all flavors)
-- 🔀 [Markdown Streaming](docs/MARKDOWN_STREAMING.md) support (via [react-native-streamdown](https://github.com/software-mansion-labs/react-native-streamdown))
-- 🎨 Fully customizable styles for all elements
-- ✨ Text selection and copy support
-- 📌 Custom text selection context menu items
-- 🔗 Interactive link handling
-- 🙈 Spoiler text with animated particle overlay and tap-to-reveal
-- 🖼️ Native image interactions (iOS: Copy, Save to Camera Roll)
-- 🌐 Native platform features (Translate, Look Up, Search Web, Share)
-- 🗣️ Accessibility support (VoiceOver on iOS, TalkBack on Android, semantic HTML on web)
-- 🔄 Full RTL (right-to-left) support including text, lists, blockquotes, tables, and task lists
+- Fully native text rendering (no WebView)
+- Web support via [react-native-web](https://necolas.github.io/react-native-web/) + [md4c](https://github.com/mity/md4c) compiled to WebAssembly
+- High-performance Markdown parsing with [md4c](https://github.com/mity/md4c)
+- CommonMark standard compliant
+- GitHub Flavored Markdown (GFM)
+- LaTeX math rendering (block `$$...$$` in both flavors, inline `$...$` in all flavors)
+- [Markdown Streaming](docs/MARKDOWN_STREAMING.md) support (via [react-native-streamdown](https://github.com/software-mansion-labs/react-native-streamdown))
+- Fully customizable styles for all elements
+- Text selection and copy support
+- Custom text selection context menu items
+- Interactive link handling
+- Citation chips with favicons, labels, and grouped counts
+- Spoiler text with animated particle overlay and tap-to-reveal
+- Native image interactions (iOS: Copy, Save to Camera Roll)
+- Native platform features (Translate, Look Up, Search Web, Share)
+- Accessibility support (VoiceOver on iOS, TalkBack on Android, semantic HTML on web)
+- Full RTL (right-to-left) support including text, lists, blockquotes, tables, and task lists
 
 ### EnrichedMarkdownInput
 
-- ✏️ Rich text input with Markdown output
-- 🕹️ Imperative API for toggling styles and managing links
-- 📋 Native context menu with formatting submenu
-- 🔍 Real-time style state detection
-- 🔗 Auto-link detection with customizable regex
-- 🔄 Smart copy/paste with Markdown preservation
-- 🎨 Customizable bold, italic, and link colors
-Since 2012 [Software Mansion](https://swmansion.com) is a software agency with experience in building web and mobile apps. We are Core React Native Contributors and experts in dealing with all kinds of React Native issues.
-We can help you build your next dream product –
-[Hire us](https://swmansion.com/contact/projects?utm_source=react-native-enriched-markdown&utm_medium=readme).
+- Rich text input with Markdown output
+- Imperative API for toggling styles and managing links
+- Native context menu with formatting submenu
+- Real-time style state detection
+- Auto-link detection with customizable regex
+- Smart copy/paste with Markdown preservation
+- Customizable bold, italic, and link colors
 
 ## Table of Contents
 
@@ -61,9 +68,6 @@ We can help you build your next dream product –
 - [API Reference](#api-reference)
 - [Web Support](docs/WEB.md)
 - [macOS Support](docs/MACOS.md)
-- [Contributing](#contributing)
-- [Future Plans](#future-plans)
-- [License](#license)
 
 ## Prerequisites
 
@@ -98,18 +102,7 @@ See [Web Support](docs/WEB.md) for full setup details, supported features, and p
 
 #### 1. Install the library
 
-```sh
-yarn add react-native-enriched-markdown
-```
-
-> [!TIP]
-> To try the latest features before they land in a stable release, install the nightly build:
->
-> ```sh
-> yarn add react-native-enriched-markdown@nightly
-> ```
->
-> Nightly versions are published to npm automatically and may contain breaking changes.
+Point your package manager at this fork's repository or a local path as appropriate for your setup.
 
 #### 2. Install iOS / macOS dependencies
 
@@ -132,8 +125,6 @@ npx expo install react-native-enriched-markdown
 ```
 
 #### 2. Run prebuild
-
-The library includes native code so you will need to re-build the native app.
 
 ```sh
 npx expo prebuild
@@ -172,25 +163,10 @@ See [Web Support](docs/WEB.md) for details on supported features, web-specific p
 
 `react-native-enriched-markdown` supports macOS via [react-native-macos](https://github.com/microsoft/react-native-macos). See [macOS Support](docs/MACOS.md) for details on macOS-specific features, known limitations, and the example app.
 
-## Future Plans
-
-We're actively working on expanding the capabilities of `react-native-enriched-markdown`. Here's what's on the roadmap:
-
-- `EnrichedMarkdownInput`: headings, lists, blockquotes, code blocks, mentions, inline images
-- `EnrichedMarkdownInput` web support
-- macOS: block math rendering, VoiceOver accessibility, tail fade-in animation
-- Web: spoiler text, streaming animation, configurable link `target`, copy options (Copy as Markdown, multi-format clipboard)
-
-## Contributing
-
-See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
-
 ## License
 
-`react-native-enriched-markdown` library is licensed under [The MIT License](./LICENSE).
+`react-native-enriched-markdown` is licensed under [The MIT License](./LICENSE).
 
 ---
 
-Built by [Software Mansion](https://swmansion.com/).
-
-[<img width="128" height="69" alt="Software Mansion Logo" src="https://github.com/user-attachments/assets/f0e18471-a7aa-4e80-86ac-87686a86fe56" />](https://swmansion.com/)
+Upstream library by [Software Mansion](https://swmansion.com/). 

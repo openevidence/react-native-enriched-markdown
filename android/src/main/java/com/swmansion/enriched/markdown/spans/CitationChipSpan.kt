@@ -12,7 +12,6 @@ import android.os.Handler
 import android.os.Looper
 import android.text.TextPaint
 import android.text.style.ReplacementSpan
-import android.util.Log
 import android.util.TypedValue
 import android.widget.TextView
 import com.swmansion.enriched.markdown.EnrichedMarkdownText
@@ -50,9 +49,15 @@ class CitationChipSpan(
   private val leftMarginPx = LEFT_MARGIN_DP * density
   private val rightMarginPx = RIGHT_MARGIN_DP * density
 
+  // Use style config values, falling back to defaults
+  private val chipBgColor = styleCache.citationBackgroundColor.takeIf { it != 0 } ?: DEFAULT_BACKGROUND_COLOR
+  private val chipTextColor = styleCache.citationColor.takeIf { it != 0 } ?: DEFAULT_TEXT_COLOR
+  private val chipFontSizeSp = styleCache.citationFontSize.takeIf { it > 0f } ?: DEFAULT_FONT_SIZE_SP
+  private val chipBorderRadius = styleCache.citationBorderRadius
+
   // sp to px for font size
   private val fontSizePx = TypedValue.applyDimension(
-    TypedValue.COMPLEX_UNIT_SP, FONT_SIZE_SP, metrics
+    TypedValue.COMPLEX_UNIT_SP, chipFontSizeSp, metrics
   )
 
   private val hasFavicon = faviconUrl.isNotEmpty()
@@ -62,12 +67,12 @@ class CitationChipSpan(
 
   // Paint objects reused across draw calls
   private val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-    color = BACKGROUND_COLOR
+    color = chipBgColor
     style = Paint.Style.FILL
   }
 
   private val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-    color = TEXT_COLOR
+    color = chipTextColor
     textSize = fontSizePx
     typeface = Typeface.DEFAULT
   }
@@ -133,7 +138,6 @@ class CitationChipSpan(
   }
 
   fun onClick(widget: TextView) {
-    Log.d("ENRM_CitationSpan", "onClick numbers=$numbers hasCallback=${onCitationPress != null} widgetType=${widget.javaClass.simpleName}")
     onCitationPress?.invoke(numbers)
       ?: (widget as? EnrichedMarkdownText)?.emitOnCitationPress(numbers)
   }
@@ -194,7 +198,7 @@ class CitationChipSpan(
     val chipY = y.toFloat() + fm.ascent + (fontHeight - chipHeightPx) / 2f
 
     // Draw pill background
-    val borderRadius = chipHeightPx / 2f
+    val borderRadius = if (chipBorderRadius > 0f) chipBorderRadius * density else chipHeightPx / 2f
     val rect = RectF(chipX, chipY, chipX + chipWidth, chipY + chipHeightPx)
     canvas.drawRoundRect(rect, borderRadius, borderRadius, bgPaint)
 
@@ -255,9 +259,9 @@ class CitationChipSpan(
     private const val FAVICON_GAP_DP = 4f
     private const val LEFT_MARGIN_DP = 4f
     private const val RIGHT_MARGIN_DP = 2f
-    private const val FONT_SIZE_SP = 11f
 
-    private const val BACKGROUND_COLOR = 0xFFFCEDE8.toInt() // #FCEDE8
-    private const val TEXT_COLOR = 0xFF343231.toInt() // #343231
+    private const val DEFAULT_FONT_SIZE_SP = 11f
+    private const val DEFAULT_BACKGROUND_COLOR = 0xFFFCEDE8.toInt() // #FCEDE8
+    private const val DEFAULT_TEXT_COLOR = 0xFF343231.toInt() // #343231
   }
 }

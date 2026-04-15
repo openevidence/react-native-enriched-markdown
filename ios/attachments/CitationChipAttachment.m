@@ -3,7 +3,6 @@
 
 // Chip design constants (matching React Native CitationElement)
 static const CGFloat kChipHeight = 20.0;
-static const CGFloat kChipMaxWidth = 90.0;
 static const CGFloat kChipPaddingH = 8.0;
 static const CGFloat kChipBorderRadius = 10.0;
 static const CGFloat kFaviconSize = 14.0;
@@ -55,8 +54,6 @@ static NSCache<NSString *, UIImage *> *sFaviconCache = nil;
     if (_faviconUrl.length > 0) {
       _chipWidth += kFaviconSize + kFaviconGap;
     }
-    _chipWidth = MIN(_chipWidth, kChipMaxWidth);
-
     // Check favicon cache
     if (_faviconUrl.length > 0) {
       UIImage *cached = [sFaviconCache objectForKey:_faviconUrl];
@@ -177,26 +174,28 @@ static NSCache<NSString *, UIImage *> *sFaviconCache = nil;
   if (!url) return;
 
   __weak CitationChipAttachment *weakSelf = self;
-  dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
-    NSData *data = [NSData dataWithContentsOfURL:url];
-    if (!data) return;
-    UIImage *image = [UIImage imageWithData:data];
-    if (!image) return;
-    [sFaviconCache setObject:image forKey:self->_faviconUrl];
-    dispatch_async(dispatch_get_main_queue(), ^{
-      CitationChipAttachment *strong = weakSelf;
-      if (!strong) return;
-      strong->_faviconImage = image;
-      strong->_faviconLoaded = YES;
-      // Invalidate DISPLAY only (not layout) so the text system re-composites
-      // the attachment image without recalculating glyph metrics. The chip
-      // bounds are unchanged (chipWidth always includes favicon space).
-      NSLayoutManager *lm = strong->_layoutManager;
-      if (lm && lm.textStorage.length > 0) {
-        [lm invalidateDisplayForCharacterRange:NSMakeRange(0, lm.textStorage.length)];
-      }
-    });
-  });
+  NSURLSessionDataTask *task = [[NSURLSession sharedSession]
+      dataTaskWithURL:url
+    completionHandler:^(NSData *data, NSURLResponse *__unused response, NSError *__unused error) {
+      if (!data) return;
+      UIImage *image = [UIImage imageWithData:data];
+      if (!image) return;
+      [sFaviconCache setObject:image forKey:self->_faviconUrl];
+      dispatch_async(dispatch_get_main_queue(), ^{
+        CitationChipAttachment *strong = weakSelf;
+        if (!strong) return;
+        strong->_faviconImage = image;
+        strong->_faviconLoaded = YES;
+        // Invalidate DISPLAY only (not layout) so the text system re-composites
+        // the attachment image without recalculating glyph metrics. The chip
+        // bounds are unchanged (chipWidth always includes favicon space).
+        NSLayoutManager *lm = strong->_layoutManager;
+        if (lm && lm.textStorage.length > 0) {
+          [lm invalidateDisplayForCharacterRange:NSMakeRange(0, lm.textStorage.length)];
+        }
+      });
+    }];
+  [task resume];
 }
 
 @end

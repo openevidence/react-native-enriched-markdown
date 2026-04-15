@@ -18,6 +18,8 @@ import com.swmansion.enriched.markdown.utils.text.view.LinkLongPressMovementMeth
 import com.swmansion.enriched.markdown.utils.text.view.applySelectableState
 import com.swmansion.enriched.markdown.utils.text.view.cancelJSTouchForCheckboxTap
 import com.swmansion.enriched.markdown.utils.text.view.cancelJSTouchForLinkTap
+import com.swmansion.enriched.markdown.utils.text.view.charOffsetAt
+import com.swmansion.enriched.markdown.utils.text.view.isInteractiveOffset
 import com.swmansion.enriched.markdown.utils.text.view.createSelectionActionModeCallback
 import com.swmansion.enriched.markdown.utils.text.view.setupAsMarkdownTextView
 import com.swmansion.enriched.markdown.views.BlockSegmentView
@@ -103,22 +105,6 @@ class EnrichedMarkdownInternalText
     ) {
       contextMenuItemTexts = items
       onContextMenuItemPress = onPress
-    }
-
-    private fun charOffsetAt(x: Float, y: Float): Int {
-      val l = layout ?: return -1
-      val lx = (x.toInt() - totalPaddingLeft + scrollX).toFloat()
-      val ly = y.toInt() - totalPaddingTop + scrollY
-      val line = l.getLineForVertical(ly)
-      return l.getOffsetForHorizontal(line, lx)
-    }
-
-    private fun isInteractiveOffset(offset: Int): Boolean {
-      if (offset < 0) return false
-      val spanned = text as? android.text.Spanned ?: return false
-      if (spanned.getSpans(offset, offset, com.swmansion.enriched.markdown.spans.LinkSpan::class.java).isNotEmpty()) return true
-      if (spanned.getSpans(offset, offset, com.swmansion.enriched.markdown.spans.CitationChipSpan::class.java).isNotEmpty()) return true
-      return false
     }
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
