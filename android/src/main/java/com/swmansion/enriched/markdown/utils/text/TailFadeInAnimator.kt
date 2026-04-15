@@ -35,7 +35,10 @@ class TailFadeInAnimator(
    * Start a fade-in animation for a new tail range.
    * Call AFTER setText so the layout is available for coordinate calculations.
    */
-  fun animate(tailStart: Int, tailEnd: Int) {
+  fun animate(
+    tailStart: Int,
+    tailEnd: Int,
+  ) {
     if (tailEnd <= tailStart) return
     activeGroups.add(FadeGroup(tailStart, tailEnd, System.nanoTime()))
     ensureFrameCallback()
@@ -117,10 +120,11 @@ class TailFadeInAnimator(
 
   // --- Choreographer frame callback ---
 
-  private val frameCallback = Choreographer.FrameCallback {
-    frameCallbackRegistered = false
-    tick()
-  }
+  private val frameCallback =
+    Choreographer.FrameCallback {
+      frameCallbackRegistered = false
+      tick()
+    }
 
   private fun ensureFrameCallback() {
     if (!frameCallbackRegistered) {
@@ -146,6 +150,7 @@ class TailFadeInAnimator(
     private const val FADE_DURATION_NANOS = FADE_DURATION_MS * 1_000_000L
 
     private fun smoothstep(t: Float): Float = t * t * (3f - 2f * t)
+
     private fun clamp(value: Float): Float = value.coerceIn(0f, 1f)
   }
 

@@ -19,8 +19,8 @@ import com.swmansion.enriched.markdown.utils.text.view.applySelectableState
 import com.swmansion.enriched.markdown.utils.text.view.cancelJSTouchForCheckboxTap
 import com.swmansion.enriched.markdown.utils.text.view.cancelJSTouchForLinkTap
 import com.swmansion.enriched.markdown.utils.text.view.charOffsetAt
-import com.swmansion.enriched.markdown.utils.text.view.isInteractiveOffset
 import com.swmansion.enriched.markdown.utils.text.view.createSelectionActionModeCallback
+import com.swmansion.enriched.markdown.utils.text.view.isInteractiveOffset
 import com.swmansion.enriched.markdown.utils.text.view.setupAsMarkdownTextView
 import com.swmansion.enriched.markdown.views.BlockSegmentView
 
@@ -124,6 +124,7 @@ class EnrichedMarkdownInternalText
           touchStartY = event.rawY
           isScrollGesture = false
         }
+
         MotionEvent.ACTION_MOVE -> {
           val mm = movementMethod
           val linkActive = mm is LinkLongPressMovementMethod && mm.isLinkTouchActive
@@ -141,6 +142,7 @@ class EnrichedMarkdownInternalText
             return true
           }
         }
+
         MotionEvent.ACTION_UP -> {
           if (isScrollGesture) {
             isScrollGesture = false
@@ -148,6 +150,7 @@ class EnrichedMarkdownInternalText
             return true
           }
         }
+
         MotionEvent.ACTION_CANCEL -> {
           isScrollGesture = false
           (text as? Spannable)?.let { Selection.removeSelection(it) }

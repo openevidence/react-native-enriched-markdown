@@ -38,11 +38,13 @@
                                                                           faviconUrl:faviconUrl
                                                                              numbers:numbers];
 
-  NSMutableAttributedString *attachmentStr =
-      [[NSMutableAttributedString alloc] initWithAttributedString:[NSAttributedString attributedStringWithAttachment:attachment]];
+  NSMutableAttributedString *attachmentStr = [[NSMutableAttributedString alloc]
+      initWithAttributedString:[NSAttributedString attributedStringWithAttachment:attachment]];
 
   // Store text-for-copy as a custom attribute for clipboard substitution
-  [attachmentStr addAttribute:@"CitationCopyText" value:[attachment textForCopy] range:NSMakeRange(0, attachmentStr.length)];
+  [attachmentStr addAttribute:@"CitationCopyText"
+                        value:[attachment textForCopy]
+                        range:NSMakeRange(0, attachmentStr.length)];
 
   [output appendAttributedString:attachmentStr];
 

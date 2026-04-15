@@ -43,13 +43,14 @@ class MathDisplayRenderer(
     builder.append("\uFFFC")
     val spanEnd = builder.length
 
-    val span = MathInlineSpan(
-      context = context,
-      latex = latex,
-      fontSize = mathStyle.fontSize,
-      textColor = textColor,
-      scaleToFit = true,
-    )
+    val span =
+      MathInlineSpan(
+        context = context,
+        latex = latex,
+        fontSize = mathStyle.fontSize,
+        textColor = textColor,
+        scaleToFit = true,
+      )
     builder.setSpan(span, spanStart, spanEnd, SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE)
 
     // Center-align the math block

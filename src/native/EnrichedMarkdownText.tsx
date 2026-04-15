@@ -19,7 +19,12 @@ import type {
 
 export type { MarkdownStyle, Md4cFlags };
 export type { EnrichedMarkdownTextProps, ContextMenuItem };
-export type { LinkPressEvent, LinkLongPressEvent, TaskListItemPressEvent, CitationPressEvent };
+export type {
+  LinkPressEvent,
+  LinkLongPressEvent,
+  TaskListItemPressEvent,
+  CitationPressEvent,
+};
 
 const defaultMd4cFlags: Md4cFlags = {
   underline: false,

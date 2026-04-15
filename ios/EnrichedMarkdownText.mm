@@ -1,6 +1,5 @@
 #import "EnrichedMarkdownText.h"
 #import "CodeBlockBackground.h"
-#import "RenderContext.h"
 #import "ContextMenuUtils.h"
 #import "ENRMContextMenuTextView+macOS.h"
 #import "ENRMImageAttachment.h"
@@ -19,6 +18,7 @@
 #import "MarkdownAccessibilityElementBuilder.h"
 #import "MarkdownExtractor.h"
 #import "ParagraphStyleUtils.h"
+#import "RenderContext.h"
 #import "RuntimeKeys.h"
 #import "StylePropsUtils.h"
 #import "TaskListTapUtils.h"
@@ -343,10 +343,9 @@ using namespace facebook::react;
   // tailStart is identical and its layout is already computed.  For
   // non-streaming updates (full replacement) invalidate everything.
   NSRange invalidRange = (_streamingAnimation && tailStart > 0 && tailStart < attributedText.length)
-      ? NSMakeRange(tailStart, attributedText.length - tailStart)
-      : NSMakeRange(0, attributedText.length);
-  [_textView.layoutManager invalidateLayoutForCharacterRange:invalidRange
-                                        actualCharacterRange:NULL];
+                             ? NSMakeRange(tailStart, attributedText.length - tailStart)
+                             : NSMakeRange(0, attributedText.length);
+  [_textView.layoutManager invalidateLayoutForCharacterRange:invalidRange actualCharacterRange:NULL];
 
   // When bounds width is zero (recycled view not yet laid out), skip layout
   // and measurement — layoutSubviews will handle it once the view has real

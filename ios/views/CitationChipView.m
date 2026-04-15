@@ -27,10 +27,7 @@ static const CGFloat kLabelFontSize = 11.0;
     _hasFavicon = (faviconUrl.length > 0);
 
     // Background color: #FCEDE8
-    RCTUIColor *bgColor = [RCTUIColor colorWithRed:0xFC / 255.0
-                                             green:0xED / 255.0
-                                              blue:0xE8 / 255.0
-                                             alpha:1.0];
+    RCTUIColor *bgColor = [RCTUIColor colorWithRed:0xFC / 255.0 green:0xED / 255.0 blue:0xE8 / 255.0 alpha:1.0];
 #if !TARGET_OS_OSX
     self.backgroundColor = bgColor;
 #else
@@ -43,19 +40,13 @@ static const CGFloat kLabelFontSize = 11.0;
     _label = [[UILabel alloc] initWithFrame:CGRectZero];
     _label.text = label;
     _label.font = [UIFont systemFontOfSize:kLabelFontSize weight:UIFontWeightRegular];
-    _label.textColor = [RCTUIColor colorWithRed:0x34 / 255.0
-                                          green:0x32 / 255.0
-                                           blue:0x31 / 255.0
-                                          alpha:1.0];
+    _label.textColor = [RCTUIColor colorWithRed:0x34 / 255.0 green:0x32 / 255.0 blue:0x31 / 255.0 alpha:1.0];
     _label.lineBreakMode = NSLineBreakByTruncatingTail;
 #else
     _label = [[NSTextField alloc] initWithFrame:CGRectZero];
     _label.stringValue = label;
     _label.font = [NSFont systemFontOfSize:kLabelFontSize weight:NSFontWeightRegular];
-    _label.textColor = [RCTUIColor colorWithRed:0x34 / 255.0
-                                          green:0x32 / 255.0
-                                           blue:0x31 / 255.0
-                                          alpha:1.0];
+    _label.textColor = [RCTUIColor colorWithRed:0x34 / 255.0 green:0x32 / 255.0 blue:0x31 / 255.0 alpha:1.0];
     _label.lineBreakMode = NSLineBreakByTruncatingTail;
     _label.bordered = NO;
     _label.editable = NO;
@@ -146,9 +137,8 @@ static const CGFloat kLabelFontSize = 11.0;
   }
 
   RCTUIGraphicsImageRenderer *renderer = ImageRendererForSize(size);
-  return [renderer imageWithActions:^(RCTUIGraphicsImageRendererContext *ctx) {
-    [self.layer renderInContext:ctx.CGContext];
-  }];
+  return [renderer
+      imageWithActions:^(RCTUIGraphicsImageRendererContext *ctx) { [self.layer renderInContext:ctx.CGContext]; }];
 }
 
 #pragma mark - Favicon download

@@ -75,7 +75,12 @@ export const EnrichedMarkdownText = ({
   }, [markdown, underline, latexMath]);
 
   const callbacks = useMemo<RendererCallbacks>(
-    () => ({ onLinkPress, onLinkLongPress, onTaskListItemPress, onCitationPress }),
+    () => ({
+      onLinkPress,
+      onLinkLongPress,
+      onTaskListItemPress,
+      onCitationPress,
+    }),
     [onLinkPress, onLinkLongPress, onTaskListItemPress, onCitationPress]
   );
 

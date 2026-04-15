@@ -9,7 +9,10 @@ import com.swmansion.enriched.markdown.spans.LinkSpan
  * Returns the character offset in the text for the given touch coordinates,
  * or -1 if the layout is not available.
  */
-fun TextView.charOffsetAt(x: Float, y: Float): Int {
+fun TextView.charOffsetAt(
+  x: Float,
+  y: Float,
+): Int {
   val l = layout ?: return -1
   val lx = (x.toInt() - totalPaddingLeft + scrollX).toFloat()
   val ly = y.toInt() - totalPaddingTop + scrollY

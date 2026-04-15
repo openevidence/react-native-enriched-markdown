@@ -20,9 +20,7 @@
   CGFloat alpha = 1.0;
   NSTextStorage *storage = textContainer.layoutManager.textStorage;
   if (storage && charIndex < storage.length) {
-    RCTUIColor *fgColor = [storage attribute:NSForegroundColorAttributeName
-                                     atIndex:charIndex
-                              effectiveRange:NULL];
+    RCTUIColor *fgColor = [storage attribute:NSForegroundColorAttributeName atIndex:charIndex effectiveRange:NULL];
     if (fgColor) {
       [fgColor getRed:NULL green:NULL blue:NULL alpha:&alpha];
     }

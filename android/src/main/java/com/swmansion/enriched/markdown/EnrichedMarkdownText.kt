@@ -30,11 +30,11 @@ import com.swmansion.enriched.markdown.utils.text.view.applySelectableState
 import com.swmansion.enriched.markdown.utils.text.view.cancelJSTouchForCheckboxTap
 import com.swmansion.enriched.markdown.utils.text.view.cancelJSTouchForLinkTap
 import com.swmansion.enriched.markdown.utils.text.view.charOffsetAt
-import com.swmansion.enriched.markdown.utils.text.view.isInteractiveOffset
 import com.swmansion.enriched.markdown.utils.text.view.createSelectionActionModeCallback
 import com.swmansion.enriched.markdown.utils.text.view.emitCitationPressEvent
 import com.swmansion.enriched.markdown.utils.text.view.emitLinkLongPressEvent
 import com.swmansion.enriched.markdown.utils.text.view.emitLinkPressEvent
+import com.swmansion.enriched.markdown.utils.text.view.isInteractiveOffset
 import com.swmansion.enriched.markdown.utils.text.view.setupAsMarkdownTextView
 import java.util.concurrent.Executors
 
@@ -257,7 +257,8 @@ class EnrichedMarkdownText
       }
 
       (styledText as? android.text.Spanned)?.let { spanned ->
-        spanned.getSpans(0, spanned.length, com.swmansion.enriched.markdown.spans.CitationChipSpan::class.java)
+        spanned
+          .getSpans(0, spanned.length, com.swmansion.enriched.markdown.spans.CitationChipSpan::class.java)
           .forEach { it.registerTextView(this) }
       }
 
@@ -355,7 +356,9 @@ class EnrichedMarkdownText
 
     private fun resolveFadeOverlayColor(): Int {
       if (fadeOverlayColor != 0) return fadeOverlayColor
-      fadeOverlayColor = com.swmansion.enriched.markdown.spoiler.SpoilerDrawContext.resolveBackgroundColor(this)
+      fadeOverlayColor =
+        com.swmansion.enriched.markdown.spoiler.SpoilerDrawContext
+          .resolveBackgroundColor(this)
       return fadeOverlayColor
     }
 
@@ -385,6 +388,7 @@ class EnrichedMarkdownText
           touchStartY = event.rawY
           isScrollGesture = false
         }
+
         MotionEvent.ACTION_MOVE -> {
           val mm = movementMethod
           val linkActive = mm is LinkLongPressMovementMethod && mm.isLinkTouchActive
@@ -403,6 +407,7 @@ class EnrichedMarkdownText
             return true
           }
         }
+
         MotionEvent.ACTION_UP -> {
           if (isScrollGesture) {
             isScrollGesture = false
@@ -410,6 +415,7 @@ class EnrichedMarkdownText
             return true
           }
         }
+
         MotionEvent.ACTION_CANCEL -> {
           isScrollGesture = false
           (text as? Spannable)?.let { Selection.removeSelection(it) }

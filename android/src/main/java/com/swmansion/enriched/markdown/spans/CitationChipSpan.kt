@@ -56,26 +56,32 @@ class CitationChipSpan(
   private val chipBorderRadius = styleCache.citationBorderRadius
 
   // sp to px for font size
-  private val fontSizePx = TypedValue.applyDimension(
-    TypedValue.COMPLEX_UNIT_SP, chipFontSizeSp, metrics
-  )
+  private val fontSizePx =
+    TypedValue.applyDimension(
+      TypedValue.COMPLEX_UNIT_SP,
+      chipFontSizeSp,
+      metrics,
+    )
 
   private val hasFavicon = faviconUrl.isNotEmpty()
+
   @Volatile private var faviconBitmap: Bitmap? = null
   private var viewRef: WeakReference<TextView>? = null
   private val mainHandler = Handler(Looper.getMainLooper())
 
   // Paint objects reused across draw calls
-  private val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-    color = chipBgColor
-    style = Paint.Style.FILL
-  }
+  private val bgPaint =
+    Paint(Paint.ANTI_ALIAS_FLAG).apply {
+      color = chipBgColor
+      style = Paint.Style.FILL
+    }
 
-  private val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-    color = chipTextColor
-    textSize = fontSizePx
-    typeface = Typeface.DEFAULT
-  }
+  private val textPaint =
+    TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+      color = chipTextColor
+      textSize = fontSizePx
+      typeface = Typeface.DEFAULT
+    }
 
   private val faviconPaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
 
@@ -89,11 +95,12 @@ class CitationChipSpan(
     ImageDownloader.download(context, faviconUrl) { bitmap ->
       if (bitmap != null) {
         val size = faviconSizePx.roundToInt()
-        val scaled = if (bitmap.width != size || bitmap.height != size) {
-          Bitmap.createScaledBitmap(bitmap, size, size, true)
-        } else {
-          bitmap
-        }
+        val scaled =
+          if (bitmap.width != size || bitmap.height != size) {
+            Bitmap.createScaledBitmap(bitmap, size, size, true)
+          } else {
+            bitmap
+          }
         faviconBitmap = scaled
         // Always invalidate on the main thread. The callback may arrive on a
         // background thread (synchronous ImageCache hit) or the main thread

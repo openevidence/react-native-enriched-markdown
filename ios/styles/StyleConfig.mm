@@ -265,7 +265,7 @@ static inline NSString *normalizedFontWeight(NSString *fontWeight)
   _spoilerSolidBorderRadius = 4.0;
   // OE design: light orange chip with dark grey text (hsl(18,90%,94%) / hsl(14,2%,20%))
   _citationBackgroundColor = [RCTUIColor colorWithRed:0.988 green:0.933 blue:0.910 alpha:1.0]; // ~#FCEDE8
-  _citationColor = [RCTUIColor colorWithRed:0.196 green:0.192 blue:0.188 alpha:1.0]; // ~#323130
+  _citationColor = [RCTUIColor colorWithRed:0.196 green:0.192 blue:0.188 alpha:1.0];           // ~#323130
   _citationFontSize = 11.0;
   _citationBorderRadius = 999.0; // pill shape
   return self;

@@ -68,18 +68,22 @@ static const NSTimeInterval kFadeDuration = 0.60;
 
 - (void)drawRect:(CGRect)rect
 {
-  if (_groups.count == 0) return;
+  if (_groups.count == 0)
+    return;
 
   ENRMPlatformTextView *tv = _textView;
-  if (!tv) return;
+  if (!tv)
+    return;
 
   NSLayoutManager *layoutManager = tv.layoutManager;
   NSTextContainer *textContainer = tv.textContainer;
   NSTextStorage *textStorage = tv.textStorage;
-  if (!layoutManager || !textContainer || !textStorage || textStorage.length == 0) return;
+  if (!layoutManager || !textContainer || !textStorage || textStorage.length == 0)
+    return;
 
   CGContextRef ctx = UIGraphicsGetCurrentContext();
-  if (!ctx) return;
+  if (!ctx)
+    return;
 
   RCTUIColor *bgColor = [self resolveBackgroundColor];
   CFTimeInterval now = CACurrentMediaTime();
@@ -95,39 +99,41 @@ static const NSTimeInterval kFadeDuration = 0.60;
     CGFloat t = fmax(0.0, fmin((now - group->startTime) / kFadeDuration, 1.0));
     CGFloat alpha = t * t * (3.0 - 2.0 * t); // smoothstep (ease-in-out)
     CGFloat overlayAlpha = 1.0 - alpha;
-    if (overlayAlpha <= 0.001) continue;
+    if (overlayAlpha <= 0.001)
+      continue;
 
     RCTUIColor *overlayColor = [bgColor colorWithAlphaComponent:overlayAlpha];
     CGContextSetFillColorWithColor(ctx, overlayColor.CGColor);
 
     NSUInteger clampedStart = MIN(group->tailStart, textStorage.length);
     NSUInteger clampedEnd = MIN(group->tailEnd, textStorage.length);
-    if (clampedEnd <= clampedStart) continue;
+    if (clampedEnd <= clampedStart)
+      continue;
 
     NSRange charRange = NSMakeRange(clampedStart, clampedEnd - clampedStart);
     NSRange glyphRange = [layoutManager glyphRangeForCharacterRange:charRange actualCharacterRange:NULL];
-    if (glyphRange.location == NSNotFound || glyphRange.length == 0) continue;
+    if (glyphRange.location == NSNotFound || glyphRange.length == 0)
+      continue;
 
     [layoutManager
         enumerateLineFragmentsForGlyphRange:glyphRange
                                  usingBlock:^(CGRect lineRect, CGRect usedRect, NSTextContainer *__unused container,
                                               NSRange lineGlyphRange, BOOL *__unused lineStop) {
-          NSRange intersect = NSIntersectionRange(lineGlyphRange, glyphRange);
-          if (intersect.length == 0) return;
+                                   NSRange intersect = NSIntersectionRange(lineGlyphRange, glyphRange);
+                                   if (intersect.length == 0)
+                                     return;
 
-          CGRect textRect = [layoutManager boundingRectForGlyphRange:intersect inTextContainer:textContainer];
+                                   CGRect textRect = [layoutManager boundingRectForGlyphRange:intersect
+                                                                              inTextContainer:textContainer];
 
-          CGRect fillRect = CGRectMake(
-            textRect.origin.x + inset.left,
-            textRect.origin.y + inset.top,
-            textRect.size.width,
-            textRect.size.height
-          );
+                                   CGRect fillRect =
+                                       CGRectMake(textRect.origin.x + inset.left, textRect.origin.y + inset.top,
+                                                  textRect.size.width, textRect.size.height);
 
-          if (fillRect.size.width > 0 && fillRect.size.height > 0) {
-            CGContextFillRect(ctx, fillRect);
-          }
-        }];
+                                   if (fillRect.size.width > 0 && fillRect.size.height > 0) {
+                                     CGContextFillRect(ctx, fillRect);
+                                   }
+                                 }];
   }
 }
 
@@ -168,7 +174,8 @@ static const NSTimeInterval kFadeDuration = 0.60;
 - (void)ensureOverlayView
 {
   ENRMPlatformTextView *tv = _textView;
-  if (!tv) return;
+  if (!tv)
+    return;
 
   if (!_overlayView) {
     _overlayView = [[ENRMFadeOverlayView alloc] initWithFrame:tv.bounds];
@@ -189,7 +196,8 @@ static const NSTimeInterval kFadeDuration = 0.60;
 
 - (void)animateFrom:(NSUInteger)tailStart to:(NSUInteger)tailEnd
 {
-  if (tailEnd <= tailStart) return;
+  if (tailEnd <= tailStart)
+    return;
 
   [self ensureOverlayView];
 

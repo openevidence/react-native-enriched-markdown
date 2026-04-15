@@ -99,10 +99,10 @@ static NSCache<NSString *, UIImage *> *sFaviconCache = nil;
   // Capture layout manager so loadFavicon can invalidate display later.
   _layoutManager = textContainer.layoutManager;
 
-  NSString *cacheKey =
-      [NSString stringWithFormat:@"%@|%d|%.0f", _label, _faviconLoaded, imageBounds.size.width];
+  NSString *cacheKey = [NSString stringWithFormat:@"%@|%d|%.0f", _label, _faviconLoaded, imageBounds.size.width];
   UIImage *cached = [sChipImageCache objectForKey:cacheKey];
-  if (cached) return cached;
+  if (cached)
+    return cached;
 
   RCTUIColor *bgColor = sChipBgColor;
   RCTUIColor *textColor = sChipTextColor;
@@ -154,30 +154,34 @@ static NSCache<NSString *, UIImage *> *sFaviconCache = nil;
 - (void)loadFavicon
 {
   NSURL *url = [NSURL URLWithString:_faviconUrl];
-  if (!url) return;
+  if (!url)
+    return;
 
   __weak CitationChipAttachment *weakSelf = self;
   NSURLSessionDataTask *task = [[NSURLSession sharedSession]
-      dataTaskWithURL:url
-    completionHandler:^(NSData *data, NSURLResponse *__unused response, NSError *__unused error) {
-      if (!data) return;
-      UIImage *image = [UIImage imageWithData:data];
-      if (!image) return;
-      [sFaviconCache setObject:image forKey:self->_faviconUrl];
-      dispatch_async(dispatch_get_main_queue(), ^{
-        CitationChipAttachment *strong = weakSelf;
-        if (!strong) return;
-        strong->_faviconImage = image;
-        strong->_faviconLoaded = YES;
-        // Invalidate DISPLAY only (not layout) so the text system re-composites
-        // the attachment image without recalculating glyph metrics. The chip
-        // bounds are unchanged (chipWidth always includes favicon space).
-        NSLayoutManager *lm = strong->_layoutManager;
-        if (lm && lm.textStorage.length > 0) {
-          [lm invalidateDisplayForCharacterRange:NSMakeRange(0, lm.textStorage.length)];
-        }
-      });
-    }];
+        dataTaskWithURL:url
+      completionHandler:^(NSData *data, NSURLResponse *__unused response, NSError *__unused error) {
+        if (!data)
+          return;
+        UIImage *image = [UIImage imageWithData:data];
+        if (!image)
+          return;
+        [sFaviconCache setObject:image forKey:self->_faviconUrl];
+        dispatch_async(dispatch_get_main_queue(), ^{
+          CitationChipAttachment *strong = weakSelf;
+          if (!strong)
+            return;
+          strong->_faviconImage = image;
+          strong->_faviconLoaded = YES;
+          // Invalidate DISPLAY only (not layout) so the text system re-composites
+          // the attachment image without recalculating glyph metrics. The chip
+          // bounds are unchanged (chipWidth always includes favicon space).
+          NSLayoutManager *lm = strong->_layoutManager;
+          if (lm && lm.textStorage.length > 0) {
+            [lm invalidateDisplayForCharacterRange:NSMakeRange(0, lm.textStorage.length)];
+          }
+        });
+      }];
   [task resume];
 }
 

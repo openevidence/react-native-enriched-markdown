@@ -93,11 +93,7 @@ function LatexMathInlineRenderer({
   );
 }
 
-function CitationRenderer({
-  node,
-  styles,
-  callbacks,
-}: RendererProps) {
+function CitationRenderer({ node, styles, callbacks }: RendererProps) {
   const numbers = node.content ?? node.attributes?.numbers ?? '';
 
   const handleClick = () => {

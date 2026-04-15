@@ -13,8 +13,7 @@ const SPLIT_SENTINEL = '!:!';
  * Regex matching fenced code blocks with language `REACTCOMPONENT`.
  * Handles both ``` and ~~~ fences (MD4C supports both).
  */
-const CODE_FENCE_REGEX =
-  /^```REACTCOMPONENT\s*\n([\s\S]*?)\n```\s*$/gm;
+const CODE_FENCE_REGEX = /^```REACTCOMPONENT\s*\n([\s\S]*?)\n```\s*$/gm;
 
 /**
  * Wraps raw `REACTCOMPONENT!:!...` sentinels in markdown code fences.

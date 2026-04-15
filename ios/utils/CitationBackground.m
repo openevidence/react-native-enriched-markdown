@@ -46,13 +46,13 @@ static const CGFloat kChipVPad = 1.5;
                            return;
 
                          [self drawChipForRange:range
-                                 layoutManager:layoutManager
-                                 textContainer:textContainer
-                                   textStorage:textStorage
-                                       atPoint:origin
-                               backgroundColor:backgroundColor
-                                  cornerRadius:cornerRadius
-                                containerWidth:containerWidth];
+                                  layoutManager:layoutManager
+                                  textContainer:textContainer
+                                    textStorage:textStorage
+                                        atPoint:origin
+                                backgroundColor:backgroundColor
+                                   cornerRadius:cornerRadius
+                                 containerWidth:containerWidth];
                        }];
 }
 

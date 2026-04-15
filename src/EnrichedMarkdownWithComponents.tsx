@@ -42,52 +42,54 @@ export interface EnrichedMarkdownWithComponentsProps
  *   onLinkPress={handleLinkPress}
  * />
  */
-export const EnrichedMarkdownWithComponents = memo(function EnrichedMarkdownWithComponents({
-  markdown,
-  components,
-  ...rest
-}: EnrichedMarkdownWithComponentsProps) {
-  const segments: MarkdownSegment[] = useMemo(
-    () => splitMarkdownSegments(markdown),
-    [markdown]
-  );
+export const EnrichedMarkdownWithComponents = memo(
+  function EnrichedMarkdownWithComponents({
+    markdown,
+    components,
+    ...rest
+  }: EnrichedMarkdownWithComponentsProps) {
+    const segments: MarkdownSegment[] = useMemo(
+      () => splitMarkdownSegments(markdown),
+      [markdown]
+    );
 
-  // Fast path: no component segments, render a single native view directly
-  const hasComponents = segments.some((s) => s.type === 'component');
-  if (!hasComponents) {
-    return <EnrichedMarkdownText markdown={markdown} {...rest} />;
-  }
+    // Fast path: no component segments, render a single native view directly
+    const hasComponents = segments.some((s) => s.type === 'component');
+    if (!hasComponents) {
+      return <EnrichedMarkdownText markdown={markdown} {...rest} />;
+    }
 
-  return (
-    <View>
-      {segments.map((segment, index) => {
-        if (segment.type === 'markdown') {
+    return (
+      <View>
+        {segments.map((segment, index) => {
+          if (segment.type === 'markdown') {
+            return (
+              <EnrichedMarkdownText
+                key={`md-${index}`}
+                markdown={segment.content}
+                {...rest}
+              />
+            );
+          }
+
+          const Component = components?.[segment.componentId];
+          if (!Component) {
+            return null;
+          }
+
           return (
-            <EnrichedMarkdownText
-              key={`md-${index}`}
-              markdown={segment.content}
-              {...rest}
-            />
+            <View key={`rc-${index}`} style={styles.componentWrap}>
+              <Component
+                componentId={segment.componentId}
+                data={segment.props}
+              />
+            </View>
           );
-        }
-
-        const Component = components?.[segment.componentId];
-        if (!Component) {
-          return null;
-        }
-
-        return (
-          <View key={`rc-${index}`} style={styles.componentWrap}>
-            <Component
-              componentId={segment.componentId}
-              data={segment.props}
-            />
-          </View>
-        );
-      })}
-    </View>
-  );
-});
+        })}
+      </View>
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   componentWrap: {

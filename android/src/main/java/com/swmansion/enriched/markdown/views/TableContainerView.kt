@@ -61,6 +61,7 @@ class TableContainerView(
             scrollTouchStartX = ev.x
             scrollTouchStartY = ev.y
           }
+
           android.view.MotionEvent.ACTION_MOVE -> {
             val dx = kotlin.math.abs(ev.x - scrollTouchStartX)
             val dy = kotlin.math.abs(ev.y - scrollTouchStartY)

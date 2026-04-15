@@ -227,10 +227,11 @@ class EnrichedMarkdown
       style: StyleConfig,
     ): RenderSegment.Text {
       val documentWrapper = MarkdownASTNode(type = MarkdownASTNode.NodeType.Document, children = nodes)
-      val renderer = Renderer().apply {
-        configure(style, context)
-        setOnCitationPress(onCitationPressCallback)
-      }
+      val renderer =
+        Renderer().apply {
+          configure(style, context)
+          setOnCitationPress(onCitationPressCallback)
+        }
 
       return RenderSegment.Text(
         styledText = renderer.renderDocument(documentWrapper, onLinkPressCallback, onLinkLongPressCallback),
@@ -269,7 +270,8 @@ class EnrichedMarkdown
         applyStyledText(segment.styledText)
         segment.imageSpans.forEach { it.registerTextView(this) }
         (segment.styledText as? android.text.Spanned)?.let { spanned ->
-          spanned.getSpans(0, spanned.length, com.swmansion.enriched.markdown.spans.CitationChipSpan::class.java)
+          spanned
+            .getSpans(0, spanned.length, com.swmansion.enriched.markdown.spans.CitationChipSpan::class.java)
             .forEach { it.registerTextView(this) }
         }
 
