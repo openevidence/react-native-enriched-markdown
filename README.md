@@ -1,172 +1,55 @@
 # react-native-enriched-markdown
 
-> **OpenEvidence fork** of [`software-mansion-labs/react-native-enriched-markdown`](https://github.com/software-mansion-labs/react-native-enriched-markdown).
+> **OpenEvidence fork** of [`software-mansion-labs/react-native-enriched-markdown`](https://github.com/software-mansion-labs/react-native-enriched-markdown). For feature documentation, installation details, API reference, and supported elements, see the [upstream README](https://github.com/software-mansion-labs/react-native-enriched-markdown#readme) and the [docs/](docs/) directory.
 
-A React Native library that renders Markdown content as native text and provides a rich text input with Markdown output. Supports iOS, Android, macOS, and Web. Requires the New Architecture (Fabric) for native platforms.
+## Fork Changes
 
-## Changes in this fork
+- **Citation chips** — `[[numbers|label|faviconUrl]]` rendered as styled pill chips with async favicon loading
+- **Tail fade-in streaming animation** — canvas overlay approach on both platforms (600ms smoothstep)
+- **Display math (CommonMark)** — `$$...$$` block math in the single-view rendering path
+- **Android touch handling** — gesture arbitration between links/citations, scroll, and drawer
 
-- **Citation chips** — inline `[[numbers|label|faviconUrl]]` syntax rendered as styled chips with favicons and grouped count suffixes, with an `onCitationPress` callback
-- **Tail fade-in streaming animation** — new text appended during streaming fades in at word-level granularity with smoothstep easing over 600ms
-- **Display math (CommonMark)** — block-level LaTeX (`$$...$$`) now renders in the CommonMark flavor path (previously GitHub-only)
-- **Android touch handling fix** — links and citations correctly respond to taps even when parent views intercept `ACTION_CANCEL`; scroll and drawer gestures are preserved for plain-text areas
+## Architecture
 
-## Features
+### Parsing (C++)
 
-### EnrichedMarkdownText
+All platforms share a single C++ parser (`cpp/parser/MD4CParser.cpp`) built on [md4c](https://github.com/mity/md4c). The parser produces an AST of `MarkdownASTNode` structs (`cpp/parser/MarkdownASTNode.hpp`). Two post-processing passes run after md4c:
 
-- Fully native text rendering (no WebView)
-- Web support via [react-native-web](https://necolas.github.io/react-native-web/) + [md4c](https://github.com/mity/md4c) compiled to WebAssembly
-- High-performance Markdown parsing with [md4c](https://github.com/mity/md4c)
-- CommonMark standard compliant
-- GitHub Flavored Markdown (GFM)
-- LaTeX math rendering (block `$$...$$` in both flavors, inline `$...$` in all flavors)
-- [Markdown Streaming](docs/MARKDOWN_STREAMING.md) support (via [react-native-streamdown](https://github.com/software-mansion-labs/react-native-streamdown))
-- Fully customizable styles for all elements
-- Text selection and copy support
-- Custom text selection context menu items
-- Interactive link handling
-- Citation chips with favicons, labels, and grouped counts
-- Spoiler text with animated particle overlay and tap-to-reveal
-- Native image interactions (iOS: Copy, Save to Camera Roll)
-- Native platform features (Translate, Look Up, Search Web, Share)
-- Accessibility support (VoiceOver on iOS, TalkBack on Android, semantic HTML on web)
-- Full RTL (right-to-left) support including text, lists, blockquotes, tables, and task lists
+1. **Citation extraction** — walks text nodes looking for `[[...]]` patterns, splits them into `Text` + `Citation` AST nodes with `numbers`, `label`, and `faviconUrl` attributes.
+2. **Display math promotion** — promotes `LatexMathDisplay` nodes out of wrapping paragraphs so renderers see them as block-level elements.
 
-### EnrichedMarkdownInput
+### React Native Layer (TypeScript)
 
-- Rich text input with Markdown output
-- Imperative API for toggling styles and managing links
-- Native context menu with formatting submenu
-- Real-time style state detection
-- Auto-link detection with customizable regex
-- Smart copy/paste with Markdown preservation
-- Customizable bold, italic, and link colors
+**`EnrichedMarkdownText`** (`src/native/EnrichedMarkdownText.tsx`) is the main component. It normalizes styles via an LRU cache (`normalizeMarkdownStyle.ts`), memoizes callbacks, and delegates to one of two native components depending on the `flavor` prop (CommonMark vs GitHub).
 
-## Table of Contents
+**`EnrichedMarkdownWithComponents`** (`src/EnrichedMarkdownWithComponents.tsx`) supports embedding arbitrary React components inside markdown. The host app wraps component data in `` ```REACTCOMPONENT `` code fences. `splitMarkdownSegments.ts` splits the markdown string on these fences and produces alternating `{ type: "markdown", content }` and `{ type: "component", name, props }` segments. Each markdown segment renders as its own `EnrichedMarkdownText`; each component segment renders via a registered component from a `ComponentRegistry`.
 
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [EnrichedMarkdownText](#enrichedmarkdowntext-1)
-  - [Usage](docs/TEXT.md#usage)
-  - [Supported Markdown Elements](docs/TEXT.md#supported-markdown-elements)
-  - [Copy Options](docs/TEXT.md#copy-options)
-  - [Accessibility](docs/TEXT.md#accessibility)
-  - [RTL Support](docs/TEXT.md#rtl-support)
-  - [Customizing Styles](docs/TEXT.md#customizing-styles)
-  - [LaTeX Math](docs/LATEX_MATH.md)
-  - [Image Caching](docs/IMAGE_CACHING.md)
-  - [Markdown Streaming](docs/MARKDOWN_STREAMING.md)
-- [EnrichedMarkdownInput](#enrichedmarkdowninput-1)
-  - [Usage](docs/INPUT.md#usage)
-  - [Inline Styles](docs/INPUT.md#inline-styles)
-  - [Links](docs/INPUT.md#links)
-  - [Auto-Link Detection](docs/INPUT.md#auto-link-detection)
-  - [Style Detection](docs/INPUT.md#style-detection)
-  - [Other Events](docs/INPUT.md#other-events)
-  - [Customizing Styles](docs/INPUT.md#customizing-enrichedmarkdowninput--styles)
-- [API Reference](#api-reference)
-- [Web Support](docs/WEB.md)
-- [macOS Support](docs/MACOS.md)
+**Two native component specs** exist (`EnrichedMarkdownNativeComponent.ts` for GitHub flavor, `EnrichedMarkdownTextNativeComponent.ts` for CommonMark) with identical interfaces — required by React Native codegen for separate native view registrations.
 
-## Prerequisites
+### iOS (Objective-C / Objective-C++)
 
-**Native (iOS / Android / macOS)**
+**Text view:** `EnrichedMarkdownText.mm` is a Fabric component that owns a `UITextView`. Markdown is parsed on a serial dispatch queue, rendered to `NSMutableAttributedString` by the renderer pipeline, and applied on the main thread.
 
-- Requires [the React Native New Architecture (Fabric)](https://reactnative.dev/architecture/landing-page)
-- Supported React Native releases: `0.81`, `0.82`, `0.83`, and `0.84`
-- macOS support via [react-native-macos](https://github.com/microsoft/react-native-macos) `0.81+`
+**Rendering:** `RendererFactory.m` maps AST node types to renderer classes. Each renderer (`ParagraphRenderer`, `HeadingRenderer`, `CitationRenderer`, etc.) appends styled attributed string ranges to a shared `NSMutableAttributedString`. The `TextViewLayoutManager.mm` subclass of `NSLayoutManager` draws custom backgrounds (code blocks, blockquotes) in `drawBackgroundForGlyphRange:`.
 
-**Web**
+**Citation chips:** `CitationChipAttachment` is an `NSTextAttachment` subclass. It draws the chip (pill background, circular favicon, label) via CoreGraphics in `imageForBounds:textContainer:characterIndex:`. Chip images are cached globally by `NSCache`. Favicons are loaded asynchronously via `NSURLSession` and cached separately; on completion, `invalidateDisplayForCharacterRange:` triggers a re-composite without relayout.
 
-- Requires [`react-native-web`](https://necolas.github.io/react-native-web/) and Metro (or another bundler with `.web.tsx` platform resolution)
-- No New Architecture requirement — the web renderer runs entirely in JavaScript via WebAssembly
-- Only `EnrichedMarkdownText` is supported on web (`EnrichedMarkdownInput` is native-only)
-- LaTeX math requires the optional [`katex`](https://katex.org/) peer dependency
+**Streaming animation:** `ENRMTailFadeInAnimator` uses a canvas overlay approach. A transparent `ENRMFadeOverlayView` is added as a subview of the text view. On each `CADisplayLink` frame, the overlay's `drawRect:` uses `NSLayoutManager` line fragment enumeration to compute per-line rectangles for each active fade group, filling them with the resolved background color at a fading alpha (smoothstep easing). Text is always rendered at full opacity — the overlay simply covers and reveals it. This avoids any `NSTextStorage` mutations during animation.
 
-## Installation
+**Spoiler text:** `ENRMSpoilerOverlayManager` adds per-span `ENRMSpoilerOverlayView` subviews on top of the text view, with particle or solid animation modes.
 
-### Web
+### Android (Kotlin)
 
-No steps beyond having `react-native-web` configured. For LaTeX math, install the optional peer dependency:
+**Text view:** `EnrichedMarkdownText.kt` extends `AppCompatTextView`. Parsing and rendering run on a dedicated `Executor`; the result is posted to the main thread via `Handler`. Text is set with `BufferType.EDITABLE` so the buffer implements `Spannable` (required for `LinkLongPressMovementMethod`).
 
-```sh
-npm install katex
-# or
-yarn add katex
-```
+**Rendering:** `RendererFactory` (`renderer/NodeRenderer.kt`) maps AST node types to `NodeRenderer` implementations. Renderers append to a `SpannableStringBuilder` and apply Android spans. Math renderers (`MathInlineRenderer`, `MathDisplayRenderer`) are loaded via reflection from the optional `math` source set to keep the math dependency (`MTMathView`) out of the main build.
 
-See [Web Support](docs/WEB.md) for full setup details, supported features, and prop behaviour.
+**Citation chips:** `CitationChipSpan` is a `ReplacementSpan`. It draws the chip directly on the `Canvas` — rounded rect background, circular favicon via `BitmapShader`, label text. Colors and font size are pulled from `SpanStyleCache` (which reads the JS `citationStyle` config) with hardcoded defaults as fallback. Favicons load asynchronously via `ImageDownloader`; on completion, the span re-seats itself on the `Editable` text (`removeSpan` + `setSpan`) to trigger `DynamicLayout`'s `SpanWatcher`, forcing a redraw.
 
-### Bare React Native app (iOS / Android)
+**Streaming animation:** `TailFadeInAnimator` draws background-colored rectangles over new text in `onDraw` (called after `super.onDraw()`). Each frame, `Choreographer.FrameCallback` triggers `invalidate()`. The overlay color is resolved by walking the view hierarchy via `SpoilerDrawContext.resolveBackgroundColor`, which uses React Native's `BackgroundStyleApplicator` to extract colors from RN's `CompositeBackgroundDrawable`. The cached color resets on configuration changes (dark/light mode).
 
-#### 1. Install the library
-
-Point your package manager at this fork's repository or a local path as appropriate for your setup.
-
-#### 2. Install iOS / macOS dependencies
-
-The library includes native code so you will need to re-build the native app.
-
-```sh
-# iOS
-cd ios && bundle install && bundle exec pod install
-
-# macOS (react-native-macos)
-cd macos && bundle install && bundle exec pod install
-```
-
-### Expo app
-
-#### 1. Install the library
-
-```sh
-npx expo install react-native-enriched-markdown
-```
-
-#### 2. Run prebuild
-
-```sh
-npx expo prebuild
-```
-
-> [!NOTE]
-> The library won't work in Expo Go as it needs native changes.
-
-> [!IMPORTANT]
-> **iOS: Save to Camera Roll**
->
-> If your Markdown content includes images and you want users to save them to their photo library, add the following to your `Info.plist`:
->
-> ```xml
-> <key>NSPhotoLibraryAddUsageDescription</key>
-> <string>This app needs access to your photo library to save images.</string>
-> ```
-
-## EnrichedMarkdownText
-
-See [EnrichedMarkdownText](docs/TEXT.md) for detailed documentation on usage examples, GFM tables, task lists, link handling, supported elements, copy options, accessibility, RTL support, and customizing styles.
-
-## EnrichedMarkdownInput
-
-See [EnrichedMarkdownInput](docs/INPUT.md) for detailed documentation on usage examples, inline styles, links, style detection, events, and customizing styles.
-
-## API Reference
-
-See the [API Reference](docs/API_REFERENCE.md) for a detailed overview of all the props, methods, and events available.
-
-## Web Support
-
-See [Web Support](docs/WEB.md) for details on supported features, web-specific prop behaviour, and known limitations.
-
-## macOS Support
-
-`react-native-enriched-markdown` supports macOS via [react-native-macos](https://github.com/microsoft/react-native-macos). See [macOS Support](docs/MACOS.md) for details on macOS-specific features, known limitations, and the example app.
-
-## License
-
-`react-native-enriched-markdown` is licensed under [The MIT License](./LICENSE).
+**Touch handling:** `dispatchTouchEvent` checks whether `ACTION_DOWN` lands on an interactive span (`LinkSpan` or `CitationChipSpan`) via shared `charOffsetAt`/`isInteractiveOffset` extensions (`TouchUtils.kt`). Only interactive hits call `requestDisallowInterceptTouchEvent(true)`; plain-text touches allow parent scroll/drawer gestures. `LinkLongPressMovementMethod` handles link long-press, citation tap dispatch, and spoiler reveal.
 
 ---
 
-Upstream library by [Software Mansion](https://swmansion.com/). 
+Upstream library by [Software Mansion](https://swmansion.com/).
