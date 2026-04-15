@@ -355,20 +355,7 @@ class EnrichedMarkdownText
 
     private fun resolveFadeOverlayColor(): Int {
       if (fadeOverlayColor != 0) return fadeOverlayColor
-      var v: android.view.View? = this
-      while (v != null) {
-        val bg = v.background
-        if (bg is android.graphics.drawable.ColorDrawable) {
-          val c = bg.color
-          if ((c ushr 24) > 0) {
-            fadeOverlayColor = c or (0xFF shl 24) // force fully opaque
-            return fadeOverlayColor
-          }
-        }
-        v = v.parent as? android.view.View
-      }
-      // Fallback to white
-      fadeOverlayColor = 0xFFFFFFFF.toInt()
+      fadeOverlayColor = com.swmansion.enriched.markdown.spoiler.SpoilerDrawContext.resolveBackgroundColor(this)
       return fadeOverlayColor
     }
 
