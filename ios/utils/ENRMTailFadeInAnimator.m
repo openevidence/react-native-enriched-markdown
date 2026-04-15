@@ -1,53 +1,146 @@
 #import "ENRMTailFadeInAnimator.h"
-#import "LinkTapUtils.h"
 #import <QuartzCore/QuartzCore.h>
 #include <TargetConditionals.h>
 
 static const NSTimeInterval kFadeDuration = 0.60;
 
-typedef struct {
-  NSRange range;
-  __unsafe_unretained RCTUIColor *color;
-} ENRMColorEntry;
-
-/// One chunk of text being faded in independently.
-@interface ENRMFadeGroup : NSObject {
+/// Lightweight data for one chunk of text being faded in.
+@interface ENRMOverlayFadeGroup : NSObject {
 @public
+  NSUInteger tailStart;
+  NSUInteger tailEnd;
   CFTimeInterval startTime;
-  NSArray<RCTUIColor *> *retainedColors;
-  ENRMColorEntry *entries;
-  NSUInteger count;
 }
-- (void)cleanup;
 @end
 
-@implementation ENRMFadeGroup
+@implementation ENRMOverlayFadeGroup
+@end
 
-- (void)cleanup
+#pragma mark - Overlay view
+
+/// Transparent view drawn on top of the text view. Its drawRect: paints
+/// background-colored rectangles over new text that fade from opaque to
+/// transparent, revealing the text underneath.
+@interface ENRMFadeOverlayView : RCTUIView
+@property (nonatomic, weak) ENRMPlatformTextView *textView;
+@property (nonatomic, strong) NSMutableArray<ENRMOverlayFadeGroup *> *groups;
+@end
+
+@implementation ENRMFadeOverlayView
+
+- (instancetype)initWithFrame:(CGRect)frame
 {
-  if (entries) {
-    free(entries);
-    entries = NULL;
+  self = [super initWithFrame:frame];
+  if (self) {
+    self.opaque = NO;
+    self.backgroundColor = [RCTUIColor clearColor];
+#if !TARGET_OS_OSX
+    self.userInteractionEnabled = NO;
+#endif
+    _groups = [NSMutableArray array];
   }
-  retainedColors = nil;
-  count = 0;
+  return self;
 }
 
-- (void)dealloc
+/// Resolves the background color by walking up the view hierarchy.
+- (RCTUIColor *)resolveBackgroundColor
 {
-  [self cleanup];
+#if !TARGET_OS_OSX
+  for (UIView *view = self.superview; view; view = view.superview) {
+    UIColor *color = view.backgroundColor;
+    if (color) {
+      CGFloat alpha = 0;
+      [color getRed:NULL green:NULL blue:NULL alpha:&alpha];
+      if (alpha > 0)
+        return color;
+    }
+  }
+  return [UIColor whiteColor];
+#else
+  for (NSView *view = self.superview; view; view = view.superview) {
+    CGColorRef color = view.layer.backgroundColor;
+    if (color && CGColorGetAlpha(color) > 0)
+      return [RCTUIColor colorWithCGColor:color];
+  }
+  return [RCTUIColor whiteColor];
+#endif
+}
+
+- (void)drawRect:(CGRect)rect
+{
+  if (_groups.count == 0) return;
+
+  ENRMPlatformTextView *tv = _textView;
+  if (!tv) return;
+
+  NSLayoutManager *layoutManager = tv.layoutManager;
+  NSTextContainer *textContainer = tv.textContainer;
+  NSTextStorage *textStorage = tv.textStorage;
+  if (!layoutManager || !textContainer || !textStorage || textStorage.length == 0) return;
+
+  CGContextRef ctx = UIGraphicsGetCurrentContext();
+  if (!ctx) return;
+
+  RCTUIColor *bgColor = [self resolveBackgroundColor];
+  CFTimeInterval now = CACurrentMediaTime();
+
+#if !TARGET_OS_OSX
+  UIEdgeInsets inset = tv.textContainerInset;
+#else
+  NSSize containerOrigin = tv.textContainerOrigin;
+  UIEdgeInsets inset = UIEdgeInsetsMake(containerOrigin.height, containerOrigin.width, 0, 0);
+#endif
+
+  for (ENRMOverlayFadeGroup *group in _groups) {
+    CGFloat t = fmax(0.0, fmin((now - group->startTime) / kFadeDuration, 1.0));
+    CGFloat alpha = t * t * (3.0 - 2.0 * t); // smoothstep (ease-in-out)
+    CGFloat overlayAlpha = 1.0 - alpha;
+    if (overlayAlpha <= 0.001) continue;
+
+    RCTUIColor *overlayColor = [bgColor colorWithAlphaComponent:overlayAlpha];
+    CGContextSetFillColorWithColor(ctx, overlayColor.CGColor);
+
+    NSUInteger clampedStart = MIN(group->tailStart, textStorage.length);
+    NSUInteger clampedEnd = MIN(group->tailEnd, textStorage.length);
+    if (clampedEnd <= clampedStart) continue;
+
+    NSRange charRange = NSMakeRange(clampedStart, clampedEnd - clampedStart);
+    NSRange glyphRange = [layoutManager glyphRangeForCharacterRange:charRange actualCharacterRange:NULL];
+    if (glyphRange.location == NSNotFound || glyphRange.length == 0) continue;
+
+    [layoutManager
+        enumerateLineFragmentsForGlyphRange:glyphRange
+                                 usingBlock:^(CGRect lineRect, CGRect usedRect, NSTextContainer *__unused container,
+                                              NSRange lineGlyphRange, BOOL *__unused lineStop) {
+          NSRange intersect = NSIntersectionRange(lineGlyphRange, glyphRange);
+          if (intersect.length == 0) return;
+
+          CGRect textRect = [layoutManager boundingRectForGlyphRange:intersect inTextContainer:textContainer];
+
+          CGRect fillRect = CGRectMake(
+            textRect.origin.x + inset.left,
+            textRect.origin.y + inset.top,
+            textRect.size.width,
+            textRect.size.height
+          );
+
+          if (fillRect.size.width > 0 && fillRect.size.height > 0) {
+            CGContextFillRect(ctx, fillRect);
+          }
+        }];
+  }
 }
 
 @end
 
-#pragma mark -
+#pragma mark - Animator
 
 @implementation ENRMTailFadeInAnimator {
   __weak ENRMPlatformTextView *_textView;
 #if !TARGET_OS_OSX
   CADisplayLink *_displayLink;
 #endif
-  NSMutableArray<ENRMFadeGroup *> *_activeGroups;
+  ENRMFadeOverlayView *_overlayView;
 }
 
 - (instancetype)initWithTextView:(ENRMPlatformTextView *)textView
@@ -55,52 +148,70 @@ typedef struct {
   self = [super init];
   if (self) {
     _textView = textView;
-    _activeGroups = [NSMutableArray array];
   }
   return self;
 }
 
 - (void)dealloc
 {
-  for (ENRMFadeGroup *group in _activeGroups) {
-    [group cleanup];
-  }
 #if !TARGET_OS_OSX
   [_displayLink invalidate];
 #endif
+  [_overlayView removeFromSuperview];
+}
+
+- (BOOL)hasActiveAnimations
+{
+  return _overlayView != nil && _overlayView.groups.count > 0;
+}
+
+- (void)ensureOverlayView
+{
+  ENRMPlatformTextView *tv = _textView;
+  if (!tv) return;
+
+  if (!_overlayView) {
+    _overlayView = [[ENRMFadeOverlayView alloc] initWithFrame:tv.bounds];
+    _overlayView.textView = tv;
+    _overlayView.autoresizingMask =
+#if !TARGET_OS_OSX
+        UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+#else
+        NSViewWidthSizable | NSViewHeightSizable;
+#endif
+    [tv addSubview:_overlayView];
+  } else {
+    _overlayView.frame = tv.bounds;
+  }
 }
 
 #pragma mark - Public API
 
 - (void)animateFrom:(NSUInteger)tailStart to:(NSUInteger)tailEnd
 {
-  // Do NOT cancel previous animations — each tail fades in independently.
-  // The word-level buffer delivers small tails (typically 1-2 words per tick),
-  // so each call naturally produces a word-granularity animation.
-  NSTextStorage *storage = _textView.textStorage;
-  if (!storage || tailEnd <= tailStart || tailEnd > storage.length)
-    return;
+  if (tailEnd <= tailStart) return;
 
-  NSRange range = NSMakeRange(tailStart, tailEnd - tailStart);
+  [self ensureOverlayView];
 
-  ENRMFadeGroup *group = [self snapshotGroup:range storage:storage];
-  if (!group)
-    return;
-
+  ENRMOverlayFadeGroup *group = [[ENRMOverlayFadeGroup alloc] init];
+  group->tailStart = tailStart;
+  group->tailEnd = tailEnd;
   group->startTime = CACurrentMediaTime();
-  [_activeGroups addObject:group];
+  [_overlayView.groups addObject:group];
 
 #if !TARGET_OS_OSX
   if (!_displayLink) {
     _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(step:)];
-    _displayLink.preferredFramesPerSecond = 0;
+    _displayLink.preferredFramesPerSecond = 0; // adaptive
     [_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
   }
 #else
   // macOS: no display link — jump straight to fully visible.
-  [self setGroup:group alpha:1.0];
-  [group cleanup];
-  [_activeGroups removeLastObject];
+  [_overlayView.groups removeLastObject];
+  if (_overlayView.groups.count == 0) {
+    [_overlayView removeFromSuperview];
+    _overlayView = nil;
+  }
 #endif
 }
 
@@ -111,45 +222,13 @@ typedef struct {
   _displayLink = nil;
 #endif
 
-  if (_activeGroups.count == 0)
-    return;
-
-  // Finalize all active groups to full opacity.
-  NSTextStorage *storage = _textView.textStorage;
-  if (storage) {
-    [storage beginEditing];
-    for (ENRMFadeGroup *group in _activeGroups) {
-      [self applyGroup:group alpha:1.0 storage:storage];
-      [group cleanup];
-    }
-    [storage endEditing];
-  } else {
-    for (ENRMFadeGroup *group in _activeGroups) {
-      [group cleanup];
-    }
-  }
-  [_activeGroups removeAllObjects];
+  [_overlayView removeFromSuperview];
+  _overlayView = nil;
 }
 
-- (void)preApplyToAttributedString:(NSMutableAttributedString *)attributedText
+- (void)drawOverlayInRect:(CGRect)rect
 {
-  if (_activeGroups.count == 0)
-    return;
-
-  CFTimeInterval now = CACurrentMediaTime();
-
-  for (ENRMFadeGroup *group in _activeGroups) {
-    CGFloat t = fmax(0.0, fmin((now - group->startTime) / kFadeDuration, 1.0));
-    CGFloat alpha = t * t * (3.0 - 2.0 * t); // smoothstep (ease-in-out)
-
-    for (NSUInteger i = 0; i < group->count; i++) {
-      ENRMColorEntry entry = group->entries[i];
-      if (NSMaxRange(entry.range) <= attributedText.length) {
-        RCTUIColor *fadedColor = [entry.color colorWithAlphaComponent:alpha];
-        [attributedText addAttribute:NSForegroundColorAttributeName value:fadedColor range:entry.range];
-      }
-    }
-  }
+  // No-op: drawing is handled by _overlayView's drawRect:
 }
 
 #pragma mark - Display Link
@@ -157,99 +236,35 @@ typedef struct {
 #if !TARGET_OS_OSX
 - (void)step:(CADisplayLink *)__unused link
 {
-  NSTextStorage *storage = _textView.textStorage;
-  if (!storage) {
+  if (!_overlayView || _overlayView.groups.count == 0) {
     [self cancel];
     return;
   }
 
   CFTimeInterval now = CACurrentMediaTime();
 
-  [storage beginEditing];
-
-  // Track which groups completed this frame.
+  // Remove completed groups
   NSMutableIndexSet *completed = [NSMutableIndexSet indexSet];
-
-  for (NSUInteger gi = 0; gi < _activeGroups.count; gi++) {
-    ENRMFadeGroup *group = _activeGroups[gi];
-    CGFloat t = fmax(0.0, fmin((now - group->startTime) / kFadeDuration, 1.0));
-    CGFloat alpha = t * t * (3.0 - 2.0 * t); // smoothstep (ease-in-out)
-
-    [self applyGroup:group alpha:alpha storage:storage];
-
-    if (t >= 1.0) {
-      [completed addIndex:gi];
+  for (NSUInteger i = 0; i < _overlayView.groups.count; i++) {
+    ENRMOverlayFadeGroup *group = _overlayView.groups[i];
+    if ((now - group->startTime) >= kFadeDuration) {
+      [completed addIndex:i];
     }
   }
+  [_overlayView.groups removeObjectsAtIndexes:completed];
 
-  [storage endEditing];
-
-  // Remove completed groups in reverse order to keep indices valid.
-  [completed enumerateIndexesWithOptions:NSEnumerationReverse
-                              usingBlock:^(NSUInteger idx, __unused BOOL *stop) {
-                                [self->_activeGroups[idx] cleanup];
-                                [self->_activeGroups removeObjectAtIndex:idx];
-                              }];
-
-  if (_activeGroups.count == 0) {
-    [_displayLink invalidate];
-    _displayLink = nil;
+  if (_overlayView.groups.count == 0) {
+    [self cancel];
+    return;
   }
+
+  // Redraw overlay
+#if !TARGET_OS_OSX
+  [_overlayView setNeedsDisplay];
+#else
+  [_overlayView setNeedsDisplay:YES];
+#endif
 }
 #endif
-
-#pragma mark - Internals
-
-- (ENRMFadeGroup *)snapshotGroup:(NSRange)range storage:(NSTextStorage *)storage
-{
-  NSMutableArray<RCTUIColor *> *colors = [NSMutableArray array];
-  NSMutableArray<NSValue *> *ranges = [NSMutableArray array];
-
-  [storage enumerateAttribute:NSForegroundColorAttributeName
-                      inRange:range
-                      options:0
-                   usingBlock:^(RCTUIColor *color, NSRange subRange, __unused BOOL *stop) {
-                     [colors addObject:color ?: [RCTUIColor labelColor]];
-                     [ranges addObject:[NSValue valueWithRange:subRange]];
-                   }];
-
-  if (colors.count == 0)
-    return nil;
-
-  ENRMFadeGroup *group = [[ENRMFadeGroup alloc] init];
-  group->count = colors.count;
-  group->retainedColors = [colors copy];
-  group->entries = malloc(sizeof(ENRMColorEntry) * group->count);
-
-  for (NSUInteger i = 0; i < group->count; i++) {
-    group->entries[i].color = group->retainedColors[i];
-    group->entries[i].range = [ranges[i] rangeValue];
-  }
-
-  return group;
-}
-
-/// Apply a single alpha value to every entry in a group.
-- (void)applyGroup:(ENRMFadeGroup *)group alpha:(CGFloat)alpha storage:(NSTextStorage *)storage
-{
-  for (NSUInteger i = 0; i < group->count; i++) {
-    ENRMColorEntry entry = group->entries[i];
-    if (NSMaxRange(entry.range) <= storage.length) {
-      RCTUIColor *fadedColor = [entry.color colorWithAlphaComponent:alpha];
-      [storage addAttribute:NSForegroundColorAttributeName value:fadedColor range:entry.range];
-    }
-  }
-}
-
-/// Convenience: apply alpha when only one group needs an immediate update.
-- (void)setGroup:(ENRMFadeGroup *)group alpha:(CGFloat)alpha
-{
-  NSTextStorage *storage = _textView.textStorage;
-  if (!storage || group->count == 0)
-    return;
-  [storage beginEditing];
-  [self applyGroup:group alpha:alpha storage:storage];
-  [storage endEditing];
-}
 
 @end

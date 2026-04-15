@@ -99,29 +99,13 @@ static NSCache<NSString *, UIImage *> *sFaviconCache = nil;
   // Capture layout manager so loadFavicon can invalidate display later.
   _layoutManager = textContainer.layoutManager;
 
-  // Respect the foreground-color alpha so citation chips fade in with
-  // surrounding text during streaming animation.
-  CGFloat alpha = 1.0;
-  NSTextStorage *storage = textContainer.layoutManager.textStorage;
-  if (storage && charIndex < storage.length) {
-    RCTUIColor *fgColor = [storage attribute:NSForegroundColorAttributeName
-                                     atIndex:charIndex
-                              effectiveRange:NULL];
-    if (fgColor) {
-      [fgColor getRed:NULL green:NULL blue:NULL alpha:&alpha];
-    }
-  }
-
-  // Quantize alpha to 10 steps so we don't explode the cache with per-frame entries.
-  CGFloat quantized = round(alpha * 10.0) / 10.0;
-
   NSString *cacheKey =
-      [NSString stringWithFormat:@"%@|%d|%.0f|%.1f", _label, _faviconLoaded, imageBounds.size.width, quantized];
+      [NSString stringWithFormat:@"%@|%d|%.0f", _label, _faviconLoaded, imageBounds.size.width];
   UIImage *cached = [sChipImageCache objectForKey:cacheKey];
   if (cached) return cached;
 
-  RCTUIColor *bgColor = [sChipBgColor colorWithAlphaComponent:quantized];
-  RCTUIColor *textColor = [sChipTextColor colorWithAlphaComponent:quantized];
+  RCTUIColor *bgColor = sChipBgColor;
+  RCTUIColor *textColor = sChipTextColor;
 
   UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:imageBounds.size];
   UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext *ctx) {
@@ -140,7 +124,6 @@ static NSCache<NSString *, UIImage *> *sFaviconCache = nil;
       CGFloat iconY = (kChipHeight - kFaviconSize) / 2.0;
       CGRect iconRect = CGRectMake(x, iconY, kFaviconSize, kFaviconSize);
       CGContextSaveGState(cg);
-      CGContextSetAlpha(cg, quantized);
       [[UIBezierPath bezierPathWithOvalInRect:iconRect] addClip];
       [self->_faviconImage drawInRect:iconRect];
       CGContextRestoreGState(cg);

@@ -1,6 +1,5 @@
 #pragma once
 #import "ENRMUIKit.h"
-#import "LinkTapUtils.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -8,13 +7,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithTextView:(ENRMPlatformTextView *)textView;
 
+/// Start a fade-in for a new tail range. Call AFTER setting attributed text.
 - (void)animateFrom:(NSUInteger)tailStart to:(NSUInteger)tailEnd;
+
+/// Cancel all animations, removing the overlay.
 - (void)cancel;
 
-/// Write all active groups' current alpha into an attributed string
-/// BEFORE it is set on the text view.  This preserves animation continuity
-/// when the entire text storage is replaced (text only grows).
-- (void)preApplyToAttributedString:(NSMutableAttributedString *)attributedText;
+/// Whether there are active animations that need drawing.
+@property (nonatomic, readonly) BOOL hasActiveAnimations;
+
+/// Draw the fade overlay on top of text. Call from drawRect: after super.
+- (void)drawOverlayInRect:(CGRect)rect;
 
 @end
 
