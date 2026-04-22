@@ -1,6 +1,8 @@
 #pragma once
 #import "ENRMUIKit.h"
 
+@class StyleConfig;
+
 NS_ASSUME_NONNULL_BEGIN
 
 /**
@@ -10,7 +12,10 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface CitationChipAttachment : NSTextAttachment
 
-- (instancetype)initWithLabel:(NSString *)label faviconUrl:(NSString *)faviconUrl numbers:(NSString *)numbers;
+- (instancetype)initWithLabel:(NSString *)label
+                   faviconUrl:(NSString *)faviconUrl
+                      numbers:(NSString *)numbers
+                       config:(StyleConfig *)config;
 
 /// Returns a copy-friendly text representation, e.g. "[1]" or "[1,2]".
 - (NSString *)textForCopy;

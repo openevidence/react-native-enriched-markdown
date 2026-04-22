@@ -1,18 +1,15 @@
 #import "CitationChipAttachment.h"
 #import "ENRMUIKit.h"
+#import "StyleConfig.h"
 
 // Chip design constants (matching React Native CitationElement)
 static const CGFloat kChipHeight = 20.0;
 static const CGFloat kChipPaddingH = 8.0;
-static const CGFloat kChipBorderRadius = 10.0;
 static const CGFloat kFaviconSize = 14.0;
 static const CGFloat kFaviconGap = 4.0;
-static const CGFloat kFontSize = 11.0;
 static const CGFloat kMarginLeft = 4.0;
 static const CGFloat kMarginRight = 2.0;
 
-static RCTUIColor *sChipBgColor = nil;
-static RCTUIColor *sChipTextColor = nil;
 static NSCache<NSString *, UIImage *> *sChipImageCache = nil;
 static NSCache<NSString *, UIImage *> *sFaviconCache = nil;
 
@@ -22,6 +19,10 @@ static NSCache<NSString *, UIImage *> *sFaviconCache = nil;
   NSString *_numbers;
   UIImage *_faviconImage;
   CGFloat _chipWidth;
+  CGFloat _fontSize;
+  CGFloat _borderRadius;
+  RCTUIColor *_bgColor;
+  RCTUIColor *_textColor;
   BOOL _faviconLoaded;
   __weak NSLayoutManager *_layoutManager;
 }
@@ -29,8 +30,6 @@ static NSCache<NSString *, UIImage *> *sFaviconCache = nil;
 + (void)initialize
 {
   if (self == [CitationChipAttachment class]) {
-    sChipBgColor = [RCTUIColor colorWithRed:0.988 green:0.933 blue:0.910 alpha:1.0];
-    sChipTextColor = [RCTUIColor colorWithRed:0.204 green:0.196 blue:0.192 alpha:1.0];
     sChipImageCache = [[NSCache alloc] init];
     sChipImageCache.countLimit = 200;
     sFaviconCache = [[NSCache alloc] init];
@@ -38,7 +37,10 @@ static NSCache<NSString *, UIImage *> *sFaviconCache = nil;
   }
 }
 
-- (instancetype)initWithLabel:(NSString *)label faviconUrl:(NSString *)faviconUrl numbers:(NSString *)numbers
+- (instancetype)initWithLabel:(NSString *)label
+                   faviconUrl:(NSString *)faviconUrl
+                      numbers:(NSString *)numbers
+                       config:(StyleConfig *)config
 {
   self = [super init];
   if (self) {
@@ -47,8 +49,16 @@ static NSCache<NSString *, UIImage *> *sFaviconCache = nil;
     _numbers = [numbers copy];
     _faviconLoaded = NO;
 
+    _bgColor = [config citationBackgroundColor] ?: [RCTUIColor colorWithRed:0.988 green:0.933 blue:0.910 alpha:1.0];
+    _textColor = [config citationColor] ?: [RCTUIColor colorWithRed:0.204 green:0.196 blue:0.192 alpha:1.0];
+    CGFloat cfgFontSize = [config citationFontSize];
+    _fontSize = cfgFontSize > 0 ? cfgFontSize : 11.0;
+    CGFloat cfgRadius = [config citationBorderRadius];
+    // Treat >= kChipHeight as "pill" (matches the JS default of 999).
+    _borderRadius = cfgRadius > 0 ? MIN(cfgRadius, kChipHeight / 2.0) : kChipHeight / 2.0;
+
     // Compute chip width
-    NSDictionary *textAttrs = @{NSFontAttributeName : [UIFont systemFontOfSize:kFontSize]};
+    NSDictionary *textAttrs = @{NSFontAttributeName : [UIFont systemFontOfSize:_fontSize]};
     CGSize textSize = [_label sizeWithAttributes:textAttrs];
     _chipWidth = kChipPaddingH + textSize.width + kChipPaddingH;
     if (_faviconUrl.length > 0) {
@@ -99,13 +109,15 @@ static NSCache<NSString *, UIImage *> *sFaviconCache = nil;
   // Capture layout manager so loadFavicon can invalidate display later.
   _layoutManager = textContainer.layoutManager;
 
-  NSString *cacheKey = [NSString stringWithFormat:@"%@|%d|%.0f", _label, _faviconLoaded, imageBounds.size.width];
+  NSString *cacheKey =
+      [NSString stringWithFormat:@"%@|%d|%.0f|%p|%p|%.1f|%.1f", _label, _faviconLoaded, imageBounds.size.width,
+                                 _bgColor, _textColor, _fontSize, _borderRadius];
   UIImage *cached = [sChipImageCache objectForKey:cacheKey];
   if (cached)
     return cached;
 
-  RCTUIColor *bgColor = sChipBgColor;
-  RCTUIColor *textColor = sChipTextColor;
+  RCTUIColor *bgColor = _bgColor;
+  RCTUIColor *textColor = _textColor;
 
   UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:imageBounds.size];
   UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext *ctx) {
@@ -113,7 +125,7 @@ static NSCache<NSString *, UIImage *> *sFaviconCache = nil;
     CGRect chipRect = CGRectMake(kMarginLeft, 0, self->_chipWidth, kChipHeight);
 
     // Pill background
-    UIBezierPath *pill = [UIBezierPath bezierPathWithRoundedRect:chipRect cornerRadius:kChipBorderRadius];
+    UIBezierPath *pill = [UIBezierPath bezierPathWithRoundedRect:chipRect cornerRadius:self->_borderRadius];
     [bgColor setFill];
     [pill fill];
 
@@ -136,11 +148,11 @@ static NSCache<NSString *, UIImage *> *sFaviconCache = nil;
       NSMutableParagraphStyle *para = [[NSMutableParagraphStyle alloc] init];
       para.lineBreakMode = NSLineBreakByTruncatingTail;
       NSDictionary *attrs = @{
-        NSFontAttributeName : [UIFont systemFontOfSize:kFontSize],
+        NSFontAttributeName : [UIFont systemFontOfSize:self->_fontSize],
         NSForegroundColorAttributeName : textColor,
         NSParagraphStyleAttributeName : para,
       };
-      CGFloat textY = (kChipHeight - kFontSize) / 2.0 - 1.0;
+      CGFloat textY = (kChipHeight - self->_fontSize) / 2.0 - 1.0;
       [self->_label drawInRect:CGRectMake(x, textY, maxTextW, kChipHeight) withAttributes:attrs];
     }
   }];

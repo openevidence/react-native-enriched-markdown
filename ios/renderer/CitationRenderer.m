@@ -36,7 +36,8 @@
   // Create chip attachment (direct CoreGraphics drawing, no UIView)
   CitationChipAttachment *attachment = [[CitationChipAttachment alloc] initWithLabel:displayText
                                                                           faviconUrl:faviconUrl
-                                                                             numbers:numbers];
+                                                                             numbers:numbers
+                                                                              config:_config];
 
   NSMutableAttributedString *attachmentStr = [[NSMutableAttributedString alloc]
       initWithAttributedString:[NSAttributedString attributedStringWithAttachment:attachment]];
