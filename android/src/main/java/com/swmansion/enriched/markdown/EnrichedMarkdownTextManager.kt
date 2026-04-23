@@ -46,6 +46,7 @@ class EnrichedMarkdownTextManager :
     MeasurementStore.clearFontScalingSettings(view.id)
     view.layoutManager.releaseMeasurementStore()
     view.clearActiveImageSpans()
+    view.release()
   }
 
   override fun getExportedCustomDirectEventTypeConstants(): MutableMap<String, Any> = markdownEventTypeConstants()

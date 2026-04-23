@@ -214,6 +214,12 @@ class EnrichedMarkdownText
       val markdown = currentMarkdown
       if (markdown.isEmpty()) return
 
+      // The executor is shut down in release() when the view instance is
+      // dropped. If a style/markdown update lands after that (e.g. during a
+      // race on theme change), skip instead of crashing with
+      // RejectedExecutionException.
+      if (executor.isShutdown) return
+
       val renderId = ++currentRenderId
 
       executor.execute {
@@ -328,9 +334,24 @@ class EnrichedMarkdownText
     override fun onDetachedFromWindow() {
       fadeAnimator?.cancelAll()
       fadeAnimator = null
-      executor.shutdownNow()
       stopSpoilerAnimations()
       super.onDetachedFromWindow()
+    }
+
+    /**
+     * Terminal cleanup — called from ViewManager#onDropViewInstance. Safe to
+     * call multiple times. Must NOT be called from onDetachedFromWindow,
+     * which fires on every reparent / theme change; shutting the executor
+     * down there causes RejectedExecutionException when the view is
+     * re-attached and a follow-up setMarkdownStyle/setMarkdown arrives.
+     */
+    fun release() {
+      fadeAnimator?.cancelAll()
+      fadeAnimator = null
+      stopSpoilerAnimations()
+      if (!executor.isShutdown) {
+        executor.shutdownNow()
+      }
     }
 
     override fun onDraw(canvas: Canvas) {
