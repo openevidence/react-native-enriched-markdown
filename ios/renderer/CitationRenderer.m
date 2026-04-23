@@ -31,6 +31,20 @@
   if (displayText.length == 0)
     return;
 
+  // Insert a leading space when the preceding content doesn't already end with
+  // whitespace. The space gives the chip inline-word separation mid-line, and
+  // TextKit naturally collapses trailing whitespace at wrap boundaries — so a
+  // wrapped chip starts the new line flush with its leading edge, regardless
+  // of paragraph indent (bullets, nested lists, etc.).
+  NSDictionary *surroundingAttrs = nil;
+  if (output.length > 0) {
+    surroundingAttrs = [output attributesAtIndex:output.length - 1 effectiveRange:NULL];
+    unichar lastChar = [output.string characterAtIndex:output.length - 1];
+    if (![[NSCharacterSet whitespaceAndNewlineCharacterSet] characterIsMember:lastChar]) {
+      [output appendAttributedString:[[NSAttributedString alloc] initWithString:@" " attributes:surroundingAttrs]];
+    }
+  }
+
   NSUInteger start = output.length;
 
   // Create chip attachment (direct CoreGraphics drawing, no UIView)
@@ -41,6 +55,23 @@
 
   NSMutableAttributedString *attachmentStr = [[NSMutableAttributedString alloc]
       initWithAttributedString:[NSAttributedString attributedStringWithAttachment:attachment]];
+
+  // Inherit font (and other typographic attributes) from the preceding text so
+  // attachmentBoundsForTextContainer: can read the actual surrounding font to
+  // scale the chip. Without this, the attachment character carries no font
+  // attribute and the chip falls back to the baseline surrounding font size.
+  if (surroundingAttrs) {
+    UIFont *font = surroundingAttrs[NSFontAttributeName];
+    if (font) {
+      [attachmentStr addAttribute:NSFontAttributeName value:font range:NSMakeRange(0, attachmentStr.length)];
+    }
+    NSParagraphStyle *paragraphStyle = surroundingAttrs[NSParagraphStyleAttributeName];
+    if (paragraphStyle) {
+      [attachmentStr addAttribute:NSParagraphStyleAttributeName
+                            value:paragraphStyle
+                            range:NSMakeRange(0, attachmentStr.length)];
+    }
+  }
 
   // Store text-for-copy as a custom attribute for clipboard substitution
   [attachmentStr addAttribute:@"CitationCopyText"

@@ -249,7 +249,8 @@ function citationStyle(style: MarkdownStyleInternal): CSSProperties {
   return {
     backgroundColor: citation.backgroundColor,
     color: citation.color,
-    fontSize: citation.fontSize || undefined,
+    // Auto (0/unset) → scale relative to surrounding text. Explicit wins.
+    fontSize: citation.fontSize || '0.65em',
     borderRadius: citation.borderRadius,
     padding: '1px 4px',
     cursor: 'pointer',

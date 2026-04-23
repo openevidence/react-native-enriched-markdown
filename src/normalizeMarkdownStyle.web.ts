@@ -197,7 +197,9 @@ const DEFAULT_NORMALIZED_STYLE: MarkdownStyleInternal = Object.freeze({
   citation: {
     backgroundColor: '#FCEDE8',
     color: '#323130',
-    fontSize: 11,
+    // 0 is a sentinel meaning "auto": the span inherits via em scaling from
+    // the surrounding text. An explicit >0 value overrides.
+    fontSize: 0,
     borderRadius: 999,
   },
 });

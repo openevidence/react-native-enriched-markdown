@@ -21,14 +21,17 @@ import java.lang.ref.WeakReference
 import kotlin.math.roundToInt
 
 /**
- * A [ReplacementSpan] that draws a citation chip directly, matching the iOS CitationChipView design.
+ * A [ReplacementSpan] that draws a citation chip directly, matching the iOS design.
  *
- * Layout: [4dp margin] [8dp pad] [favicon 14dp] [4dp gap] [label] [8dp pad] [2dp margin]
- *   or    [4dp margin] [8dp pad] [label] [8dp pad] [2dp margin]  when no favicon URL is provided.
+ * Dimensions scale with the surrounding text's font size. At a 17sp baseline
+ * the chip is 18dp tall with a 10sp label, 6dp internal padding, a 12dp
+ * favicon, a 3dp favicon gap, and a 3dp trailing buffer. All values scale
+ * proportionally, and chip height is capped at the surrounding font's line
+ * height so the chip never inflates the line.
  *
- * Height: 20dp.  Max chip width: 90dp.
- * Background: #FCEDE8.  Text: #343231 at 11sp system regular.
- * Favicon: 14dp circular image loaded asynchronously.
+ * Leading separation is not baked into the span — CitationRenderer injects a
+ * space before the chip so wrap boundaries are handled naturally by the
+ * layout engine.
  */
 class CitationChipSpan(
   private val label: String,
@@ -41,35 +44,31 @@ class CitationChipSpan(
   private val density = context.resources.displayMetrics.density
   private val metrics = context.resources.displayMetrics
 
-  // dp to px
-  private val chipHeightPx = (CHIP_HEIGHT_DP * density).roundToInt()
-  private val hPaddingPx = HORIZONTAL_PADDING_DP * density
-  private val faviconSizePx = FAVICON_SIZE_DP * density
-  private val faviconGapPx = FAVICON_GAP_DP * density
-  private val leftMarginPx = LEFT_MARGIN_DP * density
-  private val rightMarginPx = RIGHT_MARGIN_DP * density
-
-  // Use style config values, falling back to defaults
   private val chipBgColor = styleCache.citationBackgroundColor.takeIf { it != 0 } ?: DEFAULT_BACKGROUND_COLOR
   private val chipTextColor = styleCache.citationColor.takeIf { it != 0 } ?: DEFAULT_TEXT_COLOR
-  private val chipFontSizeSp = styleCache.citationFontSize.takeIf { it > 0f } ?: DEFAULT_FONT_SIZE_SP
-  private val chipBorderRadius = styleCache.citationBorderRadius
 
-  // sp to px for font size
-  private val fontSizePx =
-    TypedValue.applyDimension(
-      TypedValue.COMPLEX_UNIT_SP,
-      chipFontSizeSp,
-      metrics,
-    )
+  // >0 = explicit user override (sp), 0 = auto-scale to surrounding font.
+  private val configFontSizeSp = styleCache.citationFontSize
+
+  // >0 = explicit user override (dp), 0 = pill (chipHeight / 2).
+  private val configBorderRadiusDp = styleCache.citationBorderRadius
 
   private val hasFavicon = faviconUrl.isNotEmpty()
+
+  // Computed per-layout in getSize(), consumed by draw().
+  private var chipHeightPx = 0f
+  private var chipWidth = 0f
+  private var chipFontSizePx = 0f
+  private var hPaddingPx = 0f
+  private var faviconSizePx = 0f
+  private var faviconGapPx = 0f
+  private var rightMarginPx = 0f
+  private var borderRadiusPx = 0f
 
   @Volatile private var faviconBitmap: Bitmap? = null
   private var viewRef: WeakReference<TextView>? = null
   private val mainHandler = Handler(Looper.getMainLooper())
 
-  // Paint objects reused across draw calls
   private val bgPaint =
     Paint(Paint.ANTI_ALIAS_FLAG).apply {
       color = chipBgColor
@@ -79,7 +78,6 @@ class CitationChipSpan(
   private val textPaint =
     TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
       color = chipTextColor
-      textSize = fontSizePx
       typeface = Typeface.DEFAULT
     }
 
@@ -94,14 +92,7 @@ class CitationChipSpan(
   private fun loadFavicon() {
     ImageDownloader.download(context, faviconUrl) { bitmap ->
       if (bitmap != null) {
-        val size = faviconSizePx.roundToInt()
-        val scaled =
-          if (bitmap.width != size || bitmap.height != size) {
-            Bitmap.createScaledBitmap(bitmap, size, size, true)
-          } else {
-            bitmap
-          }
-        faviconBitmap = scaled
+        faviconBitmap = bitmap
         // Always invalidate on the main thread. The callback may arrive on a
         // background thread (synchronous ImageCache hit) or the main thread
         // (OkHttp network response). Post to main to guarantee we invalidate
@@ -113,7 +104,6 @@ class CitationChipSpan(
 
   fun registerTextView(view: TextView) {
     viewRef = WeakReference(view)
-    // If the favicon was already loaded, invalidate now.
     if (faviconBitmap != null) {
       invalidateChipDisplay()
     }
@@ -128,9 +118,6 @@ class CitationChipSpan(
     val tv = viewRef?.get() ?: return
     val editable = tv.text as? android.text.Editable
     if (editable != null) {
-      // Find our span in the text and trigger a span change notification
-      // by removing and re-adding it. DynamicLayout's SpanWatcher will
-      // pick up the change and invalidate the affected line.
       val start = editable.getSpanStart(this)
       val end = editable.getSpanEnd(this)
       if (start >= 0 && end >= 0) {
@@ -140,7 +127,6 @@ class CitationChipSpan(
         return
       }
     }
-    // Fallback: just invalidate the view
     tv.invalidate()
   }
 
@@ -150,8 +136,8 @@ class CitationChipSpan(
   }
 
   /**
-   * Calculates the total width of the chip + margins, and adjusts font metrics
-   * so the chip is vertically centered on the line.
+   * Computes chip dimensions from the surrounding paint (font size + line
+   * height) and returns the total span width.
    */
   override fun getSize(
     paint: Paint,
@@ -160,22 +146,49 @@ class CitationChipSpan(
     end: Int,
     fm: Paint.FontMetricsInt?,
   ): Int {
-    val chipWidth = computeChipWidth()
-    val totalWidth = (leftMarginPx + chipWidth + rightMarginPx).roundToInt()
+    val surroundingFontPx = paint.textSize
+    val paintFm = paint.fontMetricsInt
+    val lineHeightPx = (paintFm.descent - paintFm.ascent).toFloat()
 
-    if (fm != null) {
-      // Center the chip vertically in the line
-      val fontHeight = fm.descent - fm.ascent
-      val diff = chipHeightPx - fontHeight
-      if (diff > 0) {
-        fm.ascent -= diff / 2
-        fm.descent += (diff + 1) / 2
-        fm.top = fm.ascent
-        fm.bottom = fm.descent
+    val desiredHeight = surroundingFontPx * (BASE_CHIP_HEIGHT_DP / BASE_SURROUNDING_FONT_SP)
+    chipHeightPx = minOf(desiredHeight, lineHeightPx)
+    val scale = chipHeightPx / (BASE_CHIP_HEIGHT_DP * density)
+
+    val autoFontPx = chipHeightPx * (BASE_CHIP_FONT_SIZE_SP / BASE_CHIP_HEIGHT_DP)
+    chipFontSizePx =
+      if (configFontSizeSp > 0f) {
+        val explicitPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, configFontSizeSp, metrics)
+        minOf(explicitPx, chipHeightPx * 0.85f)
+      } else {
+        autoFontPx
       }
-    }
 
-    return totalWidth
+    hPaddingPx = BASE_HORIZONTAL_PADDING_DP * density * scale
+    faviconSizePx = BASE_FAVICON_SIZE_DP * density * scale
+    faviconGapPx = BASE_FAVICON_GAP_DP * density * scale
+    rightMarginPx = BASE_RIGHT_MARGIN_DP * density * scale
+
+    borderRadiusPx =
+      if (configBorderRadiusDp > 0f) {
+        minOf(configBorderRadiusDp * density, chipHeightPx / 2f)
+      } else {
+        chipHeightPx / 2f
+      }
+
+    textPaint.textSize = chipFontSizePx
+
+    val labelWidth = textPaint.measureText(label)
+    chipWidth =
+      if (hasFavicon) {
+        hPaddingPx + faviconSizePx + faviconGapPx + labelWidth + hPaddingPx
+      } else {
+        hPaddingPx + labelWidth + hPaddingPx
+      }
+
+    // No line-height expansion: chipHeightPx is capped at lineHeightPx above,
+    // so the chip always fits. fm (output) is left at the paint's metrics.
+
+    return (chipWidth + rightMarginPx).roundToInt()
   }
 
   /**
@@ -192,33 +205,19 @@ class CitationChipSpan(
     bottom: Int,
     paint: Paint,
   ) {
-    // Store reference to the text view for async favicon loading
-    // (the draw method is called with the canvas from the TextView)
-
-    val chipWidth = computeChipWidth()
-    val chipX = x + leftMarginPx
-    // Align to the text baseline: center the chip between ascent and descent.
-    // Using the baseline (y param) avoids misalignment on the last line of a
-    // paragraph where top/bottom include extra spacing from the text view.
     val fm = paint.fontMetricsInt
     val fontHeight = fm.descent - fm.ascent
     val chipY = y.toFloat() + fm.ascent + (fontHeight - chipHeightPx) / 2f
 
-    // Draw pill background
-    val borderRadius = if (chipBorderRadius > 0f) chipBorderRadius * density else chipHeightPx / 2f
-    val rect = RectF(chipX, chipY, chipX + chipWidth, chipY + chipHeightPx)
-    canvas.drawRoundRect(rect, borderRadius, borderRadius, bgPaint)
+    val rect = RectF(x, chipY, x + chipWidth, chipY + chipHeightPx)
+    canvas.drawRoundRect(rect, borderRadiusPx, borderRadiusPx, bgPaint)
 
-    // Current drawing X inside the chip
-    var drawX = chipX + hPaddingPx
+    var drawX = x + hPaddingPx
 
-    // Draw favicon if available
     if (hasFavicon) {
       val bitmap = faviconBitmap
       if (bitmap != null) {
         val faviconY = chipY + (chipHeightPx - faviconSizePx) / 2f
-
-        // Draw circular favicon using BitmapShader
         canvas.save()
         val shader = BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
         val matrix = android.graphics.Matrix()
@@ -234,40 +233,26 @@ class CitationChipSpan(
         faviconPaint.shader = null
         canvas.restore()
       }
-      // Always reserve space for favicon (even if not loaded yet)
       drawX += faviconSizePx + faviconGapPx
     }
 
-    // Draw label text — no truncation needed since the chip is sized to fit
     val textMetrics = textPaint.fontMetrics
     val textHeight = textMetrics.descent - textMetrics.ascent
     val textY = chipY + (chipHeightPx - textHeight) / 2f - textMetrics.ascent
     canvas.drawText(label, drawX, textY, textPaint)
   }
 
-  /**
-   * Computes the chip width (without margins).
-   * No max-width cap: the JS preprocessing already truncates labels to a
-   * reasonable length (~14 chars + " + N" suffix), so the chip grows to fit.
-   */
-  private fun computeChipWidth(): Float {
-    val labelWidth = textPaint.measureText(label)
-    return if (hasFavicon) {
-      hPaddingPx + faviconSizePx + faviconGapPx + labelWidth + hPaddingPx
-    } else {
-      hPaddingPx + labelWidth + hPaddingPx
-    }
-  }
-
   companion object {
-    private const val CHIP_HEIGHT_DP = 20f
-    private const val HORIZONTAL_PADDING_DP = 8f
-    private const val FAVICON_SIZE_DP = 14f
-    private const val FAVICON_GAP_DP = 4f
-    private const val LEFT_MARGIN_DP = 4f
-    private const val RIGHT_MARGIN_DP = 2f
+    // Baseline ratios: at a 17sp surrounding font, chip is 18dp tall with a
+    // 10sp label. All other dimensions are fractions of chipHeight.
+    private const val BASE_SURROUNDING_FONT_SP = 17f
+    private const val BASE_CHIP_HEIGHT_DP = 18f
+    private const val BASE_CHIP_FONT_SIZE_SP = 11f
+    private const val BASE_HORIZONTAL_PADDING_DP = 7f
+    private const val BASE_FAVICON_SIZE_DP = 13f
+    private const val BASE_FAVICON_GAP_DP = 3.5f
+    private const val BASE_RIGHT_MARGIN_DP = 3f
 
-    private const val DEFAULT_FONT_SIZE_SP = 11f
     private const val DEFAULT_BACKGROUND_COLOR = 0xFFFCEDE8.toInt() // #FCEDE8
     private const val DEFAULT_TEXT_COLOR = 0xFF343231.toInt() // #343231
   }

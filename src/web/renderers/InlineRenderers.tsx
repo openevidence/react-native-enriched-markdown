@@ -100,15 +100,22 @@ function CitationRenderer({ node, styles, callbacks }: RendererProps) {
     callbacks.onCitationPress?.({ numbers });
   };
 
+  // The leading space gives the chip inline-word separation mid-line. The
+  // browser collapses consecutive whitespace and strips leading whitespace at
+  // block/line starts, so this is a no-op where not needed and a single space
+  // everywhere else — mirroring the native renderers.
   return (
-    <span
-      role="button"
-      tabIndex={0}
-      style={styles.citation}
-      onClick={handleClick}
-    >
-      {numbers}
-    </span>
+    <>
+      {' '}
+      <span
+        role="button"
+        tabIndex={0}
+        style={styles.citation}
+        onClick={handleClick}
+      >
+        {numbers}
+      </span>
+    </>
   );
 }
 
