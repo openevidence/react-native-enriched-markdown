@@ -2,8 +2,10 @@
 #import <QuartzCore/QuartzCore.h>
 #include <TargetConditionals.h>
 
-// Ease-in-out infinite blink, opacity 0 → 1 → 0.
+// Ease-in-out infinite blink, opacity 0 → kCursorMaxAlpha → 0. The peak is
+// capped below 1 so the cursor reads as subtle rather than fully opaque.
 static const NSTimeInterval kCursorPeriod = 1.6;
+static const double kCursorMaxAlpha = 0.85;
 
 @implementation ENRMCursorBlinkAnimator {
   __weak ENRMPlatformTextView *_textView;
@@ -100,7 +102,7 @@ static const NSTimeInterval kCursorPeriod = 1.6;
   double phase = fmod(elapsed / kCursorPeriod, 1.0);
   // Triangle wave 0 → 1 → 0, then smoothstep to approximate ease-in-out.
   double tri = phase < 0.5 ? phase * 2.0 : (1.0 - phase) * 2.0;
-  double alpha = tri * tri * (3.0 - 2.0 * tri);
+  double alpha = tri * tri * (3.0 - 2.0 * tri) * kCursorMaxAlpha;
 
   CGFloat r = 0, g = 0, b = 0, a = 1;
   [_baseColor getRed:&r green:&g blue:&b alpha:&a];
