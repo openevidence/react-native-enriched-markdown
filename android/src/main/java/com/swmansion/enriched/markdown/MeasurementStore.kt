@@ -254,6 +254,14 @@ object MeasurementStore {
     val spannable = tryRenderMarkdown(markdown, styleMap, context, md4cFlags, allowFontScaling, maxFontSizeMultiplier)
     spannable?.replaceMathSpansWithPlaceholders(context)
     val textToMeasure = spannable ?: markdown
+    // measurePaint is shared across views/calls — configure it explicitly so
+    // unspanned characters (paragraph-separator newlines, etc.) measure with
+    // the same paint the TextView draws with. Without this, the StaticLayout
+    // built for caching can disagree with the TextView's actual layout and
+    // the bottom of the rendered text gets clipped.
+    measurePaint.reset()
+    measurePaint.typeface = Typeface.DEFAULT
+    measurePaint.textSize = fontSize
     val (size, _) = measureWithLayout(width, textToMeasure, measurePaint)
 
     // 3. Calculate Margin
@@ -432,6 +440,31 @@ object MeasurementStore {
       Log.w(TAG, "Failed to render markdown for measurement, falling back to raw text", e)
       null
     }
+  }
+
+  /**
+   * Returns the pixel font size that should be used as the default for
+   * unspanned text in both the measure path and the actual TextView paint.
+   * Keeping the two in sync prevents the rendered StaticLayout from being
+   * taller than the cached Yoga height (which would clip the bottom).
+   *
+   * Pure read — does not mutate [lastKnownFontScale] or clear the cache.
+   */
+  fun resolvePaintFontSize(
+    context: Context,
+    styleMap: ReadableMap?,
+    allowFontScaling: Boolean,
+    maxFontSizeMultiplier: Float,
+  ): Float {
+    val fontScale =
+      if (allowFontScaling) {
+        var s = context.resources.configuration.fontScale
+        if (maxFontSizeMultiplier >= 1.0f && s > maxFontSizeMultiplier) s = maxFontSizeMultiplier
+        s
+      } else {
+        1.0f
+      }
+    return getInitialFontSize(styleMap, context, allowFontScaling, fontScale, maxFontSizeMultiplier)
   }
 
   private fun getInitialFontSize(

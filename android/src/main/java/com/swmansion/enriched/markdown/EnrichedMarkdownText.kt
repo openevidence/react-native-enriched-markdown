@@ -3,6 +3,7 @@ package com.swmansion.enriched.markdown
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Canvas
+import android.graphics.Typeface
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -11,6 +12,7 @@ import android.text.Selection
 import android.text.Spannable
 import android.util.AttributeSet
 import android.util.Log
+import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.ViewConfiguration
 import androidx.appcompat.widget.AppCompatTextView
@@ -23,7 +25,7 @@ import com.swmansion.enriched.markdown.spoiler.SpoilerCapable
 import com.swmansion.enriched.markdown.spoiler.SpoilerMode
 import com.swmansion.enriched.markdown.spoiler.SpoilerOverlayDrawer
 import com.swmansion.enriched.markdown.styles.StyleConfig
-import com.swmansion.enriched.markdown.utils.text.AnimatedColorSpan
+import com.swmansion.enriched.markdown.utils.text.AnimatedCursorSpan
 import com.swmansion.enriched.markdown.utils.text.CursorBlinkAnimator
 import com.swmansion.enriched.markdown.utils.text.TailFadeInAnimator
 import com.swmansion.enriched.markdown.utils.text.interaction.CheckboxTouchHelper
@@ -93,7 +95,7 @@ class EnrichedMarkdownText
 
     private var trailingCursor: Boolean = false
     private var cursorAnimator: CursorBlinkAnimator? = null
-    private var cursorSpan: AnimatedColorSpan? = null
+    private var cursorSpan: AnimatedCursorSpan? = null
 
     // Swipe detection to prevent Editor from starting text selection during scrolling
     private var touchStartX = 0f
@@ -129,7 +131,23 @@ class EnrichedMarkdownText
       if (markdownStyle == newStyle) return
       markdownStyle = newStyle
       updateJustificationMode(newStyle)
+      applyMeasurementPaintConfig()
       scheduleRender()
+    }
+
+    /**
+     * Aligns the TextView's paint with the one [MeasurementStore] uses to
+     * compute the cached Yoga height. Without this, unspanned characters
+     * (paragraph-separator newlines) get different metrics in the two paths
+     * and the rendered StaticLayout overflows Yoga's bounds, clipping the
+     * last line of text.
+     */
+    private fun applyMeasurementPaintConfig() {
+      val styleMap = markdownStyleMap ?: return
+      val fontSize =
+        MeasurementStore.resolvePaintFontSize(context, styleMap, allowFontScaling, maxFontSizeMultiplier)
+      if (typeface != Typeface.DEFAULT) typeface = Typeface.DEFAULT
+      setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -208,17 +226,23 @@ class EnrichedMarkdownText
       // Already attached — nothing to do.
       if (cursorSpan != null) return
 
-      val baseColor = currentTextColor
+      // Use the paragraph color from the markdown style so the cursor follows
+      // the same theming as the surrounding text. Falling back to
+      // currentTextColor would pick up the AppCompatTextView default (often
+      // white from the system theme) and look wrong in light mode.
+      val baseColor = markdownStyle?.paragraphStyle?.color ?: currentTextColor
       // If the text ends with a newline, insert before it so the cursor sits
       // inline at the end of the last visible line rather than on a new line.
       val insertAt =
         if (editable[editable.length - 1] == '\n') editable.length - 1 else editable.length
 
-      // Leading space gives the cursor breathing room from the preceding text.
+      // Leading space gives the cursor breathing room from the preceding
+      // text. The trailing character is just a placeholder for the
+      // ReplacementSpan to attach to — the span renders its own visual.
       editable.insert(insertAt, " ▌")
 
-      val span = AnimatedColorSpan(baseColor)
-      // Span only covers the ▌ glyph; the leading space stays at full opacity.
+      val span = AnimatedCursorSpan(baseColor)
+      // Span only covers the placeholder; the leading space renders normally.
       editable.setSpan(span, insertAt + 1, insertAt + 2, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
       cursorSpan = span
 
@@ -235,7 +259,7 @@ class EnrichedMarkdownText
         val cursorStart = editable.getSpanStart(span)
         val cursorEnd = editable.getSpanEnd(span)
         editable.removeSpan(span)
-        // Remove the leading space too (one char before the cursor glyph).
+        // Remove the leading space too (one char before the placeholder).
         if (cursorStart in 1..editable.length && cursorEnd in (cursorStart + 1)..editable.length) {
           editable.delete(cursorStart - 1, cursorEnd)
         }
@@ -257,6 +281,7 @@ class EnrichedMarkdownText
       markdownStyleMap?.let { styleMap ->
         markdownStyle = StyleConfig(styleMap, context, allowFontScaling, maxFontSizeMultiplier)
         updateJustificationMode(markdownStyle)
+        applyMeasurementPaintConfig()
       }
     }
 
