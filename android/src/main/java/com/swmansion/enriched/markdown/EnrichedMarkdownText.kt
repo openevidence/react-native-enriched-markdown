@@ -274,7 +274,15 @@ class EnrichedMarkdownText
 
       spoilerOverlayDrawer = SpoilerOverlayDrawer.setupIfNeeded(this, styledText, spoilerOverlayDrawer, spoilerMode)
 
-      layoutManager.invalidateLayout()
+      // Intentionally do NOT call layoutManager.invalidateLayout() here.
+      // That would re-measure with the TextView's paint (which has its own
+      // default textSize) and overwrite the MeasurementStore cache that Yoga
+      // populated via measureAndCache (which uses the paragraph fontSize).
+      // The two paints disagree on the height of any unspanned characters
+      // (paragraph-separator newlines, etc.), so the cache flip-flops every
+      // streaming tick and the next Yoga remeasure returns a different size,
+      // making the last line appear/disappear and the bottom section bounce.
+
       accessibilityHelper.invalidateAccessibilityItems()
 
       // Always track text length so the tail start is correct when animation
