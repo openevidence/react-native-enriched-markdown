@@ -2,6 +2,7 @@
 #import "CodeBlockBackground.h"
 #import "ContextMenuUtils.h"
 #import "ENRMContextMenuTextView+macOS.h"
+#import "ENRMCursorBlinkAnimator.h"
 #import "ENRMImageAttachment.h"
 #import "ENRMMarkdownParser.h"
 #import "ENRMSpoilerOverlayManager.h"
@@ -68,6 +69,10 @@ using namespace facebook::react;
 
   NSUInteger _previousTextLength;
   ENRMTailFadeInAnimator *_fadeAnimator;
+
+  BOOL _trailingCursor;
+  ENRMCursorBlinkAnimator *_cursorAnimator;
+  NSRange _cursorRange;
 
   AccessibilityInfo *_accessibilityInfo;
 #if !TARGET_OS_OSX
@@ -143,6 +148,7 @@ using namespace facebook::react;
     _maxFontSizeMultiplier = 0;
     _allowTrailingMargin = NO;
     _enableLinkPreview = YES;
+    _cursorRange = NSMakeRange(NSNotFound, 0);
 
     _fontScaleObserver = [[FontScaleObserver alloc] init];
     __weak EnrichedMarkdownText *weakSelf = self;
@@ -379,6 +385,67 @@ using namespace facebook::react;
     [_fadeAnimator animateFrom:tailStart to:attributedText.length];
     _previousTextLength = attributedText.length;
   }
+
+  // The new attributedText replaced any prior cursor; if the cursor should be
+  // visible, re-append it now so it sits at the very end of the rendered text.
+  _cursorRange = NSMakeRange(NSNotFound, 0);
+  if (_trailingCursor) {
+    [self attachTrailingCursor];
+  }
+}
+
+#pragma mark - Trailing Cursor
+
+- (void)attachTrailingCursor
+{
+  NSTextStorage *textStorage = _textView.textStorage;
+  if (!textStorage || textStorage.length == 0) {
+    return;
+  }
+
+  // Copy attributes from the last character so the cursor inherits the
+  // surrounding font / color / paragraph style. Strip link/citation
+  // attributes so taps near the cursor don't open the previous link.
+  NSDictionary *lastAttrs = [textStorage attributesAtIndex:textStorage.length - 1 effectiveRange:NULL];
+  NSMutableDictionary *cursorAttrs = [lastAttrs mutableCopy];
+  [cursorAttrs removeObjectForKey:NSLinkAttributeName];
+  [cursorAttrs removeObjectForKey:NSAttachmentAttributeName];
+  [cursorAttrs removeObjectForKey:@"linkURL"];
+  [cursorAttrs removeObjectForKey:@"citationNumbers"];
+
+  // The leading space gives the cursor breathing room from the preceding text.
+  NSAttributedString *cursorChar = [[NSAttributedString alloc] initWithString:@" ▌" attributes:cursorAttrs];
+
+  // If the rendered text ends with a newline, insert before it so the cursor
+  // sits inline at the end of the last visible line rather than on a new line.
+  NSUInteger insertLocation = textStorage.length;
+  if ([textStorage.string characterAtIndex:insertLocation - 1] == '\n') {
+    insertLocation -= 1;
+  }
+
+  [textStorage insertAttributedString:cursorChar atIndex:insertLocation];
+  _cursorRange = NSMakeRange(insertLocation, cursorChar.length);
+
+  if (!_cursorAnimator) {
+    _cursorAnimator = [[ENRMCursorBlinkAnimator alloc] initWithTextView:_textView];
+  }
+  // Animate only the trailing ▌ glyph; the leading space stays at full opacity.
+  [_cursorAnimator startWithRange:NSMakeRange(insertLocation + 1, 1)];
+}
+
+- (void)detachTrailingCursor
+{
+  [_cursorAnimator stop];
+
+  if (_cursorRange.location == NSNotFound) {
+    return;
+  }
+  NSTextStorage *textStorage = _textView.textStorage;
+  NSRange clamped = NSIntersectionRange(_cursorRange, NSMakeRange(0, textStorage.length));
+  if (clamped.length > 0 && [[textStorage.string substringWithRange:clamped] isEqualToString:@" ▌"]) {
+    [textStorage deleteCharactersInRange:clamped];
+  }
+  _cursorRange = NSMakeRange(NSNotFound, 0);
 }
 
 #if !TARGET_OS_OSX
@@ -474,14 +541,29 @@ using namespace facebook::react;
     }
   }
 
+  BOOL trailingCursorChanged = newViewProps.trailingCursor != oldViewProps.trailingCursor;
+  if (trailingCursorChanged) {
+    _trailingCursor = newViewProps.trailingCursor;
+  }
+
   if (newViewProps.spoilerMode != oldViewProps.spoilerMode) {
     NSString *modeStr = [[NSString alloc] initWithUTF8String:newViewProps.spoilerMode.c_str()];
     _spoilerManager.spoilerMode = ENRMSpoilerModeFromString(modeStr);
   }
 
-  if (markdownChanged || stylePropChanged || md4cFlagsChanged || allowTrailingMarginChanged) {
+  BOOL willRerender = markdownChanged || stylePropChanged || md4cFlagsChanged || allowTrailingMarginChanged;
+  if (willRerender) {
     NSString *markdownString = [[NSString alloc] initWithUTF8String:newViewProps.markdown.c_str()];
     [self renderMarkdownContent:markdownString];
+  } else if (trailingCursorChanged) {
+    // No re-render is queued, so attach/detach the cursor directly on the
+    // existing text storage. When `willRerender` is true, the cursor is
+    // (re)applied at the end of `applyRenderedText:` based on `_trailingCursor`.
+    if (_trailingCursor) {
+      [self attachTrailingCursor];
+    } else {
+      [self detachTrailingCursor];
+    }
   }
 
   [super updateProps:props oldProps:oldProps];

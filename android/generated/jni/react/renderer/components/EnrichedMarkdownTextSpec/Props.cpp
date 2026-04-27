@@ -149,6 +149,7 @@ EnrichedMarkdownProps::EnrichedMarkdownProps(const PropsParserContext &context,
           convertRawProp(context, rawProps, "allowTrailingMargin", sourceProps.allowTrailingMargin, {false})),
       streamingAnimation(
           convertRawProp(context, rawProps, "streamingAnimation", sourceProps.streamingAnimation, {false})),
+      trailingCursor(convertRawProp(context, rawProps, "trailingCursor", sourceProps.trailingCursor, {false})),
       spoilerMode(
           convertRawProp(context, rawProps, "spoilerMode", sourceProps.spoilerMode, {std::string{"particles"}})),
       contextMenuItems(convertRawProp(context, rawProps, "contextMenuItems", sourceProps.contextMenuItems, {})) {}
@@ -204,6 +205,10 @@ folly::dynamic EnrichedMarkdownProps::getDiffProps(const Props *prevProps) const
     result["streamingAnimation"] = streamingAnimation;
   }
 
+  if (trailingCursor != oldProps->trailingCursor) {
+    result["trailingCursor"] = trailingCursor;
+  }
+
   if (spoilerMode != oldProps->spoilerMode) {
     result["spoilerMode"] = spoilerMode;
   }
@@ -231,6 +236,7 @@ EnrichedMarkdownTextProps::EnrichedMarkdownTextProps(const PropsParserContext &c
           convertRawProp(context, rawProps, "allowTrailingMargin", sourceProps.allowTrailingMargin, {false})),
       streamingAnimation(
           convertRawProp(context, rawProps, "streamingAnimation", sourceProps.streamingAnimation, {false})),
+      trailingCursor(convertRawProp(context, rawProps, "trailingCursor", sourceProps.trailingCursor, {false})),
       spoilerMode(
           convertRawProp(context, rawProps, "spoilerMode", sourceProps.spoilerMode, {std::string{"particles"}})),
       contextMenuItems(convertRawProp(context, rawProps, "contextMenuItems", sourceProps.contextMenuItems, {})) {}
@@ -284,6 +290,10 @@ folly::dynamic EnrichedMarkdownTextProps::getDiffProps(const Props *prevProps) c
 
   if (streamingAnimation != oldProps->streamingAnimation) {
     result["streamingAnimation"] = streamingAnimation;
+  }
+
+  if (trailingCursor != oldProps->trailingCursor) {
+    result["trailingCursor"] = trailingCursor;
   }
 
   if (spoilerMode != oldProps->spoilerMode) {

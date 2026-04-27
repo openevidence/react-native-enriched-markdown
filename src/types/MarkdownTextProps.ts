@@ -141,6 +141,18 @@ export interface EnrichedMarkdownTextProps extends Omit<ViewProps, 'style'> {
    */
   streamingAnimation?: boolean;
   /**
+   * When true, a blinking block cursor (▌) is appended to the end of the
+   * rendered text and animated with a 1.25s ease-in-out infinite fade.
+   * Use to indicate streaming is in progress but no new content has arrived
+   * recently. Consumers should typically toggle this on after a short
+   * idle delay so the cursor doesn't appear during active text emission.
+   *
+   * Currently only supported with `flavor="commonmark"`.
+   * @default false
+   * @platform ios, android
+   */
+  trailingCursor?: boolean;
+  /**
    * Controls how spoiler text is displayed before being revealed.
    * - `'particles'` (default): animated particle overlay (CAEmitterLayer on iOS,
    *   Choreographer-driven Canvas particles on Android).

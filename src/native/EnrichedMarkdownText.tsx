@@ -47,6 +47,7 @@ export const EnrichedMarkdownText = ({
   allowTrailingMargin = false,
   flavor = 'commonmark',
   streamingAnimation = false,
+  trailingCursor = false,
   spoilerMode = 'particles',
   contextMenuItems,
   ...rest
@@ -149,6 +150,7 @@ export const EnrichedMarkdownText = ({
     maxFontSizeMultiplier,
     allowTrailingMargin,
     streamingAnimation,
+    trailingCursor,
     spoilerMode,
     style: containerStyle,
     contextMenuItems: nativeContextMenuItems,

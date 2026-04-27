@@ -2287,6 +2287,7 @@ public:
   Float maxFontSizeMultiplier{0.0};
   bool allowTrailingMargin{false};
   bool streamingAnimation{false};
+  bool trailingCursor{false};
   std::string spoilerMode{std::string{"particles"}};
   std::vector<EnrichedMarkdownContextMenuItemsStruct> contextMenuItems{};
 
@@ -4224,6 +4225,7 @@ public:
   Float maxFontSizeMultiplier{0.0};
   bool allowTrailingMargin{false};
   bool streamingAnimation{false};
+  bool trailingCursor{false};
   std::string spoilerMode{std::string{"particles"}};
   std::vector<EnrichedMarkdownTextContextMenuItemsStruct> contextMenuItems{};
 

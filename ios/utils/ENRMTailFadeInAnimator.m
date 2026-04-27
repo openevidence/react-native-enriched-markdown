@@ -207,6 +207,18 @@ static const NSTimeInterval kFadeDuration = 0.60;
   group->startTime = CACurrentMediaTime();
   [_overlayView.groups addObject:group];
 
+  // Invalidate the overlay synchronously so the new fade group lands in the
+  // same vsync as the text-view redraw triggered by setting `attributedText`.
+  // Without this, the display link callback (`step:`) wouldn't fire until the
+  // *next* vsync, leaving the overlay's cached layer stale for one frame —
+  // i.e. the new tail would composite at full opacity over the freshly drawn
+  // text, then snap back to the fade overlay on the following frame.
+#if !TARGET_OS_OSX
+  [_overlayView setNeedsDisplay];
+#else
+  [_overlayView setNeedsDisplay:YES];
+#endif
+
 #if !TARGET_OS_OSX
   if (!_displayLink) {
     _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(step:)];

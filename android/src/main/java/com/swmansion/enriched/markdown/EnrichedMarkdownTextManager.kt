@@ -154,6 +154,14 @@ class EnrichedMarkdownTextManager :
     view?.setStreamingAnimation(streamingAnimation)
   }
 
+  @ReactProp(name = "trailingCursor", defaultBoolean = false)
+  override fun setTrailingCursor(
+    view: EnrichedMarkdownText?,
+    trailingCursor: Boolean,
+  ) {
+    view?.setTrailingCursor(trailingCursor)
+  }
+
   @ReactProp(name = "spoilerMode")
   override fun setSpoilerMode(
     view: EnrichedMarkdownText?,

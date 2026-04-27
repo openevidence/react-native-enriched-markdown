@@ -23,6 +23,8 @@ import com.swmansion.enriched.markdown.spoiler.SpoilerCapable
 import com.swmansion.enriched.markdown.spoiler.SpoilerMode
 import com.swmansion.enriched.markdown.spoiler.SpoilerOverlayDrawer
 import com.swmansion.enriched.markdown.styles.StyleConfig
+import com.swmansion.enriched.markdown.utils.text.AnimatedColorSpan
+import com.swmansion.enriched.markdown.utils.text.CursorBlinkAnimator
 import com.swmansion.enriched.markdown.utils.text.TailFadeInAnimator
 import com.swmansion.enriched.markdown.utils.text.interaction.CheckboxTouchHelper
 import com.swmansion.enriched.markdown.utils.text.view.LinkLongPressMovementMethod
@@ -88,6 +90,10 @@ class EnrichedMarkdownText
     private var streamingAnimation: Boolean = false
     private var previousTextLength: Int = 0
     private var fadeAnimator: TailFadeInAnimator? = null
+
+    private var trailingCursor: Boolean = false
+    private var cursorAnimator: CursorBlinkAnimator? = null
+    private var cursorSpan: AnimatedColorSpan? = null
 
     // Swipe detection to prevent Editor from starting text selection during scrolling
     private var touchStartX = 0f
@@ -179,6 +185,62 @@ class EnrichedMarkdownText
         fadeAnimator?.cancelAll()
         fadeAnimator = null
       }
+    }
+
+    fun setTrailingCursor(enabled: Boolean) {
+      if (trailingCursor == enabled) return
+      trailingCursor = enabled
+      // Apply immediately if there's already rendered text. When a re-render
+      // is queued (e.g. markdown changes in the same prop batch), the cursor
+      // is (re)applied at the end of applyRenderedText based on this flag.
+      if (currentMarkdown.isNotEmpty()) {
+        if (enabled) {
+          attachTrailingCursor()
+        } else {
+          detachTrailingCursor()
+        }
+      }
+    }
+
+    private fun attachTrailingCursor() {
+      val editable = editableText ?: return
+      if (editable.isEmpty()) return
+      // Already attached — nothing to do.
+      if (cursorSpan != null) return
+
+      val baseColor = currentTextColor
+      // If the text ends with a newline, insert before it so the cursor sits
+      // inline at the end of the last visible line rather than on a new line.
+      val insertAt =
+        if (editable[editable.length - 1] == '\n') editable.length - 1 else editable.length
+
+      // Leading space gives the cursor breathing room from the preceding text.
+      editable.insert(insertAt, " ▌")
+
+      val span = AnimatedColorSpan(baseColor)
+      // Span only covers the ▌ glyph; the leading space stays at full opacity.
+      editable.setSpan(span, insertAt + 1, insertAt + 2, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+      cursorSpan = span
+
+      val animator = cursorAnimator ?: CursorBlinkAnimator(this).also { cursorAnimator = it }
+      animator.start(span)
+    }
+
+    private fun detachTrailingCursor() {
+      cursorAnimator?.stop()
+
+      val editable = editableText
+      val span = cursorSpan
+      if (editable != null && span != null) {
+        val cursorStart = editable.getSpanStart(span)
+        val cursorEnd = editable.getSpanEnd(span)
+        editable.removeSpan(span)
+        // Remove the leading space too (one char before the cursor glyph).
+        if (cursorStart in 1..editable.length && cursorEnd in (cursorStart + 1)..editable.length) {
+          editable.delete(cursorStart - 1, cursorEnd)
+        }
+      }
+      cursorSpan = null
     }
 
     private fun updateMeasurementStoreFontScaling() {
@@ -297,6 +359,13 @@ class EnrichedMarkdownText
         }
         fadeAnimator?.animate(tailStart, styledText.length)
       }
+
+      // The new styledText replaced any prior cursor; if the cursor should be
+      // visible, re-append it now so it sits at the very end of the rendered text.
+      cursorSpan = null
+      if (trailingCursor) {
+        attachTrailingCursor()
+      }
     }
 
     fun setContextMenuItems(items: List<String>) {
@@ -342,6 +411,8 @@ class EnrichedMarkdownText
     override fun onDetachedFromWindow() {
       fadeAnimator?.cancelAll()
       fadeAnimator = null
+      cursorAnimator?.stop()
+      cursorSpan = null
       stopSpoilerAnimations()
       super.onDetachedFromWindow()
     }
@@ -356,6 +427,9 @@ class EnrichedMarkdownText
     fun release() {
       fadeAnimator?.cancelAll()
       fadeAnimator = null
+      cursorAnimator?.stop()
+      cursorAnimator = null
+      cursorSpan = null
       stopSpoilerAnimations()
       if (!executor.isShutdown) {
         executor.shutdownNow()

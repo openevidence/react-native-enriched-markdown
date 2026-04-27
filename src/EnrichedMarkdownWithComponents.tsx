@@ -46,6 +46,7 @@ export const EnrichedMarkdownWithComponents = memo(
   function EnrichedMarkdownWithComponents({
     markdown,
     components,
+    trailingCursor,
     ...rest
   }: EnrichedMarkdownWithComponentsProps) {
     const segments: MarkdownSegment[] = useMemo(
@@ -56,8 +57,23 @@ export const EnrichedMarkdownWithComponents = memo(
     // Fast path: no component segments, render a single native view directly
     const hasComponents = segments.some((s) => s.type === 'component');
     if (!hasComponents) {
-      return <EnrichedMarkdownText markdown={markdown} {...rest} />;
+      return (
+        <EnrichedMarkdownText
+          markdown={markdown}
+          trailingCursor={trailingCursor}
+          {...rest}
+        />
+      );
     }
+
+    // The cursor must only appear on the final markdown segment so it sits at
+    // the very end of the rendered article.
+    const lastMarkdownSegmentIndex = (() => {
+      for (let i = segments.length - 1; i >= 0; i--) {
+        if (segments[i]!.type === 'markdown') return i;
+      }
+      return -1;
+    })();
 
     return (
       <View>
@@ -67,6 +83,9 @@ export const EnrichedMarkdownWithComponents = memo(
               <EnrichedMarkdownText
                 key={`md-${index}`}
                 markdown={segment.content}
+                trailingCursor={
+                  trailingCursor && index === lastMarkdownSegmentIndex
+                }
                 {...rest}
               />
             );

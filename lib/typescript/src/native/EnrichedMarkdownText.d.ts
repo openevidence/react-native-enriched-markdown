@@ -4,6 +4,6 @@ import type { LinkPressEvent, LinkLongPressEvent, TaskListItemPressEvent, Citati
 export type { MarkdownStyle, Md4cFlags };
 export type { EnrichedMarkdownTextProps, ContextMenuItem };
 export type { LinkPressEvent, LinkLongPressEvent, TaskListItemPressEvent, CitationPressEvent, };
-export declare const EnrichedMarkdownText: ({ markdown, markdownStyle, containerStyle, onLinkPress, onLinkLongPress, onTaskListItemPress, onCitationPress, enableLinkPreview, selectable, md4cFlags, allowFontScaling, maxFontSizeMultiplier, allowTrailingMargin, flavor, streamingAnimation, spoilerMode, contextMenuItems, ...rest }: EnrichedMarkdownTextProps) => import("react/jsx-runtime").JSX.Element;
+export declare const EnrichedMarkdownText: ({ markdown, markdownStyle, containerStyle, onLinkPress, onLinkLongPress, onTaskListItemPress, onCitationPress, enableLinkPreview, selectable, md4cFlags, allowFontScaling, maxFontSizeMultiplier, allowTrailingMargin, flavor, streamingAnimation, trailingCursor, spoilerMode, contextMenuItems, ...rest }: EnrichedMarkdownTextProps) => import("react/jsx-runtime").JSX.Element;
 export default EnrichedMarkdownText;
 //# sourceMappingURL=EnrichedMarkdownText.d.ts.map

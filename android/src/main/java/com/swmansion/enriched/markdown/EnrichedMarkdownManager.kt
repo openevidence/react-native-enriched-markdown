@@ -134,6 +134,14 @@ class EnrichedMarkdownManager :
     // Currently only supported with flavor="commonmark" (single TextView).
   }
 
+  @ReactProp(name = "trailingCursor", defaultBoolean = false)
+  override fun setTrailingCursor(
+    view: EnrichedMarkdown?,
+    trailingCursor: Boolean,
+  ) {
+    // No-op on github flavor — cursor is only supported with flavor="commonmark".
+  }
+
   @ReactProp(name = "spoilerMode")
   override fun setSpoilerMode(
     view: EnrichedMarkdown?,

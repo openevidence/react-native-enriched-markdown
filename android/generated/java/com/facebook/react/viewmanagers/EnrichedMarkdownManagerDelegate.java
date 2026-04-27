@@ -52,6 +52,9 @@ public class EnrichedMarkdownManagerDelegate<T extends View, U extends BaseViewM
       case "streamingAnimation":
         mViewManager.setStreamingAnimation(view, value == null ? false : (boolean) value);
         break;
+      case "trailingCursor":
+        mViewManager.setTrailingCursor(view, value == null ? false : (boolean) value);
+        break;
       case "spoilerMode":
         mViewManager.setSpoilerMode(view, value == null ? "particles" : (String) value);
         break;

@@ -314,6 +314,14 @@ export interface NativeProps extends ViewProps {
    */
   streamingAnimation?: CodegenTypes.WithDefault<boolean, false>;
   /**
+   * When true, a blinking block cursor (▌) is appended to the end of the
+   * rendered text and animated with a 1.25s ease-in-out infinite fade.
+   * Intended for streaming use cases where consumers want to indicate that
+   * the system is still working but no new content has arrived recently.
+   * @default false
+   */
+  trailingCursor?: CodegenTypes.WithDefault<boolean, false>;
+  /**
    * Controls how spoiler text is displayed before being revealed.
    * - 'particles' (default): animated particle overlay.
    * - 'solid': opaque rectangle covering the text.

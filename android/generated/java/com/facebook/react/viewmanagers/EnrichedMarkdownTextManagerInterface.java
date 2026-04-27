@@ -25,6 +25,7 @@ public interface EnrichedMarkdownTextManagerInterface<T extends View> extends Vi
   void setMaxFontSizeMultiplier(T view, float value);
   void setAllowTrailingMargin(T view, boolean value);
   void setStreamingAnimation(T view, boolean value);
+  void setTrailingCursor(T view, boolean value);
   void setSpoilerMode(T view, @Nullable String value);
   void setContextMenuItems(T view, @Nullable ReadableArray value);
 }
