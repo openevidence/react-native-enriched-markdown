@@ -6,8 +6,16 @@ import android.view.textclassifier.TextClassifier
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.view.ViewCompat
 import com.swmansion.enriched.markdown.accessibility.MarkdownAccessibilityHelper
+import com.swmansion.enriched.markdown.utils.text.SafeEditableFactory
+import com.swmansion.enriched.markdown.utils.text.SafeSpannableFactory
 
 fun AppCompatTextView.setupAsMarkdownTextView(accessibilityHelper: MarkdownAccessibilityHelper) {
+  // Drops the (-1, -1) setSpan that Samsung's selection drag pushes when the
+  // handle leaves the text bounds — would otherwise crash SpannableStringBuilder.
+  // Both factories: setTextIsSelectable below switches the buffer through
+  // BufferType.SPANNABLE; setText(.., EDITABLE) at render time uses Editable.
+  setEditableFactory(SafeEditableFactory)
+  setSpannableFactory(SafeSpannableFactory)
   setBackgroundColor(Color.TRANSPARENT)
   includeFontPadding = false
   // setTextIsSelectable must be called BEFORE setting movementMethod because
