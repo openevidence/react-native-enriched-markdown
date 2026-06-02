@@ -7,6 +7,7 @@ data class Md4cFlags(
   val underline: Boolean = false,
   val latexMath: Boolean = FeatureFlags.IS_MATH_ENABLED,
   val permissiveAutolinks: Boolean = true,
+  val singleTilde: Boolean = false,
 ) {
   companion object {
     val DEFAULT = Md4cFlags()

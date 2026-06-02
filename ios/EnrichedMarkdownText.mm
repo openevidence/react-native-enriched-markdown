@@ -520,6 +520,10 @@ using namespace facebook::react;
     _md4cFlags.latexMath = newViewProps.md4cFlags.latexMath;
     md4cFlagsChanged = YES;
   }
+  if (newViewProps.md4cFlags.singleTilde != oldViewProps.md4cFlags.singleTilde) {
+    _md4cFlags.singleTilde = newViewProps.md4cFlags.singleTilde;
+    md4cFlagsChanged = YES;
+  }
   BOOL markdownChanged = oldViewProps.markdown != newViewProps.markdown;
   BOOL allowTrailingMarginChanged = newViewProps.allowTrailingMargin != oldViewProps.allowTrailingMargin;
 

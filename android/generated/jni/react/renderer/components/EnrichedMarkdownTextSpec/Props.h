@@ -21,8 +21,9 @@ namespace facebook::react {
 struct EnrichedMarkdownInputMarkdownStyleStrongStruct {
   SharedColor color{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownInputMarkdownStyleStrongStruct &) const = default;
+  bool operator==(const EnrichedMarkdownInputMarkdownStyleStrongStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -32,8 +33,7 @@ struct EnrichedMarkdownInputMarkdownStyleStrongStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownInputMarkdownStyleStrongStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownInputMarkdownStyleStrongStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_color = map.find("color");
@@ -55,8 +55,9 @@ static inline folly::dynamic toDynamic(const EnrichedMarkdownInputMarkdownStyleS
 struct EnrichedMarkdownInputMarkdownStyleEmStruct {
   SharedColor color{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownInputMarkdownStyleEmStruct &) const = default;
+  bool operator==(const EnrichedMarkdownInputMarkdownStyleEmStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -66,8 +67,7 @@ struct EnrichedMarkdownInputMarkdownStyleEmStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownInputMarkdownStyleEmStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownInputMarkdownStyleEmStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_color = map.find("color");
@@ -90,8 +90,9 @@ struct EnrichedMarkdownInputMarkdownStyleLinkStruct {
   SharedColor color{};
   bool underline{false};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownInputMarkdownStyleLinkStruct &) const = default;
+  bool operator==(const EnrichedMarkdownInputMarkdownStyleLinkStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -102,8 +103,7 @@ struct EnrichedMarkdownInputMarkdownStyleLinkStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownInputMarkdownStyleLinkStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownInputMarkdownStyleLinkStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_color = map.find("color");
@@ -130,8 +130,9 @@ struct EnrichedMarkdownInputMarkdownStyleSpoilerStruct {
   SharedColor color{};
   SharedColor backgroundColor{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownInputMarkdownStyleSpoilerStruct &) const = default;
+  bool operator==(const EnrichedMarkdownInputMarkdownStyleSpoilerStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -142,8 +143,7 @@ struct EnrichedMarkdownInputMarkdownStyleSpoilerStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownInputMarkdownStyleSpoilerStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownInputMarkdownStyleSpoilerStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_color = map.find("color");
@@ -172,8 +172,9 @@ struct EnrichedMarkdownInputMarkdownStyleStruct {
   EnrichedMarkdownInputMarkdownStyleLinkStruct link{};
   EnrichedMarkdownInputMarkdownStyleSpoilerStruct spoiler{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownInputMarkdownStyleStruct &) const = default;
+  bool operator==(const EnrichedMarkdownInputMarkdownStyleStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -186,8 +187,7 @@ struct EnrichedMarkdownInputMarkdownStyleStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownInputMarkdownStyleStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownInputMarkdownStyleStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_strong = map.find("strong");
@@ -222,8 +222,9 @@ struct EnrichedMarkdownInputContextMenuItemsStruct {
   std::string text{};
   std::string icon{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownInputContextMenuItemsStruct &) const = default;
+  bool operator==(const EnrichedMarkdownInputContextMenuItemsStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -234,8 +235,7 @@ struct EnrichedMarkdownInputContextMenuItemsStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownInputContextMenuItemsStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownInputContextMenuItemsStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_text = map.find("text");
@@ -258,8 +258,7 @@ static inline folly::dynamic toDynamic(const EnrichedMarkdownInputContextMenuIte
 }
 #endif
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                std::vector<EnrichedMarkdownInputContextMenuItemsStruct> &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, std::vector<EnrichedMarkdownInputContextMenuItemsStruct> &result) {
   auto items = (std::vector<RawValue>)value;
   for (const auto &item : items) {
     EnrichedMarkdownInputContextMenuItemsStruct newItem;
@@ -268,6 +267,7 @@ static inline void fromRawValue(const PropsParserContext &context, const RawValu
   }
 }
 
+
 struct EnrichedMarkdownInputLinkRegexStruct {
   std::string pattern{};
   bool caseInsensitive{false};
@@ -275,8 +275,9 @@ struct EnrichedMarkdownInputLinkRegexStruct {
   bool isDisabled{false};
   bool isDefault{false};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownInputLinkRegexStruct &) const = default;
+  bool operator==(const EnrichedMarkdownInputLinkRegexStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -290,8 +291,7 @@ struct EnrichedMarkdownInputLinkRegexStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownInputLinkRegexStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownInputLinkRegexStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_pattern = map.find("pattern");
@@ -326,10 +326,9 @@ static inline folly::dynamic toDynamic(const EnrichedMarkdownInputLinkRegexStruc
 }
 #endif
 class EnrichedMarkdownInputProps final : public ViewProps {
-public:
+ public:
   EnrichedMarkdownInputProps() = default;
-  EnrichedMarkdownInputProps(const PropsParserContext &context, const EnrichedMarkdownInputProps &sourceProps,
-                             const RawProps &rawProps);
+  EnrichedMarkdownInputProps(const PropsParserContext& context, const EnrichedMarkdownInputProps &sourceProps, const RawProps &rawProps);
 
 #pragma mark - Props
 
@@ -353,11 +352,13 @@ public:
   std::vector<EnrichedMarkdownInputContextMenuItemsStruct> contextMenuItems{};
   EnrichedMarkdownInputLinkRegexStruct linkRegex{};
 
-#ifdef RN_SERIALIZABLE_STATE
+  #ifdef RN_SERIALIZABLE_STATE
   ComponentName getDiffPropsImplementationTarget() const override;
 
-  folly::dynamic getDiffProps(const Props *prevProps) const override;
-#endif
+  folly::dynamic getDiffProps(const Props* prevProps) const override;
+  #endif
+
+  
 };
 
 struct EnrichedMarkdownMarkdownStyleParagraphStruct {
@@ -370,8 +371,9 @@ struct EnrichedMarkdownMarkdownStyleParagraphStruct {
   Float lineHeight{0.0};
   std::string textAlign{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleParagraphStruct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleParagraphStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -388,8 +390,7 @@ struct EnrichedMarkdownMarkdownStyleParagraphStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleParagraphStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleParagraphStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -446,8 +447,9 @@ struct EnrichedMarkdownMarkdownStyleH1Struct {
   Float lineHeight{0.0};
   std::string textAlign{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleH1Struct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleH1Struct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -464,8 +466,7 @@ struct EnrichedMarkdownMarkdownStyleH1Struct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleH1Struct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleH1Struct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -522,8 +523,9 @@ struct EnrichedMarkdownMarkdownStyleH2Struct {
   Float lineHeight{0.0};
   std::string textAlign{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleH2Struct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleH2Struct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -540,8 +542,7 @@ struct EnrichedMarkdownMarkdownStyleH2Struct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleH2Struct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleH2Struct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -598,8 +599,9 @@ struct EnrichedMarkdownMarkdownStyleH3Struct {
   Float lineHeight{0.0};
   std::string textAlign{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleH3Struct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleH3Struct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -616,8 +618,7 @@ struct EnrichedMarkdownMarkdownStyleH3Struct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleH3Struct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleH3Struct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -674,8 +675,9 @@ struct EnrichedMarkdownMarkdownStyleH4Struct {
   Float lineHeight{0.0};
   std::string textAlign{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleH4Struct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleH4Struct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -692,8 +694,7 @@ struct EnrichedMarkdownMarkdownStyleH4Struct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleH4Struct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleH4Struct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -750,8 +751,9 @@ struct EnrichedMarkdownMarkdownStyleH5Struct {
   Float lineHeight{0.0};
   std::string textAlign{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleH5Struct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleH5Struct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -768,8 +770,7 @@ struct EnrichedMarkdownMarkdownStyleH5Struct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleH5Struct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleH5Struct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -826,8 +827,9 @@ struct EnrichedMarkdownMarkdownStyleH6Struct {
   Float lineHeight{0.0};
   std::string textAlign{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleH6Struct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleH6Struct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -844,8 +846,7 @@ struct EnrichedMarkdownMarkdownStyleH6Struct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleH6Struct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleH6Struct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -905,8 +906,9 @@ struct EnrichedMarkdownMarkdownStyleBlockquoteStruct {
   Float gapWidth{0.0};
   SharedColor backgroundColor{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleBlockquoteStruct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleBlockquoteStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -926,8 +928,7 @@ struct EnrichedMarkdownMarkdownStyleBlockquoteStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleBlockquoteStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleBlockquoteStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -1001,8 +1002,9 @@ struct EnrichedMarkdownMarkdownStyleListStruct {
   Float gapWidth{0.0};
   Float marginLeft{0.0};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleListStruct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleListStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -1024,8 +1026,7 @@ struct EnrichedMarkdownMarkdownStyleListStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleListStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleListStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -1106,8 +1107,9 @@ struct EnrichedMarkdownMarkdownStyleCodeBlockStruct {
   Float borderWidth{0.0};
   Float padding{0.0};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleCodeBlockStruct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleCodeBlockStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -1128,8 +1130,7 @@ struct EnrichedMarkdownMarkdownStyleCodeBlockStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleCodeBlockStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleCodeBlockStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -1197,8 +1198,9 @@ struct EnrichedMarkdownMarkdownStyleLinkStruct {
   SharedColor color{};
   bool underline{false};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleLinkStruct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleLinkStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -1210,8 +1212,7 @@ struct EnrichedMarkdownMarkdownStyleLinkStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleLinkStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleLinkStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontFamily = map.find("fontFamily");
@@ -1243,8 +1244,9 @@ struct EnrichedMarkdownMarkdownStyleStrongStruct {
   std::string fontWeight{};
   SharedColor color{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleStrongStruct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleStrongStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -1256,8 +1258,7 @@ struct EnrichedMarkdownMarkdownStyleStrongStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleStrongStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleStrongStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontFamily = map.find("fontFamily");
@@ -1289,8 +1290,9 @@ struct EnrichedMarkdownMarkdownStyleEmStruct {
   std::string fontStyle{};
   SharedColor color{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleEmStruct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleEmStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -1302,8 +1304,7 @@ struct EnrichedMarkdownMarkdownStyleEmStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleEmStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleEmStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontFamily = map.find("fontFamily");
@@ -1333,8 +1334,9 @@ static inline folly::dynamic toDynamic(const EnrichedMarkdownMarkdownStyleEmStru
 struct EnrichedMarkdownMarkdownStyleStrikethroughStruct {
   SharedColor color{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleStrikethroughStruct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleStrikethroughStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -1344,8 +1346,7 @@ struct EnrichedMarkdownMarkdownStyleStrikethroughStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleStrikethroughStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleStrikethroughStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_color = map.find("color");
@@ -1367,8 +1368,9 @@ static inline folly::dynamic toDynamic(const EnrichedMarkdownMarkdownStyleStrike
 struct EnrichedMarkdownMarkdownStyleUnderlineStruct {
   SharedColor color{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleUnderlineStruct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleUnderlineStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -1378,8 +1380,7 @@ struct EnrichedMarkdownMarkdownStyleUnderlineStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleUnderlineStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleUnderlineStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_color = map.find("color");
@@ -1405,8 +1406,9 @@ struct EnrichedMarkdownMarkdownStyleCodeStruct {
   SharedColor backgroundColor{};
   SharedColor borderColor{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleCodeStruct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleCodeStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -1420,8 +1422,7 @@ struct EnrichedMarkdownMarkdownStyleCodeStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleCodeStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleCodeStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontFamily = map.find("fontFamily");
@@ -1462,8 +1463,9 @@ struct EnrichedMarkdownMarkdownStyleImageStruct {
   Float marginTop{0.0};
   Float marginBottom{0.0};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleImageStruct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleImageStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -1476,8 +1478,7 @@ struct EnrichedMarkdownMarkdownStyleImageStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleImageStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleImageStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_height = map.find("height");
@@ -1511,8 +1512,9 @@ static inline folly::dynamic toDynamic(const EnrichedMarkdownMarkdownStyleImageS
 struct EnrichedMarkdownMarkdownStyleInlineImageStruct {
   Float size{0.0};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleInlineImageStruct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleInlineImageStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -1522,8 +1524,7 @@ struct EnrichedMarkdownMarkdownStyleInlineImageStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleInlineImageStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleInlineImageStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_size = map.find("size");
@@ -1548,8 +1549,9 @@ struct EnrichedMarkdownMarkdownStyleThematicBreakStruct {
   Float marginTop{0.0};
   Float marginBottom{0.0};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleThematicBreakStruct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleThematicBreakStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -1562,8 +1564,7 @@ struct EnrichedMarkdownMarkdownStyleThematicBreakStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleThematicBreakStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleThematicBreakStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_color = map.find("color");
@@ -1613,8 +1614,9 @@ struct EnrichedMarkdownMarkdownStyleTableStruct {
   Float cellPaddingHorizontal{0.0};
   Float cellPaddingVertical{0.0};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleTableStruct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleTableStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -1640,8 +1642,7 @@ struct EnrichedMarkdownMarkdownStyleTableStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleTableStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleTableStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -1733,8 +1734,9 @@ struct EnrichedMarkdownMarkdownStyleTaskListStruct {
   SharedColor checkedTextColor{};
   bool checkedStrikethrough{false};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleTaskListStruct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleTaskListStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -1750,8 +1752,7 @@ struct EnrichedMarkdownMarkdownStyleTaskListStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleTaskListStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleTaskListStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_checkedColor = map.find("checkedColor");
@@ -1803,8 +1804,9 @@ struct EnrichedMarkdownMarkdownStyleMathStruct {
   Float marginBottom{0.0};
   std::string textAlign{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleMathStruct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleMathStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -1820,8 +1822,7 @@ struct EnrichedMarkdownMarkdownStyleMathStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleMathStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleMathStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -1867,8 +1868,9 @@ static inline folly::dynamic toDynamic(const EnrichedMarkdownMarkdownStyleMathSt
 struct EnrichedMarkdownMarkdownStyleInlineMathStruct {
   SharedColor color{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleInlineMathStruct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleInlineMathStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -1878,8 +1880,7 @@ struct EnrichedMarkdownMarkdownStyleInlineMathStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleInlineMathStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleInlineMathStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_color = map.find("color");
@@ -1904,8 +1905,9 @@ struct EnrichedMarkdownMarkdownStyleSpoilerStruct {
   Float particleSpeed{0.0};
   Float solidBorderRadius{0.0};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleSpoilerStruct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleSpoilerStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -1918,8 +1920,7 @@ struct EnrichedMarkdownMarkdownStyleSpoilerStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleSpoilerStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleSpoilerStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_color = map.find("color");
@@ -1956,8 +1957,9 @@ struct EnrichedMarkdownMarkdownStyleCitationStruct {
   Float fontSize{0.0};
   Float borderRadius{0.0};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleCitationStruct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleCitationStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -1970,8 +1972,7 @@ struct EnrichedMarkdownMarkdownStyleCitationStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleCitationStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleCitationStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_backgroundColor = map.find("backgroundColor");
@@ -2029,8 +2030,9 @@ struct EnrichedMarkdownMarkdownStyleStruct {
   EnrichedMarkdownMarkdownStyleSpoilerStruct spoiler{};
   EnrichedMarkdownMarkdownStyleCitationStruct citation{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMarkdownStyleStruct &) const = default;
+  bool operator==(const EnrichedMarkdownMarkdownStyleStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -2064,8 +2066,7 @@ struct EnrichedMarkdownMarkdownStyleStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMarkdownStyleStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_paragraph = map.find("paragraph");
@@ -2183,21 +2184,23 @@ static inline folly::dynamic toDynamic(const EnrichedMarkdownMarkdownStyleStruct
 struct EnrichedMarkdownMd4cFlagsStruct {
   bool underline{false};
   bool latexMath{false};
+  bool singleTilde{false};
+
 
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownMd4cFlagsStruct &) const = default;
+  bool operator==(const EnrichedMarkdownMd4cFlagsStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
     result["underline"] = underline;
     result["latexMath"] = latexMath;
+    result["singleTilde"] = singleTilde;
     return result;
   }
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownMd4cFlagsStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMd4cFlagsStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_underline = map.find("underline");
@@ -2207,6 +2210,10 @@ static inline void fromRawValue(const PropsParserContext &context, const RawValu
   auto tmp_latexMath = map.find("latexMath");
   if (tmp_latexMath != map.end()) {
     fromRawValue(context, tmp_latexMath->second, result.latexMath);
+  }
+  auto tmp_singleTilde = map.find("singleTilde");
+  if (tmp_singleTilde != map.end()) {
+    fromRawValue(context, tmp_singleTilde->second, result.singleTilde);
   }
 }
 
@@ -2224,8 +2231,9 @@ struct EnrichedMarkdownContextMenuItemsStruct {
   std::string text{};
   std::string icon{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownContextMenuItemsStruct &) const = default;
+  bool operator==(const EnrichedMarkdownContextMenuItemsStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -2236,8 +2244,7 @@ struct EnrichedMarkdownContextMenuItemsStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownContextMenuItemsStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownContextMenuItemsStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_text = map.find("text");
@@ -2260,8 +2267,7 @@ static inline folly::dynamic toDynamic(const EnrichedMarkdownContextMenuItemsStr
 }
 #endif
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                std::vector<EnrichedMarkdownContextMenuItemsStruct> &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, std::vector<EnrichedMarkdownContextMenuItemsStruct> &result) {
   auto items = (std::vector<RawValue>)value;
   for (const auto &item : items) {
     EnrichedMarkdownContextMenuItemsStruct newItem;
@@ -2271,10 +2277,9 @@ static inline void fromRawValue(const PropsParserContext &context, const RawValu
 }
 
 class EnrichedMarkdownProps final : public ViewProps {
-public:
+ public:
   EnrichedMarkdownProps() = default;
-  EnrichedMarkdownProps(const PropsParserContext &context, const EnrichedMarkdownProps &sourceProps,
-                        const RawProps &rawProps);
+  EnrichedMarkdownProps(const PropsParserContext& context, const EnrichedMarkdownProps &sourceProps, const RawProps &rawProps);
 
 #pragma mark - Props
 
@@ -2291,11 +2296,13 @@ public:
   std::string spoilerMode{std::string{"particles"}};
   std::vector<EnrichedMarkdownContextMenuItemsStruct> contextMenuItems{};
 
-#ifdef RN_SERIALIZABLE_STATE
+  #ifdef RN_SERIALIZABLE_STATE
   ComponentName getDiffPropsImplementationTarget() const override;
 
-  folly::dynamic getDiffProps(const Props *prevProps) const override;
-#endif
+  folly::dynamic getDiffProps(const Props* prevProps) const override;
+  #endif
+
+  
 };
 
 struct EnrichedMarkdownTextMarkdownStyleParagraphStruct {
@@ -2308,8 +2315,9 @@ struct EnrichedMarkdownTextMarkdownStyleParagraphStruct {
   Float lineHeight{0.0};
   std::string textAlign{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleParagraphStruct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleParagraphStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -2326,8 +2334,7 @@ struct EnrichedMarkdownTextMarkdownStyleParagraphStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleParagraphStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleParagraphStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -2384,8 +2391,9 @@ struct EnrichedMarkdownTextMarkdownStyleH1Struct {
   Float lineHeight{0.0};
   std::string textAlign{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleH1Struct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleH1Struct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -2402,8 +2410,7 @@ struct EnrichedMarkdownTextMarkdownStyleH1Struct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleH1Struct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleH1Struct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -2460,8 +2467,9 @@ struct EnrichedMarkdownTextMarkdownStyleH2Struct {
   Float lineHeight{0.0};
   std::string textAlign{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleH2Struct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleH2Struct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -2478,8 +2486,7 @@ struct EnrichedMarkdownTextMarkdownStyleH2Struct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleH2Struct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleH2Struct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -2536,8 +2543,9 @@ struct EnrichedMarkdownTextMarkdownStyleH3Struct {
   Float lineHeight{0.0};
   std::string textAlign{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleH3Struct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleH3Struct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -2554,8 +2562,7 @@ struct EnrichedMarkdownTextMarkdownStyleH3Struct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleH3Struct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleH3Struct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -2612,8 +2619,9 @@ struct EnrichedMarkdownTextMarkdownStyleH4Struct {
   Float lineHeight{0.0};
   std::string textAlign{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleH4Struct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleH4Struct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -2630,8 +2638,7 @@ struct EnrichedMarkdownTextMarkdownStyleH4Struct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleH4Struct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleH4Struct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -2688,8 +2695,9 @@ struct EnrichedMarkdownTextMarkdownStyleH5Struct {
   Float lineHeight{0.0};
   std::string textAlign{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleH5Struct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleH5Struct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -2706,8 +2714,7 @@ struct EnrichedMarkdownTextMarkdownStyleH5Struct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleH5Struct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleH5Struct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -2764,8 +2771,9 @@ struct EnrichedMarkdownTextMarkdownStyleH6Struct {
   Float lineHeight{0.0};
   std::string textAlign{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleH6Struct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleH6Struct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -2782,8 +2790,7 @@ struct EnrichedMarkdownTextMarkdownStyleH6Struct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleH6Struct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleH6Struct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -2843,8 +2850,9 @@ struct EnrichedMarkdownTextMarkdownStyleBlockquoteStruct {
   Float gapWidth{0.0};
   SharedColor backgroundColor{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleBlockquoteStruct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleBlockquoteStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -2864,8 +2872,7 @@ struct EnrichedMarkdownTextMarkdownStyleBlockquoteStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleBlockquoteStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleBlockquoteStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -2939,8 +2946,9 @@ struct EnrichedMarkdownTextMarkdownStyleListStruct {
   Float gapWidth{0.0};
   Float marginLeft{0.0};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleListStruct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleListStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -2962,8 +2970,7 @@ struct EnrichedMarkdownTextMarkdownStyleListStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleListStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleListStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -3044,8 +3051,9 @@ struct EnrichedMarkdownTextMarkdownStyleCodeBlockStruct {
   Float borderWidth{0.0};
   Float padding{0.0};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleCodeBlockStruct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleCodeBlockStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -3066,8 +3074,7 @@ struct EnrichedMarkdownTextMarkdownStyleCodeBlockStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleCodeBlockStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleCodeBlockStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -3135,8 +3142,9 @@ struct EnrichedMarkdownTextMarkdownStyleLinkStruct {
   SharedColor color{};
   bool underline{false};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleLinkStruct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleLinkStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -3148,8 +3156,7 @@ struct EnrichedMarkdownTextMarkdownStyleLinkStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleLinkStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleLinkStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontFamily = map.find("fontFamily");
@@ -3181,8 +3188,9 @@ struct EnrichedMarkdownTextMarkdownStyleStrongStruct {
   std::string fontWeight{};
   SharedColor color{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleStrongStruct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleStrongStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -3194,8 +3202,7 @@ struct EnrichedMarkdownTextMarkdownStyleStrongStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleStrongStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleStrongStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontFamily = map.find("fontFamily");
@@ -3227,8 +3234,9 @@ struct EnrichedMarkdownTextMarkdownStyleEmStruct {
   std::string fontStyle{};
   SharedColor color{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleEmStruct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleEmStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -3240,8 +3248,7 @@ struct EnrichedMarkdownTextMarkdownStyleEmStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleEmStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleEmStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontFamily = map.find("fontFamily");
@@ -3271,8 +3278,9 @@ static inline folly::dynamic toDynamic(const EnrichedMarkdownTextMarkdownStyleEm
 struct EnrichedMarkdownTextMarkdownStyleStrikethroughStruct {
   SharedColor color{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleStrikethroughStruct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleStrikethroughStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -3282,8 +3290,7 @@ struct EnrichedMarkdownTextMarkdownStyleStrikethroughStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleStrikethroughStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleStrikethroughStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_color = map.find("color");
@@ -3305,8 +3312,9 @@ static inline folly::dynamic toDynamic(const EnrichedMarkdownTextMarkdownStyleSt
 struct EnrichedMarkdownTextMarkdownStyleUnderlineStruct {
   SharedColor color{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleUnderlineStruct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleUnderlineStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -3316,8 +3324,7 @@ struct EnrichedMarkdownTextMarkdownStyleUnderlineStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleUnderlineStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleUnderlineStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_color = map.find("color");
@@ -3343,8 +3350,9 @@ struct EnrichedMarkdownTextMarkdownStyleCodeStruct {
   SharedColor backgroundColor{};
   SharedColor borderColor{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleCodeStruct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleCodeStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -3358,8 +3366,7 @@ struct EnrichedMarkdownTextMarkdownStyleCodeStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleCodeStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleCodeStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontFamily = map.find("fontFamily");
@@ -3400,8 +3407,9 @@ struct EnrichedMarkdownTextMarkdownStyleImageStruct {
   Float marginTop{0.0};
   Float marginBottom{0.0};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleImageStruct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleImageStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -3414,8 +3422,7 @@ struct EnrichedMarkdownTextMarkdownStyleImageStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleImageStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleImageStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_height = map.find("height");
@@ -3449,8 +3456,9 @@ static inline folly::dynamic toDynamic(const EnrichedMarkdownTextMarkdownStyleIm
 struct EnrichedMarkdownTextMarkdownStyleInlineImageStruct {
   Float size{0.0};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleInlineImageStruct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleInlineImageStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -3460,8 +3468,7 @@ struct EnrichedMarkdownTextMarkdownStyleInlineImageStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleInlineImageStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleInlineImageStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_size = map.find("size");
@@ -3486,8 +3493,9 @@ struct EnrichedMarkdownTextMarkdownStyleThematicBreakStruct {
   Float marginTop{0.0};
   Float marginBottom{0.0};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleThematicBreakStruct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleThematicBreakStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -3500,8 +3508,7 @@ struct EnrichedMarkdownTextMarkdownStyleThematicBreakStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleThematicBreakStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleThematicBreakStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_color = map.find("color");
@@ -3551,8 +3558,9 @@ struct EnrichedMarkdownTextMarkdownStyleTableStruct {
   Float cellPaddingHorizontal{0.0};
   Float cellPaddingVertical{0.0};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleTableStruct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleTableStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -3578,8 +3586,7 @@ struct EnrichedMarkdownTextMarkdownStyleTableStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleTableStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleTableStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -3671,8 +3678,9 @@ struct EnrichedMarkdownTextMarkdownStyleTaskListStruct {
   SharedColor checkedTextColor{};
   bool checkedStrikethrough{false};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleTaskListStruct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleTaskListStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -3688,8 +3696,7 @@ struct EnrichedMarkdownTextMarkdownStyleTaskListStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleTaskListStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleTaskListStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_checkedColor = map.find("checkedColor");
@@ -3741,8 +3748,9 @@ struct EnrichedMarkdownTextMarkdownStyleMathStruct {
   Float marginBottom{0.0};
   std::string textAlign{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleMathStruct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleMathStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -3758,8 +3766,7 @@ struct EnrichedMarkdownTextMarkdownStyleMathStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleMathStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleMathStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_fontSize = map.find("fontSize");
@@ -3805,8 +3812,9 @@ static inline folly::dynamic toDynamic(const EnrichedMarkdownTextMarkdownStyleMa
 struct EnrichedMarkdownTextMarkdownStyleInlineMathStruct {
   SharedColor color{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleInlineMathStruct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleInlineMathStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -3816,8 +3824,7 @@ struct EnrichedMarkdownTextMarkdownStyleInlineMathStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleInlineMathStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleInlineMathStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_color = map.find("color");
@@ -3842,8 +3849,9 @@ struct EnrichedMarkdownTextMarkdownStyleSpoilerStruct {
   Float particleSpeed{0.0};
   Float solidBorderRadius{0.0};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleSpoilerStruct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleSpoilerStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -3856,8 +3864,7 @@ struct EnrichedMarkdownTextMarkdownStyleSpoilerStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleSpoilerStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleSpoilerStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_color = map.find("color");
@@ -3894,8 +3901,9 @@ struct EnrichedMarkdownTextMarkdownStyleCitationStruct {
   Float fontSize{0.0};
   Float borderRadius{0.0};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleCitationStruct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleCitationStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -3908,8 +3916,7 @@ struct EnrichedMarkdownTextMarkdownStyleCitationStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleCitationStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleCitationStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_backgroundColor = map.find("backgroundColor");
@@ -3967,8 +3974,9 @@ struct EnrichedMarkdownTextMarkdownStyleStruct {
   EnrichedMarkdownTextMarkdownStyleSpoilerStruct spoiler{};
   EnrichedMarkdownTextMarkdownStyleCitationStruct citation{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMarkdownStyleStruct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -4002,8 +4010,7 @@ struct EnrichedMarkdownTextMarkdownStyleStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMarkdownStyleStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_paragraph = map.find("paragraph");
@@ -4121,21 +4128,23 @@ static inline folly::dynamic toDynamic(const EnrichedMarkdownTextMarkdownStyleSt
 struct EnrichedMarkdownTextMd4cFlagsStruct {
   bool underline{false};
   bool latexMath{false};
+  bool singleTilde{false};
+
 
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextMd4cFlagsStruct &) const = default;
+  bool operator==(const EnrichedMarkdownTextMd4cFlagsStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
     result["underline"] = underline;
     result["latexMath"] = latexMath;
+    result["singleTilde"] = singleTilde;
     return result;
   }
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextMd4cFlagsStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMd4cFlagsStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_underline = map.find("underline");
@@ -4145,6 +4154,10 @@ static inline void fromRawValue(const PropsParserContext &context, const RawValu
   auto tmp_latexMath = map.find("latexMath");
   if (tmp_latexMath != map.end()) {
     fromRawValue(context, tmp_latexMath->second, result.latexMath);
+  }
+  auto tmp_singleTilde = map.find("singleTilde");
+  if (tmp_singleTilde != map.end()) {
+    fromRawValue(context, tmp_singleTilde->second, result.singleTilde);
   }
 }
 
@@ -4162,8 +4175,9 @@ struct EnrichedMarkdownTextContextMenuItemsStruct {
   std::string text{};
   std::string icon{};
 
+
 #ifdef RN_SERIALIZABLE_STATE
-  bool operator==(const EnrichedMarkdownTextContextMenuItemsStruct &) const = default;
+  bool operator==(const EnrichedMarkdownTextContextMenuItemsStruct&) const = default;
 
   folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
@@ -4174,8 +4188,7 @@ struct EnrichedMarkdownTextContextMenuItemsStruct {
 #endif
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                EnrichedMarkdownTextContextMenuItemsStruct &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextContextMenuItemsStruct &result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_text = map.find("text");
@@ -4198,8 +4211,7 @@ static inline folly::dynamic toDynamic(const EnrichedMarkdownTextContextMenuItem
 }
 #endif
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &value,
-                                std::vector<EnrichedMarkdownTextContextMenuItemsStruct> &result) {
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, std::vector<EnrichedMarkdownTextContextMenuItemsStruct> &result) {
   auto items = (std::vector<RawValue>)value;
   for (const auto &item : items) {
     EnrichedMarkdownTextContextMenuItemsStruct newItem;
@@ -4209,10 +4221,9 @@ static inline void fromRawValue(const PropsParserContext &context, const RawValu
 }
 
 class EnrichedMarkdownTextProps final : public ViewProps {
-public:
+ public:
   EnrichedMarkdownTextProps() = default;
-  EnrichedMarkdownTextProps(const PropsParserContext &context, const EnrichedMarkdownTextProps &sourceProps,
-                            const RawProps &rawProps);
+  EnrichedMarkdownTextProps(const PropsParserContext& context, const EnrichedMarkdownTextProps &sourceProps, const RawProps &rawProps);
 
 #pragma mark - Props
 
@@ -4229,11 +4240,13 @@ public:
   std::string spoilerMode{std::string{"particles"}};
   std::vector<EnrichedMarkdownTextContextMenuItemsStruct> contextMenuItems{};
 
-#ifdef RN_SERIALIZABLE_STATE
+  #ifdef RN_SERIALIZABLE_STATE
   ComponentName getDiffPropsImplementationTarget() const override;
 
-  folly::dynamic getDiffProps(const Props *prevProps) const override;
-#endif
+  folly::dynamic getDiffProps(const Props* prevProps) const override;
+  #endif
+
+  
 };
 
 } // namespace facebook::react

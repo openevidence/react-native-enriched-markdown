@@ -143,6 +143,7 @@ MarkdownASTNode *parseMarkdownWithCppParser(NSString *markdown, ENRMMd4cFlags *f
   Markdown::Md4cFlags cppFlags;
   cppFlags.underline = flags.underline;
   cppFlags.latexMath = flags.latexMath;
+  cppFlags.singleTilde = flags.singleTilde;
 
   Markdown::MD4CParser parser;
   auto cppAST = parser.parse(cppMarkdown, cppFlags);

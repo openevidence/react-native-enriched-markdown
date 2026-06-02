@@ -192,6 +192,12 @@ export interface Md4cFlagsInternal {
      * @default true
      */
     latexMath: boolean;
+    /**
+     * Allow single-tilde strikethrough (~text~).
+     * When false, only double-tilde (~~text~~) produces strikethrough.
+     * @default false
+     */
+    singleTilde: boolean;
 }
 export interface NativeProps extends ViewProps {
     /**

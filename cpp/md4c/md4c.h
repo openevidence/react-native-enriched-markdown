@@ -321,6 +321,7 @@ typedef struct MD_SPAN_WIKILINK {
 #define MD_FLAG_UNDERLINE 0x4000        /* Enable underline extension (and disables '_' for normal emphasis). */
 #define MD_FLAG_HARD_SOFT_BREAKS 0x8000 /* Force all soft breaks to act as hard breaks. */
 #define MD_FLAG_SPOILER 0x10000         /* Enable ||hidden text|| spoiler spans. */
+#define MD_FLAG_SINGLETILDESTRIKETHROUGH 0x20000 /* Allow single-tilde strikethrough (~text~). When unset, only ~~text~~ is strikethrough. */
 
 #define MD_FLAG_PERMISSIVEAUTOLINKS                                                                                    \
   (MD_FLAG_PERMISSIVEEMAILAUTOLINKS | MD_FLAG_PERMISSIVEURLAUTOLINKS | MD_FLAG_PERMISSIVEWWWAUTOLINKS)
