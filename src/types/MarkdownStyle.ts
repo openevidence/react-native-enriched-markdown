@@ -243,4 +243,11 @@ export interface Md4cFlags {
    * @default true
    */
   latexMath?: boolean;
+  /**
+   * Allow single-tilde strikethrough (~text~) in addition to double-tilde (~~text~~).
+   * When disabled (the default), a lone ~ is rendered as literal text, preventing
+   * approximation signs like ~60% from being misinterpreted as strikethrough delimiters.
+   * @default false
+   */
+  singleTilde?: boolean;
 }

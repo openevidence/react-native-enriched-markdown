@@ -11,132 +11,133 @@
 
 #include <react/renderer/components/view/ViewEventEmitter.h>
 
+
 namespace facebook::react {
 class EnrichedMarkdownInputEventEmitter : public ViewEventEmitter {
-public:
+ public:
   using ViewEventEmitter::ViewEventEmitter;
 
   struct OnChangeText {
-    std::string value;
-  };
+      std::string value;
+    };
 
   struct OnChangeMarkdown {
-    std::string value;
-  };
+      std::string value;
+    };
 
   struct OnChangeSelection {
-    int start;
+      int start;
     int end;
-  };
+    };
 
   struct OnChangeStateBold {
-    bool isActive;
-  };
+      bool isActive;
+    };
 
   struct OnChangeStateItalic {
-    bool isActive;
-  };
+      bool isActive;
+    };
 
   struct OnChangeStateUnderline {
-    bool isActive;
-  };
+      bool isActive;
+    };
 
   struct OnChangeStateStrikethrough {
-    bool isActive;
-  };
+      bool isActive;
+    };
 
   struct OnChangeStateSpoiler {
-    bool isActive;
-  };
+      bool isActive;
+    };
 
   struct OnChangeStateLink {
-    bool isActive;
-  };
+      bool isActive;
+    };
 
   struct OnChangeState {
-    OnChangeStateBold bold;
+      OnChangeStateBold bold;
     OnChangeStateItalic italic;
     OnChangeStateUnderline underline;
     OnChangeStateStrikethrough strikethrough;
     OnChangeStateSpoiler spoiler;
     OnChangeStateLink link;
-  };
+    };
 
   struct OnInputFocus {
-    int target;
-  };
+      int target;
+    };
 
   struct OnInputBlur {
-    int target;
-  };
+      int target;
+    };
 
   struct OnRequestMarkdownResult {
-    int requestId;
+      int requestId;
     std::string markdown;
-  };
+    };
 
   struct OnRequestCaretRectResult {
-    int requestId;
+      int requestId;
     double x;
     double y;
     double width;
     double height;
-  };
+    };
 
   struct OnCaretRectChange {
-    double x;
+      double x;
     double y;
     double width;
     double height;
-  };
+    };
 
   struct OnContextMenuItemPressStyleStateBold {
-    bool isActive;
-  };
+      bool isActive;
+    };
 
   struct OnContextMenuItemPressStyleStateItalic {
-    bool isActive;
-  };
+      bool isActive;
+    };
 
   struct OnContextMenuItemPressStyleStateUnderline {
-    bool isActive;
-  };
+      bool isActive;
+    };
 
   struct OnContextMenuItemPressStyleStateStrikethrough {
-    bool isActive;
-  };
+      bool isActive;
+    };
 
   struct OnContextMenuItemPressStyleStateSpoiler {
-    bool isActive;
-  };
+      bool isActive;
+    };
 
   struct OnContextMenuItemPressStyleStateLink {
-    bool isActive;
-  };
+      bool isActive;
+    };
 
   struct OnContextMenuItemPressStyleState {
-    OnContextMenuItemPressStyleStateBold bold;
+      OnContextMenuItemPressStyleStateBold bold;
     OnContextMenuItemPressStyleStateItalic italic;
     OnContextMenuItemPressStyleStateUnderline underline;
     OnContextMenuItemPressStyleStateStrikethrough strikethrough;
     OnContextMenuItemPressStyleStateSpoiler spoiler;
     OnContextMenuItemPressStyleStateLink link;
-  };
+    };
 
   struct OnContextMenuItemPress {
-    std::string itemText;
+      std::string itemText;
     std::string selectedText;
     int selectionStart;
     int selectionEnd;
     OnContextMenuItemPressStyleState styleState;
-  };
+    };
 
   struct OnLinkDetected {
-    std::string text;
+      std::string text;
     std::string url;
     int start;
     int end;
-  };
+    };
   void onChangeText(OnChangeText value) const;
 
   void onChangeMarkdown(OnChangeMarkdown value) const;
@@ -160,33 +161,33 @@ public:
   void onLinkDetected(OnLinkDetected value) const;
 };
 class EnrichedMarkdownEventEmitter : public ViewEventEmitter {
-public:
+ public:
   using ViewEventEmitter::ViewEventEmitter;
 
   struct OnLinkPress {
-    std::string url;
-  };
+      std::string url;
+    };
 
   struct OnLinkLongPress {
-    std::string url;
-  };
+      std::string url;
+    };
 
   struct OnTaskListItemPress {
-    int index;
+      int index;
     bool checked;
     std::string text;
-  };
+    };
 
   struct OnCitationPress {
-    std::string numbers;
-  };
+      std::string numbers;
+    };
 
   struct OnContextMenuItemPress {
-    std::string itemText;
+      std::string itemText;
     std::string selectedText;
     int selectionStart;
     int selectionEnd;
-  };
+    };
   void onLinkPress(OnLinkPress value) const;
 
   void onLinkLongPress(OnLinkLongPress value) const;
@@ -198,33 +199,33 @@ public:
   void onContextMenuItemPress(OnContextMenuItemPress value) const;
 };
 class EnrichedMarkdownTextEventEmitter : public ViewEventEmitter {
-public:
+ public:
   using ViewEventEmitter::ViewEventEmitter;
 
   struct OnLinkPress {
-    std::string url;
-  };
+      std::string url;
+    };
 
   struct OnLinkLongPress {
-    std::string url;
-  };
+      std::string url;
+    };
 
   struct OnTaskListItemPress {
-    int index;
+      int index;
     bool checked;
     std::string text;
-  };
+    };
 
   struct OnCitationPress {
-    std::string numbers;
-  };
+      std::string numbers;
+    };
 
   struct OnContextMenuItemPress {
-    std::string itemText;
+      std::string itemText;
     std::string selectedText;
     int selectionStart;
     int selectionEnd;
-  };
+    };
   void onLinkPress(OnLinkPress value) const;
 
   void onLinkLongPress(OnLinkLongPress value) const;

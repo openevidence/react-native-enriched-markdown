@@ -30,262 +30,258 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)requestCaretRect:(NSInteger)requestId;
 @end
 
-RCT_EXTERN inline void RCTEnrichedMarkdownInputHandleCommand(id<RCTEnrichedMarkdownInputViewProtocol> componentView,
-                                                             NSString const *commandName, NSArray const *args)
+RCT_EXTERN inline void RCTEnrichedMarkdownInputHandleCommand(
+  id<RCTEnrichedMarkdownInputViewProtocol> componentView,
+  NSString const *commandName,
+  NSArray const *args)
 {
   if ([commandName isEqualToString:@"focus"]) {
 #if RCT_DEBUG
-    if ([args count] != 0) {
-      RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName,
-                  (int)[args count], 0);
-      return;
-    }
-#endif
-
-    [componentView focus];
+  if ([args count] != 0) {
+    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName, (int)[args count], 0);
     return;
   }
-
-  if ([commandName isEqualToString:@"blur"]) {
-#if RCT_DEBUG
-    if ([args count] != 0) {
-      RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName,
-                  (int)[args count], 0);
-      return;
-    }
 #endif
 
-    [componentView blur];
+  
+
+  [componentView focus];
+  return;
+}
+
+if ([commandName isEqualToString:@"blur"]) {
+#if RCT_DEBUG
+  if ([args count] != 0) {
+    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName, (int)[args count], 0);
     return;
   }
-
-  if ([commandName isEqualToString:@"setValue"]) {
-#if RCT_DEBUG
-    if ([args count] != 1) {
-      RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName,
-                  (int)[args count], 1);
-      return;
-    }
 #endif
 
-    NSObject *arg0 = args[0];
-#if RCT_DEBUG
-    if (!RCTValidateTypeOfViewCommandArgument(arg0, [NSString class], @"string", @"EnrichedMarkdownInput", commandName,
-                                              @"1st")) {
-      return;
-    }
-#endif
-    NSString *markdown = (NSString *)arg0;
+  
 
-    [componentView setValue:markdown];
+  [componentView blur];
+  return;
+}
+
+if ([commandName isEqualToString:@"setValue"]) {
+#if RCT_DEBUG
+  if ([args count] != 1) {
+    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName, (int)[args count], 1);
     return;
   }
-
-  if ([commandName isEqualToString:@"setSelection"]) {
-#if RCT_DEBUG
-    if ([args count] != 2) {
-      RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName,
-                  (int)[args count], 2);
-      return;
-    }
 #endif
 
-    NSObject *arg0 = args[0];
+  NSObject *arg0 = args[0];
 #if RCT_DEBUG
-    if (!RCTValidateTypeOfViewCommandArgument(arg0, [NSNumber class], @"number", @"EnrichedMarkdownInput", commandName,
-                                              @"1st")) {
-      return;
-    }
-#endif
-    NSInteger start = [(NSNumber *)arg0 intValue];
-
-    NSObject *arg1 = args[1];
-#if RCT_DEBUG
-    if (!RCTValidateTypeOfViewCommandArgument(arg1, [NSNumber class], @"number", @"EnrichedMarkdownInput", commandName,
-                                              @"2nd")) {
-      return;
-    }
-#endif
-    NSInteger end = [(NSNumber *)arg1 intValue];
-
-    [componentView setSelection:start end:end];
+  if (!RCTValidateTypeOfViewCommandArgument(arg0, [NSString class], @"string", @"EnrichedMarkdownInput", commandName, @"1st")) {
     return;
   }
-
-  if ([commandName isEqualToString:@"toggleBold"]) {
-#if RCT_DEBUG
-    if ([args count] != 0) {
-      RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName,
-                  (int)[args count], 0);
-      return;
-    }
 #endif
+  NSString * markdown = (NSString *)arg0;
 
-    [componentView toggleBold];
+  [componentView setValue:markdown];
+  return;
+}
+
+if ([commandName isEqualToString:@"setSelection"]) {
+#if RCT_DEBUG
+  if ([args count] != 2) {
+    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName, (int)[args count], 2);
     return;
   }
-
-  if ([commandName isEqualToString:@"toggleItalic"]) {
-#if RCT_DEBUG
-    if ([args count] != 0) {
-      RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName,
-                  (int)[args count], 0);
-      return;
-    }
 #endif
 
-    [componentView toggleItalic];
+  NSObject *arg0 = args[0];
+#if RCT_DEBUG
+  if (!RCTValidateTypeOfViewCommandArgument(arg0, [NSNumber class], @"number", @"EnrichedMarkdownInput", commandName, @"1st")) {
     return;
   }
-
-  if ([commandName isEqualToString:@"toggleUnderline"]) {
-#if RCT_DEBUG
-    if ([args count] != 0) {
-      RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName,
-                  (int)[args count], 0);
-      return;
-    }
 #endif
+  NSInteger start = [(NSNumber *)arg0 intValue];
 
-    [componentView toggleUnderline];
+NSObject *arg1 = args[1];
+#if RCT_DEBUG
+  if (!RCTValidateTypeOfViewCommandArgument(arg1, [NSNumber class], @"number", @"EnrichedMarkdownInput", commandName, @"2nd")) {
     return;
   }
-
-  if ([commandName isEqualToString:@"toggleStrikethrough"]) {
-#if RCT_DEBUG
-    if ([args count] != 0) {
-      RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName,
-                  (int)[args count], 0);
-      return;
-    }
 #endif
+  NSInteger end = [(NSNumber *)arg1 intValue];
 
-    [componentView toggleStrikethrough];
+  [componentView setSelection:start end:end];
+  return;
+}
+
+if ([commandName isEqualToString:@"toggleBold"]) {
+#if RCT_DEBUG
+  if ([args count] != 0) {
+    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName, (int)[args count], 0);
     return;
   }
-
-  if ([commandName isEqualToString:@"toggleSpoiler"]) {
-#if RCT_DEBUG
-    if ([args count] != 0) {
-      RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName,
-                  (int)[args count], 0);
-      return;
-    }
 #endif
 
-    [componentView toggleSpoiler];
+  
+
+  [componentView toggleBold];
+  return;
+}
+
+if ([commandName isEqualToString:@"toggleItalic"]) {
+#if RCT_DEBUG
+  if ([args count] != 0) {
+    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName, (int)[args count], 0);
     return;
   }
-
-  if ([commandName isEqualToString:@"setLink"]) {
-#if RCT_DEBUG
-    if ([args count] != 1) {
-      RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName,
-                  (int)[args count], 1);
-      return;
-    }
 #endif
 
-    NSObject *arg0 = args[0];
-#if RCT_DEBUG
-    if (!RCTValidateTypeOfViewCommandArgument(arg0, [NSString class], @"string", @"EnrichedMarkdownInput", commandName,
-                                              @"1st")) {
-      return;
-    }
-#endif
-    NSString *url = (NSString *)arg0;
+  
 
-    [componentView setLink:url];
+  [componentView toggleItalic];
+  return;
+}
+
+if ([commandName isEqualToString:@"toggleUnderline"]) {
+#if RCT_DEBUG
+  if ([args count] != 0) {
+    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName, (int)[args count], 0);
     return;
   }
-
-  if ([commandName isEqualToString:@"insertLink"]) {
-#if RCT_DEBUG
-    if ([args count] != 2) {
-      RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName,
-                  (int)[args count], 2);
-      return;
-    }
 #endif
 
-    NSObject *arg0 = args[0];
-#if RCT_DEBUG
-    if (!RCTValidateTypeOfViewCommandArgument(arg0, [NSString class], @"string", @"EnrichedMarkdownInput", commandName,
-                                              @"1st")) {
-      return;
-    }
-#endif
-    NSString *text = (NSString *)arg0;
+  
 
-    NSObject *arg1 = args[1];
-#if RCT_DEBUG
-    if (!RCTValidateTypeOfViewCommandArgument(arg1, [NSString class], @"string", @"EnrichedMarkdownInput", commandName,
-                                              @"2nd")) {
-      return;
-    }
-#endif
-    NSString *url = (NSString *)arg1;
+  [componentView toggleUnderline];
+  return;
+}
 
-    [componentView insertLink:text url:url];
+if ([commandName isEqualToString:@"toggleStrikethrough"]) {
+#if RCT_DEBUG
+  if ([args count] != 0) {
+    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName, (int)[args count], 0);
     return;
   }
-
-  if ([commandName isEqualToString:@"removeLink"]) {
-#if RCT_DEBUG
-    if ([args count] != 0) {
-      RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName,
-                  (int)[args count], 0);
-      return;
-    }
 #endif
 
-    [componentView removeLink];
+  
+
+  [componentView toggleStrikethrough];
+  return;
+}
+
+if ([commandName isEqualToString:@"toggleSpoiler"]) {
+#if RCT_DEBUG
+  if ([args count] != 0) {
+    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName, (int)[args count], 0);
     return;
   }
-
-  if ([commandName isEqualToString:@"requestMarkdown"]) {
-#if RCT_DEBUG
-    if ([args count] != 1) {
-      RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName,
-                  (int)[args count], 1);
-      return;
-    }
 #endif
 
-    NSObject *arg0 = args[0];
-#if RCT_DEBUG
-    if (!RCTValidateTypeOfViewCommandArgument(arg0, [NSNumber class], @"number", @"EnrichedMarkdownInput", commandName,
-                                              @"1st")) {
-      return;
-    }
-#endif
-    NSInteger requestId = [(NSNumber *)arg0 intValue];
+  
 
-    [componentView requestMarkdown:requestId];
+  [componentView toggleSpoiler];
+  return;
+}
+
+if ([commandName isEqualToString:@"setLink"]) {
+#if RCT_DEBUG
+  if ([args count] != 1) {
+    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName, (int)[args count], 1);
     return;
   }
-
-  if ([commandName isEqualToString:@"requestCaretRect"]) {
-#if RCT_DEBUG
-    if ([args count] != 1) {
-      RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName,
-                  (int)[args count], 1);
-      return;
-    }
 #endif
 
-    NSObject *arg0 = args[0];
+  NSObject *arg0 = args[0];
 #if RCT_DEBUG
-    if (!RCTValidateTypeOfViewCommandArgument(arg0, [NSNumber class], @"number", @"EnrichedMarkdownInput", commandName,
-                                              @"1st")) {
-      return;
-    }
-#endif
-    NSInteger requestId = [(NSNumber *)arg0 intValue];
-
-    [componentView requestCaretRect:requestId];
+  if (!RCTValidateTypeOfViewCommandArgument(arg0, [NSString class], @"string", @"EnrichedMarkdownInput", commandName, @"1st")) {
     return;
   }
+#endif
+  NSString * url = (NSString *)arg0;
+
+  [componentView setLink:url];
+  return;
+}
+
+if ([commandName isEqualToString:@"insertLink"]) {
+#if RCT_DEBUG
+  if ([args count] != 2) {
+    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName, (int)[args count], 2);
+    return;
+  }
+#endif
+
+  NSObject *arg0 = args[0];
+#if RCT_DEBUG
+  if (!RCTValidateTypeOfViewCommandArgument(arg0, [NSString class], @"string", @"EnrichedMarkdownInput", commandName, @"1st")) {
+    return;
+  }
+#endif
+  NSString * text = (NSString *)arg0;
+
+NSObject *arg1 = args[1];
+#if RCT_DEBUG
+  if (!RCTValidateTypeOfViewCommandArgument(arg1, [NSString class], @"string", @"EnrichedMarkdownInput", commandName, @"2nd")) {
+    return;
+  }
+#endif
+  NSString * url = (NSString *)arg1;
+
+  [componentView insertLink:text url:url];
+  return;
+}
+
+if ([commandName isEqualToString:@"removeLink"]) {
+#if RCT_DEBUG
+  if ([args count] != 0) {
+    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName, (int)[args count], 0);
+    return;
+  }
+#endif
+
+  
+
+  [componentView removeLink];
+  return;
+}
+
+if ([commandName isEqualToString:@"requestMarkdown"]) {
+#if RCT_DEBUG
+  if ([args count] != 1) {
+    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName, (int)[args count], 1);
+    return;
+  }
+#endif
+
+  NSObject *arg0 = args[0];
+#if RCT_DEBUG
+  if (!RCTValidateTypeOfViewCommandArgument(arg0, [NSNumber class], @"number", @"EnrichedMarkdownInput", commandName, @"1st")) {
+    return;
+  }
+#endif
+  NSInteger requestId = [(NSNumber *)arg0 intValue];
+
+  [componentView requestMarkdown:requestId];
+  return;
+}
+
+if ([commandName isEqualToString:@"requestCaretRect"]) {
+#if RCT_DEBUG
+  if ([args count] != 1) {
+    RCTLogError(@"%@ command %@ received %d arguments, expected %d.", @"EnrichedMarkdownInput", commandName, (int)[args count], 1);
+    return;
+  }
+#endif
+
+  NSObject *arg0 = args[0];
+#if RCT_DEBUG
+  if (!RCTValidateTypeOfViewCommandArgument(arg0, [NSNumber class], @"number", @"EnrichedMarkdownInput", commandName, @"1st")) {
+    return;
+  }
+#endif
+  NSInteger requestId = [(NSNumber *)arg0 intValue];
+
+  [componentView requestCaretRect:requestId];
+  return;
+}
 
 #if RCT_DEBUG
   RCTLogError(@"%@ received command %@, which is not a supported command.", @"EnrichedMarkdownInput", commandName);

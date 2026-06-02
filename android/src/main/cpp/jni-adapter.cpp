@@ -212,6 +212,10 @@ JNIEXPORT jobject JNICALL Java_com_swmansion_enriched_markdown_parser_Parser_nat
         if (permissiveAutolinksField) {
           md4cFlags.permissiveAutolinks = env->GetBooleanField(flags, permissiveAutolinksField) == JNI_TRUE;
         }
+        jfieldID singleTildeField = env->GetFieldID(flagsClass, "singleTilde", "Z");
+        if (singleTildeField) {
+          md4cFlags.singleTilde = env->GetBooleanField(flags, singleTildeField) == JNI_TRUE;
+        }
         env->DeleteLocalRef(flagsClass);
       }
     }

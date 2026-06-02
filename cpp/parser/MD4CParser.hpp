@@ -10,6 +10,7 @@ struct Md4cFlags {
     bool underline = false;
     bool latexMath = true;
     bool permissiveAutolinks = true;
+    bool singleTilde = false;
 };
 
 class MD4CParser {

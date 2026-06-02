@@ -3825,6 +3825,12 @@ md_analyze_tilde(MD_CTX* ctx, int mark_index)
      * only tildes sequences of length 1 and 2, and the length of the opener
      * and closer has to match. */
 
+    /* When MD_FLAG_SINGLETILDESTRIKETHROUGH is not set, ignore length-1 tilde
+     * runs so lone ~ (e.g. "~60%") is always rendered as literal text. */
+    if(!(ctx->parser.flags & MD_FLAG_SINGLETILDESTRIKETHROUGH)  &&
+       (mark->end - mark->beg == 1))
+        return;
+
     if((mark->flags & MD_MARK_POTENTIAL_CLOSER)  &&  stack->top >= 0) {
         int opener_index = stack->top;
 

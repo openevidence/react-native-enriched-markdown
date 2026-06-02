@@ -9,12 +9,14 @@
  */
 
 #include "ComponentDescriptors.h"
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
 #include <react/renderer/core/ConcreteComponentDescriptor.h>
+#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
 
 namespace facebook::react {
 
 void EnrichedMarkdownTextSpec_registerComponentDescriptorsFromCodegen(
-    std::shared_ptr<const ComponentDescriptorProviderRegistry> registry) {}
+  std::shared_ptr<const ComponentDescriptorProviderRegistry> registry) {
+
+}
 
 } // namespace facebook::react

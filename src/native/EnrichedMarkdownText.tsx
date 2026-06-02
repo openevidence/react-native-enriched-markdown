@@ -29,6 +29,7 @@ export type {
 const defaultMd4cFlags: Md4cFlags = {
   underline: false,
   latexMath: true,
+  singleTilde: false,
 };
 
 export const EnrichedMarkdownText = ({
@@ -65,6 +66,7 @@ export const EnrichedMarkdownText = ({
     () => ({
       underline: md4cFlags.underline ?? false,
       latexMath: md4cFlags.latexMath ?? true,
+      singleTilde: md4cFlags.singleTilde ?? false,
     }),
     [md4cFlags]
   );

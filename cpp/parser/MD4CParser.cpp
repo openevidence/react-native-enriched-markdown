@@ -657,6 +657,9 @@ std::shared_ptr<MarkdownASTNode> MD4CParser::parse(const std::string &markdown, 
   if (md4cFlags.underline) {
     flags |= MD_FLAG_UNDERLINE;
   }
+  if (md4cFlags.singleTilde) {
+    flags |= MD_FLAG_SINGLETILDESTRIKETHROUGH;
+  }
 
   // Configure MD4C parser with callbacks
   MD_PARSER parser = {

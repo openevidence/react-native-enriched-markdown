@@ -5,6 +5,7 @@
 
 @property (nonatomic, assign) BOOL underline;
 @property (nonatomic, assign) BOOL latexMath;
+@property (nonatomic, assign) BOOL singleTilde;
 
 + (instancetype)defaultFlags;
 
