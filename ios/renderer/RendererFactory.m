@@ -9,6 +9,7 @@
 #import "ENRMFeatureFlags.h"
 
 #if ENRICHED_MARKDOWN_MATH
+#import "ENRMMathDisplayRenderer.h"
 #import "ENRMMathInlineRenderer.h"
 #endif
 #import "ENRMSpoilerRenderer.h"
@@ -104,6 +105,8 @@
 #if ENRICHED_MARKDOWN_MATH
     case MarkdownNodeTypeLatexMathInline:
       return [[ENRMMathInlineRenderer alloc] initWithRendererFactory:self config:_config];
+    case MarkdownNodeTypeLatexMathDisplay:
+      return [[ENRMMathDisplayRenderer alloc] initWithRendererFactory:self config:_config];
 #endif
     case MarkdownNodeTypeSpoiler:
       return [[ENRMSpoilerRenderer alloc] initWithRendererFactory:self config:_config];
