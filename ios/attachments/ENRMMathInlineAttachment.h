@@ -8,6 +8,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSString *latex;
 @property (nonatomic, assign) CGFloat fontSize;
 @property (nonatomic, strong, nullable) RCTUIColor *mathTextColor;
+@property (nonatomic, assign) BOOL displayMode;
+@property (nonatomic, assign) BOOL scaleToFit;
 
 #if TARGET_OS_OSX
 /// Pre-renders the formula into self.image and sets self.bounds.

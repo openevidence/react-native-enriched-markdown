@@ -12,7 +12,7 @@
     return;
 
   MTMathUILabel *mathLabel = [[MTMathUILabel alloc] init];
-  mathLabel.labelMode = kMTMathUILabelModeText;
+  mathLabel.labelMode = self.displayMode ? kMTMathUILabelModeDisplay : kMTMathUILabelModeText;
   mathLabel.textAlignment = kMTTextAlignmentLeft;
   mathLabel.fontSize = self.fontSize;
   mathLabel.latex = self.latex;
@@ -31,6 +31,14 @@
   }
 }
 
+- (CGFloat)scaleForAvailableWidth:(CGFloat)availableWidth
+{
+  if (!self.scaleToFit || _cachedSize.width <= 0 || availableWidth <= 0 || _cachedSize.width <= availableWidth) {
+    return 1.0;
+  }
+  return availableWidth / _cachedSize.width;
+}
+
 - (CGRect)attachmentBoundsForTextContainer:(NSTextContainer *)textContainer
                       proposedLineFragment:(CGRect)lineFragment
                              glyphPosition:(CGPoint)position
@@ -38,7 +46,12 @@
 {
   [self prepareIfNeeded];
 
-  return CGRectMake(0, -_mathDescent, _cachedSize.width, _cachedSize.height);
+  CGFloat availableWidth = lineFragment.size.width > 0 ? lineFragment.size.width : textContainer.size.width;
+  CGFloat scale = [self scaleForAvailableWidth:availableWidth];
+  CGSize scaledSize = CGSizeMake(_cachedSize.width * scale, _cachedSize.height * scale);
+  CGFloat scaledDescent = _mathDescent * scale;
+
+  return CGRectMake(0, -scaledDescent, scaledSize.width, scaledSize.height);
 }
 
 - (UIImage *)imageForBounds:(CGRect)imageBounds
@@ -53,15 +66,22 @@
   UIGraphicsImageRendererFormat *format = [UIGraphicsImageRendererFormat preferredFormat];
   format.opaque = NO;
 
-  UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:_cachedSize format:format];
+  CGSize imageSize = imageBounds.size;
+  if (imageSize.width <= 0 || imageSize.height <= 0) {
+    imageSize = _cachedSize;
+  }
+
+  CGFloat scale = _cachedSize.width > 0 ? imageSize.width / _cachedSize.width : 1.0;
+
+  UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:imageSize format:format];
 
   return [renderer imageWithActions:^(UIGraphicsImageRendererContext *rendererContext) {
     CGContextRef ctx = rendererContext.CGContext;
 
     CGContextSaveGState(ctx);
 
-    CGContextTranslateCTM(ctx, 0, _cachedSize.height);
-    CGContextScaleCTM(ctx, 1.0, -1.0);
+    CGContextTranslateCTM(ctx, 0, imageSize.height);
+    CGContextScaleCTM(ctx, scale, -scale);
     _displayList.position = CGPointMake(0, _mathDescent);
 
     [_displayList draw:ctx];
