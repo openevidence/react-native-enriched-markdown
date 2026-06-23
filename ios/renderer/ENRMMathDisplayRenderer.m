@@ -34,8 +34,7 @@
     [output appendAttributedString:kNewlineAttributedString];
   }
 
-  NSUInteger blockStart = output.length;
-  blockStart += applyBlockSpacingBefore(output, blockStart, _config.mathMarginTop);
+  applyBlockSpacingBefore(output, output.length, _config.mathMarginTop);
 
   ENRMMathInlineAttachment *attachment = [[ENRMMathInlineAttachment alloc] init];
   attachment.latex = latex;
