@@ -3,6 +3,7 @@ package com.swmansion.enriched.markdown.utils.text.view
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.text.Selection
 import android.text.Spannable
 import android.view.ActionMode
 import android.view.Menu
@@ -104,8 +105,14 @@ fun createSelectionActionModeCallback(
         val start = textView.selectionStart
         val end = textView.selectionEnd
         val selectedText = if (start >= 0 && end > start) textView.text.substring(start, end) else ""
-        onCustomItemPress(customItems[customIndex], selectedText, start, end)
+        val customItemText = customItems[customIndex]
         mode?.finish()
+        (textView.text as? Spannable)?.let { Selection.removeSelection(it) }
+        textView.clearFocus()
+        textView.parent?.requestDisallowInterceptTouchEvent(false)
+        textView.post {
+          onCustomItemPress(customItemText, selectedText, start, end)
+        }
         return true
       }
 
