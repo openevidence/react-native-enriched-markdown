@@ -97,6 +97,12 @@ static const double kCursorMaxAlpha = 0.85;
     [self stop];
     return;
   }
+  // A render can replace the text while retaining this numeric range. Never
+  // apply cursor opacity to ordinary answer text if lifecycle cleanup is late.
+  if (clamped.length != 1 || ![[textStorage.string substringWithRange:clamped] isEqualToString:@"▌"]) {
+    [self stop];
+    return;
+  }
 
   CFTimeInterval elapsed = CACurrentMediaTime() - _startTime;
   double phase = fmod(elapsed / kCursorPeriod, 1.0);
