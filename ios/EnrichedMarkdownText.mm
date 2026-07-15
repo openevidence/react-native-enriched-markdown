@@ -342,6 +342,12 @@ using namespace facebook::react;
   _accessibilityElements = nil;
   _accessibilityNeedsRebuild = YES;
 
+  // The cursor animator tracks a character range in the current text storage.
+  // Stop it before replacing that storage so it cannot animate whichever
+  // character happens to occupy the stale range in the newly rendered text.
+  [_cursorAnimator stop];
+  _cursorRange = NSMakeRange(NSNotFound, 0);
+
   _textView.attributedText = attributedText;
   _renderedMarkdown = [_cachedMarkdown copy];
 
@@ -388,7 +394,6 @@ using namespace facebook::react;
 
   // The new attributedText replaced any prior cursor; if the cursor should be
   // visible, re-append it now so it sits at the very end of the rendered text.
-  _cursorRange = NSMakeRange(NSNotFound, 0);
   if (_trailingCursor) {
     [self attachTrailingCursor];
   }
