@@ -139,6 +139,14 @@ int main() {
   expect("other tag names that start with dose are not doses", "<doses id=\"x\">5 mg</doses>",
          "P(Text\"5 mg\")");
 
+  // The exact markup the iPhone app writes for a final copy
+  // (web/apps/openevidence-app/utils/nativeMarkdownPreprocess.ts nativeDoseTag),
+  // followed by the citation chip it appends to the span.
+  expect("the app's final-copy markup",
+         "the labeled apixaban dose is <dose id=\"d1\" state=\"green\" calc=\"1\" label=\"checked against the FDA "
+         "label, with a dosing calculator\">5 mg orally twice daily</dose>.[[1|DailyMed|]]",
+         "P(Text\"the labeled apixaban dose is \",Dose[id=d1,state=green,calc=1,label=checked against the FDA "
+         "label, with a dosing calculator](Text\"5 mg orally twice daily\"),Text\".\",Cite[DailyMed])");
   expect("a self-closing dose marks nothing", "A <dose id=\"x\"/> B", "P(Text\"A  B\")");
 
   expect("a half-written tag at the end stays text (the app strips it while streaming)",
