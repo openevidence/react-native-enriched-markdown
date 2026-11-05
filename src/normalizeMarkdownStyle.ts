@@ -251,6 +251,7 @@ const DEFAULT_NORMALIZED_STYLE: MarkdownStyleInternal = Object.freeze({
     amberColor: normalizeColor('#8A5A00')!,
     calculatorColor: normalizeColor('#E4643D')!,
     glyphColor: normalizeColor('#FFFFFF')!,
+    calculatorGlyphColor: normalizeColor('#FFFFFF')!,
     pillBackgroundColor: normalizeColor('#F6F7F9')!,
     pillBorderColor: normalizeColor('#E3E6EA')!,
     iconSize: 22,

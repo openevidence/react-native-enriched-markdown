@@ -207,6 +207,7 @@ const DEFAULT_NORMALIZED_STYLE: MarkdownStyleInternal = Object.freeze({
     amberColor: '#8A5A00',
     calculatorColor: '#E4643D',
     glyphColor: '#FFFFFF',
+    calculatorGlyphColor: '#FFFFFF',
     pillBackgroundColor: '#F6F7F9',
     pillBorderColor: '#E3E6EA',
     iconSize: 22,

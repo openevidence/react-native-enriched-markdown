@@ -377,6 +377,7 @@
 @property (nonatomic, strong) RCTUIColor *doseAmberColor;
 @property (nonatomic, strong) RCTUIColor *doseCalculatorColor;
 @property (nonatomic, strong) RCTUIColor *doseGlyphColor;
+@property (nonatomic, strong) RCTUIColor *doseCalculatorGlyphColor;
 @property (nonatomic, strong) RCTUIColor *dosePillBackgroundColor;
 @property (nonatomic, strong) RCTUIColor *dosePillBorderColor;
 @property (nonatomic, assign) CGFloat doseIconSize;

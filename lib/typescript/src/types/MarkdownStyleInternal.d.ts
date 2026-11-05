@@ -129,6 +129,7 @@ interface DoseStyleInternal {
     amberColor: string;
     calculatorColor: string;
     glyphColor: string;
+    calculatorGlyphColor: string;
     pillBackgroundColor: string;
     pillBorderColor: string;
     iconSize: number;

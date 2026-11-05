@@ -107,9 +107,12 @@ static const CGFloat kPillPaddingEnd = 12.0;
       textAttributes:textAttributes
                 into:output];
   if (hasCalculator) {
+    DoseIconAppearance *calculatorAppearance = [self appearanceWithColor:_config.doseCalculatorColor
+                                                                   state:calculatorState];
+    calculatorAppearance.glyphColor = _config.doseCalculatorGlyphColor ?: _config.doseGlyphColor;
     [self appendIcon:ENRMDoseIconKindCalculator
                    gap:_config.doseIconGap
-            appearance:[self appearanceWithColor:_config.doseCalculatorColor state:calculatorState]
+            appearance:calculatorAppearance
         textAttributes:textAttributes
                   into:output];
   }

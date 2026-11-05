@@ -1109,6 +1109,11 @@ BOOL applyMarkdownStyleToConfig(StyleConfig *config, const MarkdownStyle &newSty
     changed = YES;
   }
 
+  if (newStyle.dose.calculatorGlyphColor != oldStyle.dose.calculatorGlyphColor) {
+    config.doseCalculatorGlyphColor = RCTUIColorFromSharedColor(newStyle.dose.calculatorGlyphColor);
+    changed = YES;
+  }
+
   if (newStyle.dose.pillBackgroundColor != oldStyle.dose.pillBackgroundColor) {
     config.dosePillBackgroundColor = RCTUIColorFromSharedColor(newStyle.dose.pillBackgroundColor);
     changed = YES;
