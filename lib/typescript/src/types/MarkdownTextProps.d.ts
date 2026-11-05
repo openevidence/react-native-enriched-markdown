@@ -1,6 +1,6 @@
 import type { ViewProps, ViewStyle, TextStyle } from 'react-native';
 import type { MarkdownStyle, Md4cFlags } from './MarkdownStyle';
-import type { LinkPressEvent, LinkLongPressEvent, TaskListItemPressEvent, CitationPressEvent } from './events';
+import type { LinkPressEvent, LinkLongPressEvent, TaskListItemPressEvent, CitationPressEvent, DosePressEvent } from './events';
 /**
  * Public context menu item. Each item includes a JS-side `onPress` callback
  * that is called when the user taps the item in the selection context menu.
@@ -72,6 +72,12 @@ export interface EnrichedMarkdownTextProps extends Omit<ViewProps, 'style'> {
      * @platform ios, android, web
      */
     onCitationPress?: (event: CitationPressEvent) => void;
+    /**
+     * Callback fired when a dose check mark is tapped or activated with VoiceOver.
+     * Marks come from inline <dose id="…" state="green|amber" calc="1" label="…"> tags.
+     * @platform ios
+     */
+    onDosePress?: (event: DosePressEvent) => void;
     /**
      * Controls whether the system link preview is shown on long press (iOS only).
      *
