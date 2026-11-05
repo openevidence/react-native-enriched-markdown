@@ -66,16 +66,12 @@ public:
     }
   }
 
-  // Longest attribute value kept on a Dose node. The app writes short ids,
-  // states and labels; a longer value is cut rather than copied whole.
   static constexpr size_t kMaxDoseAttributeLength = 512;
 
   static bool isTagNameEnd(char c) {
     return c == '>' || c == '/' || c == ' ' || c == '\t' || c == '\n' || c == '\r';
   }
 
-  // True for "<dose>" or "<dose " + attributes + ">", case-insensitive.
-  // A self-closing "<dose/>" carries no words to mark, so it is not an opener.
   static bool isDoseOpenTag(const std::string &tag) {
     if (tag.size() < 6 || tag[0] != '<')
       return false;
@@ -95,14 +91,13 @@ public:
 
   static bool isDoseCloseTag(const std::string &normalizedLower) { return normalizedLower == "</dose>"; }
 
-  // Reads name="value", name='value' and name=value pairs after "<dose".
   static void parseDoseAttributes(const std::string &tag, MarkdownASTNode &node) {
     size_t end = tag.size();
     while (end > 0 && (tag[end - 1] == '>' || tag[end - 1] == ' ' || tag[end - 1] == '\t' || tag[end - 1] == '\n' ||
                        tag[end - 1] == '\r')) {
       --end;
     }
-    size_t i = 5; // past "<dose"
+    size_t i = 5;
     auto isSpace = [](char c) { return c == ' ' || c == '\t' || c == '\n' || c == '\r'; };
     auto isNameChar = [](char c) {
       return std::isalnum(static_cast<unsigned char>(c)) || c == '_' || c == '-' || c == ':' || c == '.';
@@ -114,7 +109,7 @@ public:
       while (i < end && isNameChar(tag[i]))
         ++i;
       if (i == nameStart) {
-        ++i; // skip a stray character such as '/'
+        ++i;
         continue;
       }
       std::string attrName;
@@ -136,7 +131,7 @@ public:
             ++i;
           value = tag.substr(valueStart, i - valueStart);
           if (i < end)
-            ++i; // closing quote
+            ++i;
         } else {
           size_t valueStart = i;
           while (i < end && !isSpace(tag[i]))
@@ -151,8 +146,7 @@ public:
     }
   }
 
-  // A <dose> opened inside a span or block that ends before its </dose> is
-  // closed with that span or block, so the mark never swallows what follows.
+  // A dose opened in a span that ends first closes with it, so a mark never swallows what follows.
   void closeDanglingDoseNodes() {
     while (nodeStack.size() > 1 && nodeStack.back()->type == NodeType::Dose) {
       popNode();
@@ -184,7 +178,6 @@ public:
     } else if (lower == "<em>" || lower == "<i>") {
       pushNode(std::make_shared<MarkdownASTNode>(NodeType::Emphasis));
     }
-    // A </dose> closes only an open Dose; a stray one is dropped.
     else if (isDoseCloseTag(lower)) {
       if (doseTags && !nodeStack.empty() && nodeStack.back()->type == NodeType::Dose) {
         popNode();

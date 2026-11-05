@@ -147,7 +147,6 @@ MarkdownASTNode *parseMarkdownWithCppParser(NSString *markdown, ENRMMd4cFlags *f
   cppFlags.underline = flags.underline;
   cppFlags.latexMath = flags.latexMath;
   cppFlags.singleTilde = flags.singleTilde;
-  // iOS draws dose marks (DoseRenderer), so it asks the parser for Dose nodes.
   cppFlags.doseTags = true;
 
   Markdown::MD4CParser parser;

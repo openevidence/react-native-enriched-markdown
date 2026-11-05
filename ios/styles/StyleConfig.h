@@ -373,12 +373,10 @@
 - (void)setCitationFontSize:(CGFloat)newValue;
 - (CGFloat)citationBorderRadius;
 - (void)setCitationBorderRadius:(CGFloat)newValue;
-// Dose check mark properties
 @property (nonatomic, strong) RCTUIColor *doseCheckColor;
 @property (nonatomic, strong) RCTUIColor *doseAmberColor;
 @property (nonatomic, strong) RCTUIColor *doseCalculatorColor;
 @property (nonatomic, strong) RCTUIColor *doseGlyphColor;
-/// Fill and 1 pt border of the pill an amber dose sits in.
 @property (nonatomic, strong) RCTUIColor *dosePillBackgroundColor;
 @property (nonatomic, strong) RCTUIColor *dosePillBorderColor;
 @property (nonatomic, assign) CGFloat doseIconSize;
@@ -386,7 +384,6 @@
 @property (nonatomic, assign) CGFloat doseIconBorderRadius;
 @property (nonatomic, assign) CGFloat doseDimmedOpacity;
 @property (nonatomic, assign) CGFloat doseActiveBackgroundOpacity;
-/// Id of the mark whose card is open ("" for none) and which icon is open.
 @property (nonatomic, copy) NSString *doseActiveId;
 @property (nonatomic, copy) NSString *doseActiveTarget;
 

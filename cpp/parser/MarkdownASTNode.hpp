@@ -36,8 +36,6 @@ enum class NodeType {
     LatexMathDisplay,
     Spoiler,
     Citation,
-    // OE dose check mark: <dose id="…" state="…" calc="…" label="…">words</dose>.
-    // Produced only when Md4cFlags::doseTags is set.
     Dose
 };
 

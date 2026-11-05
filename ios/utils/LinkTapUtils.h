@@ -17,9 +17,6 @@ NSString *_Nullable linkURLAtRange(ENRMPlatformTextView *textView, NSRange chara
 /// Returns the citation numbers string at the tap location, or nil if no citation was tapped.
 NSString *_Nullable citationNumbersAtTapLocation(ENRMPlatformTextView *textView, ENRMTapRecognizer *recognizer);
 
-/// Returns the dose check mark id at the tap location (its words or its icons), or nil.
-/// `outTarget` receives what was tapped: @"check" (the check or person icon),
-/// @"calculator" (the calculator icon) or @"text" (the dose's words).
 NSString *_Nullable doseIdAtTapLocation(ENRMPlatformTextView *textView, ENRMTapRecognizer *recognizer,
                                         NSString *_Nullable *_Nullable outTarget);
 

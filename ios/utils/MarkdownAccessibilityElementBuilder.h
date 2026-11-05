@@ -18,10 +18,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSMutableArray<UIAccessibilityElement *> *)buildElementsForTextView:(UITextView *)textView
                                                                   info:(AccessibilityInfo *)info
                                                              container:(id)container;
-/**
- * As above; each dose check mark becomes a button whose activation calls onDoseActivate
- * with the mark's id (the same event a tap on the mark sends).
- */
 + (NSMutableArray<UIAccessibilityElement *> *)buildElementsForTextView:(UITextView *)textView
                                                                   info:(AccessibilityInfo *)info
                                                              container:(id)container

@@ -1088,7 +1088,6 @@ BOOL applyMarkdownStyleToConfig(StyleConfig *config, const MarkdownStyle &newSty
     changed = YES;
   }
 
-  // ── Dose check marks ─────────────────────────────────────────────────────
 
   if (newStyle.dose.checkColor != oldStyle.dose.checkColor) {
     config.doseCheckColor = RCTUIColorFromSharedColor(newStyle.dose.checkColor);

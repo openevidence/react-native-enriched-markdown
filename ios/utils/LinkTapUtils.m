@@ -33,9 +33,7 @@ NSString *_Nullable citationNumbersAtTapLocation(ENRMPlatformTextView *textView,
   return [attrText attribute:@"citationNumbers" atIndex:characterIndex effectiveRange:NULL];
 }
 
-// How far outside an icon's own box a tap still counts as that icon, in points.
-// The tiles are small (22 pt, 4 pt apart), so a finger landing near one should
-// still hit it; where two tiles' margins overlap, the nearer tile wins.
+// Tiles are small and close together: a tap this near a tile counts as that tile, the nearest one winning.
 static const CGFloat kDoseIconTapSlop = 8.0;
 
 NSString *_Nullable doseIdAtTapLocation(ENRMPlatformTextView *textView, ENRMTapRecognizer *recognizer,
@@ -56,8 +54,6 @@ NSString *_Nullable doseIdAtTapLocation(ENRMPlatformTextView *textView, ENRMTapR
                                   atIndex:characterIndex
                     longestEffectiveRange:&doseRange
                                   inRange:fullRange];
-  // A tap on the right edge of a mark's last icon can resolve to the character
-  // after the mark; count it when the point is still inside that icon's slop.
   if (!doseId && characterIndex > 0) {
     NSRange previousRange = NSMakeRange(NSNotFound, 0);
     NSString *previousId = [attrText attribute:ENRMDoseIdAttributeName
@@ -78,8 +74,6 @@ NSString *_Nullable doseIdAtTapLocation(ENRMPlatformTextView *textView, ENRMTapR
     return nil;
 
   if (outTarget) {
-    // Which icon the tap is on: the nearest icon whose box, widened by the
-    // slop, holds the point. Elsewhere in the mark it is a tap on its words.
     __block NSString *target = @"text";
     __block CGFloat nearest = CGFLOAT_MAX;
     [attrText enumerateAttribute:NSAttachmentAttributeName

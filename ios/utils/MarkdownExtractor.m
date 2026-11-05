@@ -146,7 +146,6 @@ NSString *_Nullable extractMarkdownFromAttributedString(NSAttributedString *attr
                         if (text.length == 0)
                           return;
 
-                        // Dose mark icons are drawing, not content.
                         if (attrs[ENRMDoseDecorationAttributeName])
                           return;
 

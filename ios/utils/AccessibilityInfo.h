@@ -22,7 +22,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readonly) NSArray<NSValue *> *imageRanges;
 @property (nonatomic, copy, readonly) NSArray<NSString *> *imageAltTexts;
 
-// Dose check marks (words and icons), their ids and what VoiceOver reads
 @property (nonatomic, copy, readonly) NSArray<NSValue *> *doseRanges;
 @property (nonatomic, copy, readonly) NSArray<NSString *> *doseIds;
 @property (nonatomic, copy, readonly) NSArray<NSString *> *doseLabels;

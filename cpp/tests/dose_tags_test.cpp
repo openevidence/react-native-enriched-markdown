@@ -1,5 +1,3 @@
-// Unit tests for the C++ parser's <dose> tag support.
-// Run: bash cpp/tests/run_tests.sh (needs a C and a C++17 compiler; no other dependency).
 #include "MD4CParser.hpp"
 
 #include <cstdio>
@@ -34,8 +32,6 @@ const char *typeName(NodeType type) {
   }
 }
 
-// Compact one-line form of a tree, e.g. P(Text"a ",Dose[id=d1](Text"5 mg")).
-// Attributes print in a fixed order so the expectation strings are stable.
 void serialize(const MarkdownASTNode &node, std::string &out) {
   out += typeName(node.type);
   if (node.type == NodeType::Text) {
@@ -92,7 +88,7 @@ void expect(const char *name, const std::string &markdown, const std::string &ex
   }
 }
 
-} // namespace
+}
 
 int main() {
   expect("dose with every attribute becomes a Dose node",
@@ -103,7 +99,7 @@ int main() {
 
   expect("flag off keeps today's behaviour: tag dropped, words kept",
          "Apixaban <dose id=\"d1\" state=\"green\">5 mg twice daily</dose> is the dose.",
-         "P(Text\"Apixaban 5 mg twice daily is the dose.\")", /*doseTags=*/false);
+         "P(Text\"Apixaban 5 mg twice daily is the dose.\")", false);
 
   expect("bold inside a dose", "<dose id=\"d1\" state=\"amber\">**250 mg** every 6 hours</dose>",
          "P(Dose[id=d1,state=amber](Strong(Text\"250 mg\"),Text\" every 6 hours\"))");
@@ -139,9 +135,6 @@ int main() {
   expect("other tag names that start with dose are not doses", "<doses id=\"x\">5 mg</doses>",
          "P(Text\"5 mg\")");
 
-  // The exact markup the iPhone app writes for a final copy
-  // (web/apps/openevidence-app/utils/nativeMarkdownPreprocess.ts nativeDoseTag),
-  // followed by the citation chip it appends to the span.
   expect("the app's final-copy markup",
          "the labeled apixaban dose is <dose id=\"d1\" state=\"green\" calc=\"1\" label=\"checked against the FDA "
          "label, with a dosing calculator\">5 mg orally twice daily</dose>.[[1|DailyMed|]]",

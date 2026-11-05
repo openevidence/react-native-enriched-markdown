@@ -2,13 +2,9 @@
 #import "ENRMUIKit.h"
 #import "RenderContext.h"
 
-// Daniel's pill beside 15 px text is 30 px tall with 7 px corners and a 1 px
-// border, centred on the digits. In em, so it scales with Dynamic Type.
 static const CGFloat kPillHeightEm = 2.0;
 static const CGFloat kPillCornerEm = 0.47;
 static const CGFloat kPillBorderWidth = 1.0;
-// The pill never grows past its line: it stays this far inside the line's
-// used height, so pills on neighbouring lines never touch.
 static const CGFloat kPillLineInset = 1.0;
 
 @implementation DosePillBackground {
@@ -82,8 +78,6 @@ static const CGFloat kPillLineInset = 1.0;
                                  BOOL isFirst = (piece.location == glyphRange.location);
                                  BOOL isLast = (NSMaxRange(piece) == NSMaxRange(glyphRange));
 
-                                 // Where the line wraps inside the pill, its open end stops at the
-                                 // last word, not after the space the line broke at.
                                  while (!isLast && piece.length > 1) {
                                    NSUInteger lastChar =
                                        [layoutManager characterIndexForGlyphAtIndex:NSMaxRange(piece) - 1];
@@ -96,7 +90,6 @@ static const CGFloat kPillLineInset = 1.0;
 
                                  CGRect textRect = [layoutManager boundingRectForGlyphRange:piece
                                                                             inTextContainer:textContainer];
-                                 // Centred on the cap height, as Daniel's pill sits on its digits.
                                  CGPoint location = [layoutManager locationForGlyphAtIndex:piece.location];
                                  CGFloat capCentre = rect.origin.y + location.y - capHeight / 2.0;
                                  CGFloat height = MIN(fontSize * kPillHeightEm,
@@ -116,7 +109,6 @@ static const CGFloat kPillLineInset = 1.0;
 
 - (nullable UIFont *)textFontInRange:(NSRange)range textStorage:(NSTextStorage *)textStorage
 {
-  // The words' font, skipping the padding and icon at the pill's ends.
   __block UIFont *found = nil;
   [textStorage enumerateAttribute:NSFontAttributeName
                           inRange:range
@@ -139,8 +131,6 @@ static const CGFloat kPillLineInset = 1.0;
             fill:(nullable RCTUIColor *)fill
           border:(nullable RCTUIColor *)border
 {
-  // Stroke on the half-pixel line inside the rect, so the 1 pt border stays
-  // within the pill's measured height.
   CGRect inner = CGRectInset(rect, kPillBorderWidth / 2.0, kPillBorderWidth / 2.0);
   UIBezierPath *shape = [self pathForRect:inner isFirst:isFirst isLast:isLast radius:radius];
   if (fill) {
@@ -171,8 +161,6 @@ static const CGFloat kPillLineInset = 1.0;
 #endif
 }
 
-/// The border of one line's piece of a wrapped pill: closed and rounded at the
-/// dose's start or end, open on the side where the line breaks.
 - (UIBezierPath *)openBorderPathForRect:(CGRect)rect isFirst:(BOOL)isFirst isLast:(BOOL)isLast radius:(CGFloat)r
 {
   UIBezierPath *path = [UIBezierPath bezierPath];

@@ -34,7 +34,7 @@ static const CGFloat kSpacerBaseFontSize = 17.0;
               textContainer:(NSTextContainer *)textContainer
              characterIndex:(NSUInteger)charIndex
 {
-  // A clear image, so UIKit never draws its placeholder for an empty attachment.
+  // A clear image, or UIKit draws its placeholder for an attachment without one.
   static UIImage *clear = nil;
   static dispatch_once_t once;
   dispatch_once(&once, ^{

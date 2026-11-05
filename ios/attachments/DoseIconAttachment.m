@@ -1,12 +1,7 @@
 #import "DoseIconAttachment.h"
 
-// The tile is drawn on a 22-unit grid, the size it has beside 17 pt text, and
-// scaled with the surrounding font. It is capped by the line height so a mark
-// never grows its line.
 static const CGFloat kBaseSurroundingFontSize = 17.0;
 static const CGFloat kGlyphGrid = 22.0;
-// Width of the active ring on the grid; the tile shrinks inside it so the
-// mark's width never changes when a card opens.
 static const CGFloat kActiveRing = 2.0;
 static const CGFloat kPersonIconScale = 0.9;
 
@@ -18,7 +13,6 @@ static NSCache<NSString *, RCTUIImage *> *sDoseIconCache = nil;
 @implementation DoseIconAttachment {
   CGFloat _baseLeadingGap;
   DoseIconAppearance *_appearance;
-  // Computed per layout in attachmentBoundsForTextContainer:, used by imageForBounds:.
   CGFloat _iconSize;
   CGFloat _leadingGap;
 }
@@ -65,13 +59,10 @@ static NSCache<NSString *, RCTUIImage *> *sDoseIconCache = nil;
   CGFloat scale = surroundingFontSize / kBaseSurroundingFontSize;
   CGFloat lineHeightCap = lineFragment.size.height > 0 ? lineFragment.size.height : baseSize * scale * 1.3;
 
-  // The amber person is Daniel's round icon, a little smaller than the tiles
-  // (1.17 em against the tiles' 1.29 em in his mocks).
   CGFloat kindScale = _kind == ENRMDoseIconKindPerson ? kPersonIconScale : 1.0;
   _iconSize = MIN(baseSize * scale * kindScale, lineHeightCap);
   _leadingGap = _baseLeadingGap * scale;
 
-  // Centre the tile on the text's cap height, as the citation chip does.
   CGFloat yOffset = surroundingFont ? (surroundingFont.capHeight - _iconSize) / 2.0 : -5.0;
   return CGRectMake(0, yOffset, _leadingGap + _iconSize, _iconSize);
 }
@@ -84,7 +75,6 @@ static NSString *ENRMColorKey(UIColor *color)
   return [NSString stringWithFormat:@"%.3f,%.3f,%.3f,%.3f", r, g, b, a];
 }
 
-/// The tile colour mixed toward the glyph colour, for the active tile.
 static UIColor *ENRMLighter(UIColor *tile, UIColor *glyph, CGFloat amount)
 {
   CGFloat r1 = 0, g1 = 0, b1 = 0, a1 = 0, r2 = 0, g2 = 0, b2 = 0, a2 = 0;
@@ -156,9 +146,6 @@ static UIColor *ENRMLighter(UIColor *tile, UIColor *glyph, CGFloat amount)
   return image;
 }
 
-/// Draws the glyph on the 22-unit grid (the caller has scaled the context).
-/// The check and the calculator are a page in the glyph colour with their
-/// details cut out in the tile colour, as in the design.
 + (void)drawGlyphForKind:(ENRMDoseIconKind)kind tile:(UIColor *)tile glyph:(UIColor *)glyph
 {
   switch (kind) {
@@ -180,8 +167,6 @@ static UIColor *ENRMLighter(UIColor *tile, UIColor *glyph, CGFloat amount)
       break;
     }
     case ENRMDoseIconKindPerson: {
-      // A filled person on the round tile, as in Daniel's Nov 4 mock:
-      // "written for a different patient group".
       [glyph setFill];
       [[UIBezierPath bezierPathWithOvalInRect:CGRectMake(8.0, 5.4, 6.0, 6.0)] fill];
       UIBezierPath *body = [UIBezierPath bezierPath];

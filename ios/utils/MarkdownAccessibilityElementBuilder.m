@@ -5,7 +5,6 @@
 typedef NS_ENUM(NSInteger, ElementType) { ElementTypeText, ElementTypeLink, ElementTypeImage };
 
 #if !TARGET_OS_OSX
-/// A dose check mark for VoiceOver: a button that opens the mark's source, like a tap.
 @interface ENRMDoseAccessibilityElement : UIAccessibilityElement
 @property (nonatomic, copy) NSString *doseId;
 @property (nonatomic, copy, nullable) void (^onActivate)(NSString *doseId);
@@ -133,7 +132,6 @@ typedef NS_ENUM(NSInteger, ElementType) { ElementTypeText, ElementTypeLink, Elem
       }
     }
 
-    // A link inside a dose mark is read as part of the mark, not twice.
     if (itemRange.location < doseEnd)
       continue;
 

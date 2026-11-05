@@ -268,13 +268,12 @@ static inline NSString *normalizedFontWeight(NSString *fontWeight)
   _citationColor = [RCTUIColor colorWithRed:0.196 green:0.192 blue:0.188 alpha:1.0];           // ~#323130
   _citationFontSize = 11.0;
   _citationBorderRadius = 999.0; // pill shape
-  // Library fallbacks only: apps pass their theme's colours in markdownStyle.dose.
-  _doseCheckColor = [RCTUIColor colorWithRed:0.180 green:0.490 blue:0.322 alpha:1.0];      // ~#2E7D52
-  _doseAmberColor = [RCTUIColor colorWithRed:0.541 green:0.353 blue:0.0 alpha:1.0];        // ~#8A5A00
-  _doseCalculatorColor = [RCTUIColor colorWithRed:0.894 green:0.392 blue:0.239 alpha:1.0]; // ~#E4643D
+  _doseCheckColor = [RCTUIColor colorWithRed:0.180 green:0.490 blue:0.322 alpha:1.0];
+  _doseAmberColor = [RCTUIColor colorWithRed:0.541 green:0.353 blue:0.0 alpha:1.0];
+  _doseCalculatorColor = [RCTUIColor colorWithRed:0.894 green:0.392 blue:0.239 alpha:1.0];
   _doseGlyphColor = [RCTUIColor whiteColor];
-  _dosePillBackgroundColor = [RCTUIColor colorWithRed:0.965 green:0.969 blue:0.976 alpha:1.0]; // ~#F6F7F9
-  _dosePillBorderColor = [RCTUIColor colorWithRed:0.890 green:0.902 blue:0.918 alpha:1.0];     // ~#E3E6EA
+  _dosePillBackgroundColor = [RCTUIColor colorWithRed:0.965 green:0.969 blue:0.976 alpha:1.0];
+  _dosePillBorderColor = [RCTUIColor colorWithRed:0.890 green:0.902 blue:0.918 alpha:1.0];
   _doseIconSize = 22.0;
   _doseIconGap = 4.0;
   _doseIconBorderRadius = 5.0;

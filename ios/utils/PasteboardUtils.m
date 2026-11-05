@@ -54,8 +54,6 @@ static void addHTMLData(NSMutableDictionary *items, NSAttributedString *attribut
   }
 }
 
-// Dose mark icons and the word joiners that hold them on the line are drawing,
-// not words: copied plain text leaves them out.
 static NSString *plainTextWithoutDoseDecorations(NSAttributedString *attributedString)
 {
   NSMutableString *text = [attributedString.string mutableCopy];
@@ -72,8 +70,6 @@ static NSString *plainTextWithoutDoseDecorations(NSAttributedString *attributedS
   return text;
 }
 
-// The source markdown carries <dose …> tags for the renderer; copied markdown
-// keeps only the words inside them.
 static NSString *markdownWithoutDoseTags(NSString *markdown)
 {
   if ([markdown rangeOfString:@"dose" options:NSCaseInsensitiveSearch].location == NSNotFound)

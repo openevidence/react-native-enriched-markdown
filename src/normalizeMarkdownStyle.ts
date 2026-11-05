@@ -246,7 +246,6 @@ const DEFAULT_NORMALIZED_STYLE: MarkdownStyleInternal = Object.freeze({
     fontSize: 0,
     borderRadius: 999,
   },
-  // Library fallbacks only: apps pass their theme's colours.
   dose: {
     checkColor: normalizeColor('#2E7D52')!,
     amberColor: normalizeColor('#8A5A00')!,

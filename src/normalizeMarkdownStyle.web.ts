@@ -202,7 +202,6 @@ const DEFAULT_NORMALIZED_STYLE: MarkdownStyleInternal = Object.freeze({
     fontSize: 0,
     borderRadius: 999,
   },
-  // Dose marks are not drawn on web yet; defaults kept for type compatibility.
   dose: {
     checkColor: '#2E7D52',
     amberColor: '#8A5A00',

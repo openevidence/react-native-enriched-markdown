@@ -252,10 +252,6 @@ export interface NativeProps extends ViewProps {
      * Receives the citation numbers as a comma-separated string (e.g. "1,2,3").
      */
     onCitationPress?: CodegenTypes.BubblingEventHandler<CitationPressEvent>;
-    /**
-     * Callback fired when a dose check mark (its words or its icons) is tapped,
-     * or activated with VoiceOver. Receives the mark's id from <dose id="…">.
-     */
     onDosePress?: CodegenTypes.BubblingEventHandler<DosePressEvent>;
     /**
      * Controls whether the system link preview is shown on long press (iOS only).
