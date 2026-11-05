@@ -2,6 +2,7 @@
 #import "BlockquoteBorder.h"
 #import "CodeBackground.h"
 #import "CodeBlockBackground.h"
+#import "DosePillBackground.h"
 #import "ListMarkerDrawer.h"
 #import "RuntimeKeys.h"
 #import "StyleConfig.h"
@@ -34,6 +35,9 @@
   CodeBackground *codeBg = [self getCodeBackgroundWithConfig:config];
   [codeBg drawBackgroundsForGlyphRange:glyphsToShow layoutManager:self textContainer:textContainer atPoint:origin];
 
+  DosePillBackground *dosePill = [self getDosePillBackgroundWithConfig:config];
+  [dosePill drawBackgroundsForGlyphRange:glyphsToShow layoutManager:self textContainer:textContainer atPoint:origin];
+
   CodeBlockBackground *codeBlockBg = [self getCodeBlockBackgroundWithConfig:config];
   [codeBlockBg drawBackgroundsForGlyphRange:glyphsToShow layoutManager:self textContainer:textContainer atPoint:origin];
 
@@ -55,6 +59,16 @@
   if (!obj) {
     obj = [[CodeBackground alloc] initWithConfig:config];
     objc_setAssociatedObject(self, kCodeBackgroundKey, obj, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+  }
+  return obj;
+}
+
+- (DosePillBackground *)getDosePillBackgroundWithConfig:(StyleConfig *)config
+{
+  DosePillBackground *obj = objc_getAssociatedObject(self, kDosePillBackgroundKey);
+  if (!obj) {
+    obj = [[DosePillBackground alloc] initWithConfig:config];
+    objc_setAssociatedObject(self, kDosePillBackgroundKey, obj, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   }
   return obj;
 }
@@ -103,6 +117,7 @@
   objc_setAssociatedObject(self, kCodeBlockBackgroundKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   objc_setAssociatedObject(self, kBlockquoteBorderKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   objc_setAssociatedObject(self, kListMarkerDrawerKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+  objc_setAssociatedObject(self, kDosePillBackgroundKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 
   objc_setAssociatedObject(self, kStyleConfigKey, config, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 

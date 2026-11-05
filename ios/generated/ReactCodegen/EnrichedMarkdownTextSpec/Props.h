@@ -2008,6 +2008,8 @@ struct EnrichedMarkdownMarkdownStyleDoseStruct {
   SharedColor amberColor{};
   SharedColor calculatorColor{};
   SharedColor glyphColor{};
+  SharedColor pillBackgroundColor{};
+  SharedColor pillBorderColor{};
   Float iconSize{0.0};
   Float iconGap{0.0};
   Float iconBorderRadius{0.0};
@@ -2026,6 +2028,8 @@ struct EnrichedMarkdownMarkdownStyleDoseStruct {
     result["amberColor"] = ::facebook::react::toDynamic(amberColor);
     result["calculatorColor"] = ::facebook::react::toDynamic(calculatorColor);
     result["glyphColor"] = ::facebook::react::toDynamic(glyphColor);
+    result["pillBackgroundColor"] = ::facebook::react::toDynamic(pillBackgroundColor);
+    result["pillBorderColor"] = ::facebook::react::toDynamic(pillBorderColor);
     result["iconSize"] = iconSize;
     result["iconGap"] = iconGap;
     result["iconBorderRadius"] = iconBorderRadius;
@@ -2056,6 +2060,14 @@ static inline void fromRawValue(const PropsParserContext& context, const RawValu
   auto tmp_glyphColor = map.find("glyphColor");
   if (tmp_glyphColor != map.end()) {
     fromRawValue(context, tmp_glyphColor->second, result.glyphColor);
+  }
+  auto tmp_pillBackgroundColor = map.find("pillBackgroundColor");
+  if (tmp_pillBackgroundColor != map.end()) {
+    fromRawValue(context, tmp_pillBackgroundColor->second, result.pillBackgroundColor);
+  }
+  auto tmp_pillBorderColor = map.find("pillBorderColor");
+  if (tmp_pillBorderColor != map.end()) {
+    fromRawValue(context, tmp_pillBorderColor->second, result.pillBorderColor);
   }
   auto tmp_iconSize = map.find("iconSize");
   if (tmp_iconSize != map.end()) {
@@ -4052,6 +4064,8 @@ struct EnrichedMarkdownTextMarkdownStyleDoseStruct {
   SharedColor amberColor{};
   SharedColor calculatorColor{};
   SharedColor glyphColor{};
+  SharedColor pillBackgroundColor{};
+  SharedColor pillBorderColor{};
   Float iconSize{0.0};
   Float iconGap{0.0};
   Float iconBorderRadius{0.0};
@@ -4070,6 +4084,8 @@ struct EnrichedMarkdownTextMarkdownStyleDoseStruct {
     result["amberColor"] = ::facebook::react::toDynamic(amberColor);
     result["calculatorColor"] = ::facebook::react::toDynamic(calculatorColor);
     result["glyphColor"] = ::facebook::react::toDynamic(glyphColor);
+    result["pillBackgroundColor"] = ::facebook::react::toDynamic(pillBackgroundColor);
+    result["pillBorderColor"] = ::facebook::react::toDynamic(pillBorderColor);
     result["iconSize"] = iconSize;
     result["iconGap"] = iconGap;
     result["iconBorderRadius"] = iconBorderRadius;
@@ -4100,6 +4116,14 @@ static inline void fromRawValue(const PropsParserContext& context, const RawValu
   auto tmp_glyphColor = map.find("glyphColor");
   if (tmp_glyphColor != map.end()) {
     fromRawValue(context, tmp_glyphColor->second, result.glyphColor);
+  }
+  auto tmp_pillBackgroundColor = map.find("pillBackgroundColor");
+  if (tmp_pillBackgroundColor != map.end()) {
+    fromRawValue(context, tmp_pillBackgroundColor->second, result.pillBackgroundColor);
+  }
+  auto tmp_pillBorderColor = map.find("pillBorderColor");
+  if (tmp_pillBorderColor != map.end()) {
+    fromRawValue(context, tmp_pillBorderColor->second, result.pillBorderColor);
   }
   auto tmp_iconSize = map.find("iconSize");
   if (tmp_iconSize != map.end()) {

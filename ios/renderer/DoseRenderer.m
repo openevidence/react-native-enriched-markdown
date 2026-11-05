@@ -1,9 +1,16 @@
 #import "DoseRenderer.h"
 #import "DoseIconAttachment.h"
+#import "DoseSpacerAttachment.h"
 #import "MarkdownASTNode.h"
 #import "RenderContext.h"
 #import "RendererFactory.h"
 #import "StyleConfig.h"
+
+// The amber pill's padding beside 17 pt text, from Daniel's Nov 4 mock (15 px
+// text: 12.5 px before the words, 9 px before the icon, 10.5 px after it).
+static const CGFloat kPillPaddingStart = 13.0;
+static const CGFloat kPillIconGap = 10.0;
+static const CGFloat kPillPaddingEnd = 12.0;
 
 @implementation DoseRenderer {
   RendererFactory *_rendererFactory;
@@ -24,19 +31,65 @@
 
 - (void)renderNode:(MarkdownASTNode *)node into:(NSMutableAttributedString *)output context:(RenderContext *)context
 {
-  NSUInteger start = output.length;
-  [_rendererFactory renderChildrenOfNode:node into:output context:context];
-
-  NSRange textRange = NSMakeRange(start, output.length - start);
   NSString *doseId = node.attributes[@"id"] ?: @"";
-  // Without words to mark or an id to open, the dose stays plain text.
-  if (textRange.length == 0 || doseId.length == 0)
+  // Without an id to open, the dose stays plain text.
+  if (doseId.length == 0) {
+    [_rendererFactory renderChildrenOfNode:node into:output context:context];
     return;
-
+  }
   BOOL amber = [node.attributes[@"state"] isEqualToString:@"amber"];
   BOOL hasCalculator = [node.attributes[@"calc"] isEqualToString:@"1"];
-  ENRMDoseIconKind markKind = amber ? ENRMDoseIconKindPerson : ENRMDoseIconKindCheck;
-  RCTUIColor *markColor = amber ? _config.doseAmberColor : _config.doseCheckColor;
+
+  // An amber dose's pill opens with padding before its words. It goes in
+  // before the words are rendered, so nothing the children register (links,
+  // citations) ever shifts; it takes the words' font once they exist.
+  NSUInteger start = output.length;
+  if (amber) {
+    [output appendAttributedString:[self spacerWithWidth:kPillPaddingStart textAttributes:@{}]];
+    [output appendAttributedString:[[NSAttributedString alloc] initWithString:@"\u2060"
+                                                                   attributes:[self decorationAttributesFrom:@{}]]];
+  }
+  NSUInteger textStart = output.length;
+  [_rendererFactory renderChildrenOfNode:node into:output context:context];
+
+  NSRange textRange = NSMakeRange(textStart, output.length - textStart);
+  // Without words to mark, the dose stays plain text (and loses its padding,
+  // which nothing follows yet).
+  if (textRange.length == 0) {
+    [output deleteCharactersInRange:NSMakeRange(start, textStart - start)];
+    return;
+  }
+
+  NSDictionary *textAttributes = [output attributesAtIndex:NSMaxRange(textRange) - 1 effectiveRange:NULL];
+  NSString *words = [[output.string substringWithRange:textRange]
+      stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+
+  if (amber) {
+    NSDictionary *firstAttributes = [output attributesAtIndex:textStart effectiveRange:NULL];
+    [output addAttributes:[self decorationAttributesFrom:firstAttributes] range:NSMakeRange(start, textStart - start)];
+    [self finishAmberPillFrom:start textAttributes:textAttributes doseId:doseId into:output];
+  } else {
+    [self decorateCheckedTextRange:textRange
+                            doseId:doseId
+                     hasCalculator:hasCalculator
+                    textAttributes:textAttributes
+                              into:output];
+  }
+
+  NSString *label = node.attributes[@"label"];
+  NSString *spoken = label.length > 0 ? [NSString stringWithFormat:@"%@, %@", words, label] : words;
+  [context registerDoseRange:NSMakeRange(start, output.length - start) doseId:doseId accessibilityLabel:spoken];
+}
+
+/// A checked dose: a dotted underline in the check's colour under the exact
+/// words, then the check and (when the source has rules) calculator tiles.
+- (void)decorateCheckedTextRange:(NSRange)textRange
+                          doseId:(NSString *)doseId
+                   hasCalculator:(BOOL)hasCalculator
+                  textAttributes:(NSDictionary *)textAttributes
+                            into:(NSMutableAttributedString *)output
+{
+  RCTUIColor *markColor = _config.doseCheckColor;
 
   // The mark whose card is open: its words get a tint of the open icon's
   // colour, the open icon a ring and the other icon fades.
@@ -61,8 +114,7 @@
   ENRMDoseIconState calculatorState = !active ? ENRMDoseIconStateNormal
                                               : (calculatorActive ? ENRMDoseIconStateActive : ENRMDoseIconStateDimmed);
 
-  NSDictionary *textAttributes = [output attributesAtIndex:NSMaxRange(textRange) - 1 effectiveRange:NULL];
-  [self appendIcon:markKind
+  [self appendIcon:ENRMDoseIconKindCheck
                  gap:_config.doseIconGap
           appearance:[self appearanceWithColor:markColor state:markState]
       textAttributes:textAttributes
@@ -74,13 +126,54 @@
         textAttributes:textAttributes
                   into:output];
   }
+}
 
-  NSString *words = [[output.string substringWithRange:textRange]
-      stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-  NSString *label = node.attributes[@"label"];
-  NSString *spoken = label.length > 0 ? [NSString stringWithFormat:@"%@, %@", words, label] : words;
+/// An amber dose, as in Daniel's Nov 4 mock: its words and a round person
+/// icon inside a bordered pill, with no underline. The pill's padding is two
+/// spacers held to the words by word joiners, so the text system keeps room
+/// for it and a wrap never strands the padding or the icon; the layout
+/// manager draws the pill itself (DosePillBackground). Its look doesn't change
+/// while the card is open, as in his hover-open mock.
+- (void)finishAmberPillFrom:(NSUInteger)pillStart
+             textAttributes:(NSDictionary *)textAttributes
+                     doseId:(NSString *)doseId
+                       into:(NSMutableAttributedString *)output
+{
+  [self appendIcon:ENRMDoseIconKindPerson
+                 gap:kPillIconGap
+          appearance:[self appearanceWithColor:_config.doseAmberColor state:ENRMDoseIconStateNormal]
+      textAttributes:textAttributes
+                into:output];
+  [output appendAttributedString:[[NSAttributedString alloc]
+                                     initWithString:@"\u2060"
+                                         attributes:[self decorationAttributesFrom:textAttributes]]];
+  [output appendAttributedString:[self spacerWithWidth:kPillPaddingEnd textAttributes:textAttributes]];
 
-  [context registerDoseRange:NSMakeRange(start, output.length - start) doseId:doseId accessibilityLabel:spoken];
+  [output addAttribute:ENRMDosePillAttributeName value:doseId range:NSMakeRange(pillStart, output.length - pillStart)];
+}
+
+- (NSMutableAttributedString *)spacerWithWidth:(CGFloat)width textAttributes:(NSDictionary *)textAttributes
+{
+  DoseSpacerAttachment *spacer = [[DoseSpacerAttachment alloc] initWithBaseWidth:width];
+  NSMutableAttributedString *string = [[NSMutableAttributedString alloc]
+      initWithAttributedString:[NSAttributedString attributedStringWithAttachment:spacer]];
+  [string addAttributes:[self decorationAttributesFrom:textAttributes] range:NSMakeRange(0, string.length)];
+  return string;
+}
+
+/// The words' font and paragraph style, marked as decoration: copy and
+/// VoiceOver skip it, and it never changes the line's spacing.
+- (NSDictionary *)decorationAttributesFrom:(NSDictionary *)textAttributes
+{
+  NSMutableDictionary *attributes = [NSMutableDictionary dictionary];
+  if (textAttributes[NSFontAttributeName]) {
+    attributes[NSFontAttributeName] = textAttributes[NSFontAttributeName];
+  }
+  if (textAttributes[NSParagraphStyleAttributeName]) {
+    attributes[NSParagraphStyleAttributeName] = textAttributes[NSParagraphStyleAttributeName];
+  }
+  attributes[ENRMDoseDecorationAttributeName] = @YES;
+  return attributes;
 }
 
 - (DoseIconAppearance *)appearanceWithColor:(RCTUIColor *)color state:(ENRMDoseIconState)state
@@ -101,16 +194,9 @@
       textAttributes:(NSDictionary *)textAttributes
                 into:(NSMutableAttributedString *)output
 {
-  NSMutableDictionary *attributes = [NSMutableDictionary dictionary];
   // The icon takes the text's font, so it scales with Dynamic Type, and its
   // paragraph style, so it doesn't change the line's spacing.
-  if (textAttributes[NSFontAttributeName]) {
-    attributes[NSFontAttributeName] = textAttributes[NSFontAttributeName];
-  }
-  if (textAttributes[NSParagraphStyleAttributeName]) {
-    attributes[NSParagraphStyleAttributeName] = textAttributes[NSParagraphStyleAttributeName];
-  }
-  attributes[ENRMDoseDecorationAttributeName] = @YES;
+  NSDictionary *attributes = [self decorationAttributesFrom:textAttributes];
 
   // A word joiner (U+2060) forbids a line break before the icon, so a mark
   // never leaves its icon alone at the start of the next line.

@@ -205,6 +205,10 @@ interface DoseStyle {
   calculatorColor?: string;
   /** Colour of the glyph drawn on each tile. */
   glyphColor?: string;
+  /** Fill of the pill an amber dose sits in (its words and person icon). */
+  pillBackgroundColor?: string;
+  /** 1 pt border of the amber dose's pill. */
+  pillBorderColor?: string;
   /** Tile size beside 17 pt text; scales with the surrounding font. @default 22 */
   iconSize?: number;
   /** Space before the first tile and between tiles, at 17 pt text. @default 4 */

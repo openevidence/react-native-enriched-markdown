@@ -128,6 +128,8 @@ interface DoseStyleInternal {
     amberColor: ColorValue;
     calculatorColor: ColorValue;
     glyphColor: ColorValue;
+    pillBackgroundColor: ColorValue;
+    pillBorderColor: ColorValue;
     iconSize: CodegenTypes.Float;
     iconGap: CodegenTypes.Float;
     iconBorderRadius: CodegenTypes.Float;

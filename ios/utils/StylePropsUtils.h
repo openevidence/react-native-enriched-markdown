@@ -1110,6 +1110,16 @@ BOOL applyMarkdownStyleToConfig(StyleConfig *config, const MarkdownStyle &newSty
     changed = YES;
   }
 
+  if (newStyle.dose.pillBackgroundColor != oldStyle.dose.pillBackgroundColor) {
+    config.dosePillBackgroundColor = RCTUIColorFromSharedColor(newStyle.dose.pillBackgroundColor);
+    changed = YES;
+  }
+
+  if (newStyle.dose.pillBorderColor != oldStyle.dose.pillBorderColor) {
+    config.dosePillBorderColor = RCTUIColorFromSharedColor(newStyle.dose.pillBorderColor);
+    changed = YES;
+  }
+
   if (newStyle.dose.iconSize != oldStyle.dose.iconSize) {
     config.doseIconSize = newStyle.dose.iconSize;
     changed = YES;

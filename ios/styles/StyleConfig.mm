@@ -273,6 +273,8 @@ static inline NSString *normalizedFontWeight(NSString *fontWeight)
   _doseAmberColor = [RCTUIColor colorWithRed:0.541 green:0.353 blue:0.0 alpha:1.0];        // ~#8A5A00
   _doseCalculatorColor = [RCTUIColor colorWithRed:0.894 green:0.392 blue:0.239 alpha:1.0]; // ~#E4643D
   _doseGlyphColor = [RCTUIColor whiteColor];
+  _dosePillBackgroundColor = [RCTUIColor colorWithRed:0.965 green:0.969 blue:0.976 alpha:1.0]; // ~#F6F7F9
+  _dosePillBorderColor = [RCTUIColor colorWithRed:0.890 green:0.902 blue:0.918 alpha:1.0];     // ~#E3E6EA
   _doseIconSize = 22.0;
   _doseIconGap = 4.0;
   _doseIconBorderRadius = 5.0;
@@ -528,6 +530,8 @@ static inline NSString *normalizedFontWeight(NSString *fontWeight)
   copy.doseAmberColor = [self.doseAmberColor copy];
   copy.doseCalculatorColor = [self.doseCalculatorColor copy];
   copy.doseGlyphColor = [self.doseGlyphColor copy];
+  copy.dosePillBackgroundColor = [self.dosePillBackgroundColor copy];
+  copy.dosePillBorderColor = [self.dosePillBorderColor copy];
   copy.doseIconSize = self.doseIconSize;
   copy.doseIconGap = self.doseIconGap;
   copy.doseIconBorderRadius = self.doseIconBorderRadius;

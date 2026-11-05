@@ -5,6 +5,7 @@
 
 NSString *const ENRMDoseIdAttributeName = @"doseId";
 NSString *const ENRMDoseDecorationAttributeName = @"ENRMDoseDecoration";
+NSString *const ENRMDosePillAttributeName = @"ENRMDosePill";
 
 @implementation BlockStyle
 @end

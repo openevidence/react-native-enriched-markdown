@@ -28,6 +28,10 @@ extern void *kBlockquoteBorderKey;
 // Used by TextViewLayoutManager for list marker drawing
 extern void *kListMarkerDrawerKey;
 
+// Key for storing DosePillBackground instance on NSLayoutManager
+// Used by TextViewLayoutManager to draw amber dose pills
+extern void *kDosePillBackgroundKey;
+
 // Key for storing CodeBlockBackground instance on NSLayoutManager
 // Used by TextViewLayoutManager for code block background drawing
 extern void *kCodeBlockBackgroundKey;

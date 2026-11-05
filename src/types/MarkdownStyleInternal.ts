@@ -156,6 +156,8 @@ interface DoseStyleInternal {
   amberColor: string;
   calculatorColor: string;
   glyphColor: string;
+  pillBackgroundColor: string;
+  pillBorderColor: string;
   iconSize: number;
   iconGap: number;
   iconBorderRadius: number;

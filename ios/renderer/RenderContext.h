@@ -18,6 +18,9 @@ extern NSString *const ENRMDoseIdAttributeName;
 /// Marks the characters a dose mark adds (icons and the word joiners that keep
 /// them on the line), so copy and export can leave them out.
 extern NSString *const ENRMDoseDecorationAttributeName;
+/// On every character of an amber dose's pill (its padding, words and icon);
+/// the value is the dose's id, so two pills never merge into one run.
+extern NSString *const ENRMDosePillAttributeName;
 
 @interface BlockStyle : NSObject
 @property (nonatomic, assign) CGFloat fontSize;

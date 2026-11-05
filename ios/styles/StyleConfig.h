@@ -378,6 +378,9 @@
 @property (nonatomic, strong) RCTUIColor *doseAmberColor;
 @property (nonatomic, strong) RCTUIColor *doseCalculatorColor;
 @property (nonatomic, strong) RCTUIColor *doseGlyphColor;
+/// Fill and 1 pt border of the pill an amber dose sits in.
+@property (nonatomic, strong) RCTUIColor *dosePillBackgroundColor;
+@property (nonatomic, strong) RCTUIColor *dosePillBorderColor;
 @property (nonatomic, assign) CGFloat doseIconSize;
 @property (nonatomic, assign) CGFloat doseIconGap;
 @property (nonatomic, assign) CGFloat doseIconBorderRadius;

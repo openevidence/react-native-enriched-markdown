@@ -8,6 +8,7 @@ static const CGFloat kGlyphGrid = 22.0;
 // Width of the active ring on the grid; the tile shrinks inside it so the
 // mark's width never changes when a card opens.
 static const CGFloat kActiveRing = 2.0;
+static const CGFloat kPersonIconScale = 0.9;
 
 static NSCache<NSString *, RCTUIImage *> *sDoseIconCache = nil;
 
@@ -64,7 +65,10 @@ static NSCache<NSString *, RCTUIImage *> *sDoseIconCache = nil;
   CGFloat scale = surroundingFontSize / kBaseSurroundingFontSize;
   CGFloat lineHeightCap = lineFragment.size.height > 0 ? lineFragment.size.height : baseSize * scale * 1.3;
 
-  _iconSize = MIN(baseSize * scale, lineHeightCap);
+  // The amber person is Daniel's round icon, a little smaller than the tiles
+  // (1.17 em against the tiles' 1.29 em in his mocks).
+  CGFloat kindScale = _kind == ENRMDoseIconKindPerson ? kPersonIconScale : 1.0;
+  _iconSize = MIN(baseSize * scale * kindScale, lineHeightCap);
   _leadingGap = _baseLeadingGap * scale;
 
   // Centre the tile on the text's cap height, as the citation chip does.
@@ -104,7 +108,10 @@ static UIColor *ENRMLighter(UIColor *tile, UIColor *glyph, CGFloat amount)
   UIColor *glyph = _appearance.glyphColor ?: [UIColor whiteColor];
   ENRMDoseIconState state = _appearance.state;
   CGFloat dimmedOpacity = _appearance.dimmedOpacity > 0 ? _appearance.dimmedOpacity : 0.4;
-  CGFloat cornerRadius = (_appearance.baseCornerRadius > 0 ? _appearance.baseCornerRadius : 5.0) * (iconSize / baseSize);
+  CGFloat cornerRadius = kind == ENRMDoseIconKindPerson
+                             ? iconSize / 2.0
+                             : (_appearance.baseCornerRadius > 0 ? _appearance.baseCornerRadius : 5.0) *
+                                   (iconSize / baseSize);
 
   NSString *cacheKey =
       [NSString stringWithFormat:@"%ld|%ld|%@|%@|%.2f|%.2f|%.2f|%.2f|%.0fx%.0f", (long)kind, (long)state, ENRMColorKey(tile),
@@ -173,19 +180,22 @@ static UIColor *ENRMLighter(UIColor *tile, UIColor *glyph, CGFloat amount)
       break;
     }
     case ENRMDoseIconKindPerson: {
-      // A person, outlined: "written for a different patient group".
-      [glyph setStroke];
-      UIBezierPath *head = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(8.4, 4.4, 5.2, 5.2)];
-      head.lineWidth = 1.6;
-      [head stroke];
-      UIBezierPath *shoulders = [UIBezierPath bezierPath];
-      [shoulders moveToPoint:CGPointMake(5.8, 17.4)];
-      [shoulders addCurveToPoint:CGPointMake(16.2, 17.4)
-                   controlPoint1:CGPointMake(6.0, 11.6)
-                   controlPoint2:CGPointMake(16.0, 11.6)];
-      shoulders.lineWidth = 1.6;
-      shoulders.lineCapStyle = kCGLineCapRound;
-      [shoulders stroke];
+      // A filled person on the round tile, as in Daniel's Nov 4 mock:
+      // "written for a different patient group".
+      [glyph setFill];
+      [[UIBezierPath bezierPathWithOvalInRect:CGRectMake(8.0, 5.4, 6.0, 6.0)] fill];
+      UIBezierPath *body = [UIBezierPath bezierPath];
+      [body moveToPoint:CGPointMake(6.4, 16.4)];
+      [body addLineToPoint:CGPointMake(6.4, 15.6)];
+      [body addCurveToPoint:CGPointMake(11.0, 12.0)
+              controlPoint1:CGPointMake(6.4, 13.4)
+              controlPoint2:CGPointMake(8.4, 12.0)];
+      [body addCurveToPoint:CGPointMake(15.6, 15.6)
+              controlPoint1:CGPointMake(13.6, 12.0)
+              controlPoint2:CGPointMake(15.6, 13.4)];
+      [body addLineToPoint:CGPointMake(15.6, 16.4)];
+      [body closePath];
+      [body fill];
       break;
     }
     case ENRMDoseIconKindCalculator: {
