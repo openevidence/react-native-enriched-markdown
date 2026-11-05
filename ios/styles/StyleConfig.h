@@ -373,5 +373,18 @@
 - (void)setCitationFontSize:(CGFloat)newValue;
 - (CGFloat)citationBorderRadius;
 - (void)setCitationBorderRadius:(CGFloat)newValue;
+// Dose check mark properties
+@property (nonatomic, strong) RCTUIColor *doseCheckColor;
+@property (nonatomic, strong) RCTUIColor *doseAmberColor;
+@property (nonatomic, strong) RCTUIColor *doseCalculatorColor;
+@property (nonatomic, strong) RCTUIColor *doseGlyphColor;
+@property (nonatomic, assign) CGFloat doseIconSize;
+@property (nonatomic, assign) CGFloat doseIconGap;
+@property (nonatomic, assign) CGFloat doseIconBorderRadius;
+@property (nonatomic, assign) CGFloat doseDimmedOpacity;
+@property (nonatomic, assign) CGFloat doseActiveBackgroundOpacity;
+/// Id of the mark whose card is open ("" for none) and which icon is open.
+@property (nonatomic, copy) NSString *doseActiveId;
+@property (nonatomic, copy) NSString *doseActiveTarget;
 
 @end

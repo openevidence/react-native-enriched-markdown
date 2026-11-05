@@ -184,6 +184,7 @@ class EnrichedMarkdownEventEmitter : public ViewEventEmitter {
 
   struct OnDosePress {
       std::string doseId;
+    std::string target;
     };
 
   struct OnContextMenuItemPress {
@@ -228,6 +229,7 @@ class EnrichedMarkdownTextEventEmitter : public ViewEventEmitter {
 
   struct OnDosePress {
       std::string doseId;
+    std::string target;
     };
 
   struct OnContextMenuItemPress {

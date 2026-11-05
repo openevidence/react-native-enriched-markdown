@@ -171,6 +171,31 @@ interface CitationStyle {
     /** Corner radius of the citation chip background. */
     borderRadius?: number;
 }
+/** Dose check marks drawn from <dose> tags (needs `md4cFlags.doseTags`). */
+interface DoseStyle {
+    /** Tile colour of the check icon and the underline of a checked dose. */
+    checkColor?: string;
+    /** Tile colour of the person icon and the underline of an amber dose. */
+    amberColor?: string;
+    /** Tile colour of the calculator icon. */
+    calculatorColor?: string;
+    /** Colour of the glyph drawn on each tile. */
+    glyphColor?: string;
+    /** Tile size beside 17 pt text; scales with the surrounding font. @default 22 */
+    iconSize?: number;
+    /** Space before the first tile and between tiles, at 17 pt text. @default 4 */
+    iconGap?: number;
+    /** Tile corner radius at the default size. @default 5 */
+    iconBorderRadius?: number;
+    /** Opacity of the other icon while one icon of the mark is active. @default 0.4 */
+    dimmedOpacity?: number;
+    /** Opacity of the active mark's tinted background behind its words. @default 0.18 */
+    activeBackgroundOpacity?: number;
+    /** Id of the mark whose card is open, or '' for none. */
+    activeId?: string;
+    /** Which icon of the active mark is open: 'check' or 'calculator'. */
+    activeTarget?: string;
+}
 export interface MarkdownStyle {
     paragraph?: ParagraphStyle;
     h1?: HeadingStyle;
@@ -197,6 +222,7 @@ export interface MarkdownStyle {
     inlineMath?: InlineMathStyle;
     spoiler?: SpoilerStyle;
     citation?: CitationStyle;
+    dose?: DoseStyle;
 }
 /**
  * MD4C parser flags configuration.

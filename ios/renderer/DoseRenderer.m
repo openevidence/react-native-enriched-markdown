@@ -5,11 +5,6 @@
 #import "RendererFactory.h"
 #import "StyleConfig.h"
 
-// Space before the first icon and between icons, in points at 17 pt text
-// (the spec: 4 px between the dose and its check, 4 px between icons).
-static const CGFloat kGapBeforeFirstIcon = 4.0;
-static const CGFloat kGapBetweenIcons = 4.0;
-
 @implementation DoseRenderer {
   RendererFactory *_rendererFactory;
   StyleConfig *_config;
@@ -39,18 +34,43 @@ static const CGFloat kGapBetweenIcons = 4.0;
     return;
 
   BOOL amber = [node.attributes[@"state"] isEqualToString:@"amber"];
+  BOOL hasCalculator = [node.attributes[@"calc"] isEqualToString:@"1"];
   ENRMDoseIconKind markKind = amber ? ENRMDoseIconKindPerson : ENRMDoseIconKindCheck;
-  RCTUIColor *markColor = [DoseIconAttachment colorForKind:markKind];
+  RCTUIColor *markColor = amber ? _config.doseAmberColor : _config.doseCheckColor;
+
+  // The mark whose card is open: its words get a tint of the open icon's
+  // colour, the open icon a ring and the other icon fades.
+  BOOL active = _config.doseActiveId.length > 0 && [_config.doseActiveId isEqualToString:doseId];
+  BOOL calculatorActive = active && hasCalculator && [_config.doseActiveTarget isEqualToString:@"calculator"];
 
   [output addAttribute:NSUnderlineStyleAttributeName
                  value:@(NSUnderlineStyleSingle | NSUnderlinePatternDot)
                  range:textRange];
   [output addAttribute:NSUnderlineColorAttributeName value:markColor range:textRange];
+  if (active) {
+    RCTUIColor *tint = calculatorActive ? _config.doseCalculatorColor : markColor;
+    [output addAttribute:NSBackgroundColorAttributeName
+                   value:[tint colorWithAlphaComponent:_config.doseActiveBackgroundOpacity]
+                   range:textRange];
+  }
+
+  ENRMDoseIconState markState = !active ? ENRMDoseIconStateNormal
+                                        : (calculatorActive ? ENRMDoseIconStateDimmed : ENRMDoseIconStateActive);
+  ENRMDoseIconState calculatorState = !active ? ENRMDoseIconStateNormal
+                                              : (calculatorActive ? ENRMDoseIconStateActive : ENRMDoseIconStateDimmed);
 
   NSDictionary *textAttributes = [output attributesAtIndex:NSMaxRange(textRange) - 1 effectiveRange:NULL];
-  [self appendIcon:markKind gap:kGapBeforeFirstIcon textAttributes:textAttributes into:output];
-  if ([node.attributes[@"calc"] isEqualToString:@"1"]) {
-    [self appendIcon:ENRMDoseIconKindCalculator gap:kGapBetweenIcons textAttributes:textAttributes into:output];
+  [self appendIcon:markKind
+                 gap:_config.doseIconGap
+          appearance:[self appearanceWithColor:markColor state:markState]
+      textAttributes:textAttributes
+                into:output];
+  if (hasCalculator) {
+    [self appendIcon:ENRMDoseIconKindCalculator
+                   gap:_config.doseIconGap
+            appearance:[self appearanceWithColor:_config.doseCalculatorColor state:calculatorState]
+        textAttributes:textAttributes
+                  into:output];
   }
 
   NSString *words = [[output.string substringWithRange:textRange]
@@ -61,8 +81,21 @@ static const CGFloat kGapBetweenIcons = 4.0;
   [context registerDoseRange:NSMakeRange(start, output.length - start) doseId:doseId accessibilityLabel:spoken];
 }
 
+- (DoseIconAppearance *)appearanceWithColor:(RCTUIColor *)color state:(ENRMDoseIconState)state
+{
+  DoseIconAppearance *appearance = [[DoseIconAppearance alloc] init];
+  appearance.tileColor = color;
+  appearance.glyphColor = _config.doseGlyphColor;
+  appearance.baseSize = _config.doseIconSize;
+  appearance.baseCornerRadius = _config.doseIconBorderRadius;
+  appearance.state = state;
+  appearance.dimmedOpacity = _config.doseDimmedOpacity;
+  return appearance;
+}
+
 - (void)appendIcon:(ENRMDoseIconKind)kind
                  gap:(CGFloat)gap
+          appearance:(DoseIconAppearance *)appearance
       textAttributes:(NSDictionary *)textAttributes
                 into:(NSMutableAttributedString *)output
 {
@@ -81,7 +114,7 @@ static const CGFloat kGapBetweenIcons = 4.0;
   // never leaves its icon alone at the start of the next line.
   [output appendAttributedString:[[NSAttributedString alloc] initWithString:@"\u2060" attributes:attributes]];
 
-  DoseIconAttachment *attachment = [[DoseIconAttachment alloc] initWithKind:kind leadingGap:gap];
+  DoseIconAttachment *attachment = [[DoseIconAttachment alloc] initWithKind:kind leadingGap:gap appearance:appearance];
   NSMutableAttributedString *icon = [[NSMutableAttributedString alloc]
       initWithAttributedString:[NSAttributedString attributedStringWithAttachment:attachment]];
   [icon addAttributes:attributes range:NSMakeRange(0, icon.length)];

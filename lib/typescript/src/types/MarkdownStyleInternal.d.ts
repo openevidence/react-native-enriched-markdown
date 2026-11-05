@@ -124,6 +124,19 @@ interface CitationStyleInternal {
     fontSize: number;
     borderRadius: number;
 }
+interface DoseStyleInternal {
+    checkColor: string;
+    amberColor: string;
+    calculatorColor: string;
+    glyphColor: string;
+    iconSize: number;
+    iconGap: number;
+    iconBorderRadius: number;
+    dimmedOpacity: number;
+    activeBackgroundOpacity: number;
+    activeId: string;
+    activeTarget: string;
+}
 export interface MarkdownStyleInternal {
     paragraph: ParagraphStyleInternal;
     h1: HeadingStyleInternal;
@@ -150,6 +163,7 @@ export interface MarkdownStyleInternal {
     inlineMath: InlineMathStyleInternal;
     spoiler: SpoilerStyleInternal;
     citation: CitationStyleInternal;
+    dose: DoseStyleInternal;
 }
 export {};
 //# sourceMappingURL=MarkdownStyleInternal.d.ts.map

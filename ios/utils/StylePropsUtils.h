@@ -1088,5 +1088,62 @@ BOOL applyMarkdownStyleToConfig(StyleConfig *config, const MarkdownStyle &newSty
     changed = YES;
   }
 
+  // ── Dose check marks ─────────────────────────────────────────────────────
+
+  if (newStyle.dose.checkColor != oldStyle.dose.checkColor) {
+    config.doseCheckColor = RCTUIColorFromSharedColor(newStyle.dose.checkColor);
+    changed = YES;
+  }
+
+  if (newStyle.dose.amberColor != oldStyle.dose.amberColor) {
+    config.doseAmberColor = RCTUIColorFromSharedColor(newStyle.dose.amberColor);
+    changed = YES;
+  }
+
+  if (newStyle.dose.calculatorColor != oldStyle.dose.calculatorColor) {
+    config.doseCalculatorColor = RCTUIColorFromSharedColor(newStyle.dose.calculatorColor);
+    changed = YES;
+  }
+
+  if (newStyle.dose.glyphColor != oldStyle.dose.glyphColor) {
+    config.doseGlyphColor = RCTUIColorFromSharedColor(newStyle.dose.glyphColor);
+    changed = YES;
+  }
+
+  if (newStyle.dose.iconSize != oldStyle.dose.iconSize) {
+    config.doseIconSize = newStyle.dose.iconSize;
+    changed = YES;
+  }
+
+  if (newStyle.dose.iconGap != oldStyle.dose.iconGap) {
+    config.doseIconGap = newStyle.dose.iconGap;
+    changed = YES;
+  }
+
+  if (newStyle.dose.iconBorderRadius != oldStyle.dose.iconBorderRadius) {
+    config.doseIconBorderRadius = newStyle.dose.iconBorderRadius;
+    changed = YES;
+  }
+
+  if (newStyle.dose.dimmedOpacity != oldStyle.dose.dimmedOpacity) {
+    config.doseDimmedOpacity = newStyle.dose.dimmedOpacity;
+    changed = YES;
+  }
+
+  if (newStyle.dose.activeBackgroundOpacity != oldStyle.dose.activeBackgroundOpacity) {
+    config.doseActiveBackgroundOpacity = newStyle.dose.activeBackgroundOpacity;
+    changed = YES;
+  }
+
+  if (newStyle.dose.activeId != oldStyle.dose.activeId) {
+    config.doseActiveId = [NSString stringWithUTF8String:newStyle.dose.activeId.c_str()] ?: @"";
+    changed = YES;
+  }
+
+  if (newStyle.dose.activeTarget != oldStyle.dose.activeTarget) {
+    config.doseActiveTarget = [NSString stringWithUTF8String:newStyle.dose.activeTarget.c_str()] ?: @"";
+    changed = YES;
+  }
+
   return changed;
 }

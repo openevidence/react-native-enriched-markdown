@@ -232,6 +232,7 @@ void EnrichedMarkdownEventEmitter::onDosePress(OnDosePress event) const {
   dispatchEvent("dosePress", [event=std::move(event)](jsi::Runtime &runtime) {
     auto payload = jsi::Object(runtime);
     payload.setProperty(runtime, "doseId", event.doseId);
+payload.setProperty(runtime, "target", event.target);
     return payload;
   });
 }
@@ -291,6 +292,7 @@ void EnrichedMarkdownTextEventEmitter::onDosePress(OnDosePress event) const {
   dispatchEvent("dosePress", [event=std::move(event)](jsi::Runtime &runtime) {
     auto payload = jsi::Object(runtime);
     payload.setProperty(runtime, "doseId", event.doseId);
+payload.setProperty(runtime, "target", event.target);
     return payload;
   });
 }

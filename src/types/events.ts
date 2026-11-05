@@ -19,6 +19,12 @@ export interface CitationPressEvent {
 export interface DosePressEvent {
   /** The id of the tapped mark, from <dose id="…">. */
   doseId: string;
+  /**
+   * What was tapped: `check` (the check icon, or the amber person icon),
+   * `calculator` (the calculator icon) or `text` (the dose's words). A screen
+   * reader's activation reports `text`.
+   */
+  target: string;
 }
 
 /**

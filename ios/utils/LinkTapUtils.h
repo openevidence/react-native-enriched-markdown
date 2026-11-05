@@ -18,7 +18,10 @@ NSString *_Nullable linkURLAtRange(ENRMPlatformTextView *textView, NSRange chara
 NSString *_Nullable citationNumbersAtTapLocation(ENRMPlatformTextView *textView, ENRMTapRecognizer *recognizer);
 
 /// Returns the dose check mark id at the tap location (its words or its icons), or nil.
-NSString *_Nullable doseIdAtTapLocation(ENRMPlatformTextView *textView, ENRMTapRecognizer *recognizer);
+/// `outTarget` receives what was tapped: @"check" (the check or person icon),
+/// @"calculator" (the calculator icon) or @"text" (the dose's words).
+NSString *_Nullable doseIdAtTapLocation(ENRMPlatformTextView *textView, ENRMTapRecognizer *recognizer,
+                                        NSString *_Nullable *_Nullable outTarget);
 
 /// Returns YES if the point (in textView coordinates) is on a link or task list checkbox.
 BOOL isPointOnInteractiveElement(ENRMPlatformTextView *textView, CGPoint point);

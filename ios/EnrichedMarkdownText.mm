@@ -639,9 +639,10 @@ Class<RCTComponentViewProtocol> EnrichedMarkdownTextCls(void)
     return;
   }
 
-  NSString *doseId = doseIdAtTapLocation(textView, recognizer);
+  NSString *doseTarget = nil;
+  NSString *doseId = doseIdAtTapLocation(textView, recognizer, &doseTarget);
   if (doseId) {
-    [self emitDosePress:doseId];
+    [self emitDosePress:doseId target:doseTarget ?: @"text"];
     return;
   }
 
@@ -666,11 +667,12 @@ Class<RCTComponentViewProtocol> EnrichedMarkdownTextCls(void)
   ENRMClearSelection(textView);
 }
 
-- (void)emitDosePress:(NSString *)doseId
+- (void)emitDosePress:(NSString *)doseId target:(NSString *)target
 {
   auto eventEmitter = std::static_pointer_cast<EnrichedMarkdownTextEventEmitter const>(_eventEmitter);
   if (eventEmitter) {
-    eventEmitter->onDosePress({.doseId = std::string([doseId UTF8String] ?: "")});
+    eventEmitter->onDosePress(
+        {.doseId = std::string([doseId UTF8String] ?: ""), .target = std::string([target UTF8String] ?: "text")});
   }
 }
 
@@ -744,7 +746,7 @@ Class<RCTComponentViewProtocol> EnrichedMarkdownTextCls(void)
                                                                                     info:_accessibilityInfo
                                                                                container:self
                                                                           onDoseActivate:^(NSString *doseId) {
-                                                                            [weakSelf emitDosePress:doseId];
+                                                                            [weakSelf emitDosePress:doseId target:@"text"];
                                                                           }];
 #else
   _accessibilityElements = [NSMutableArray array];

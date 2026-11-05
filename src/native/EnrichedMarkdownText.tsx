@@ -143,8 +143,8 @@ export const EnrichedMarkdownText = ({
 
   const handleDosePress = useCallback(
     (e: NativeSyntheticEvent<DosePressEvent>) => {
-      const { doseId } = e.nativeEvent;
-      onDosePress?.({ doseId });
+      const { doseId, target } = e.nativeEvent;
+      onDosePress?.({ doseId, target: target || 'text' });
     },
     [onDosePress]
   );

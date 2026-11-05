@@ -2003,6 +2003,100 @@ static inline folly::dynamic toDynamic(const EnrichedMarkdownMarkdownStyleCitati
 }
 #endif
 
+struct EnrichedMarkdownMarkdownStyleDoseStruct {
+  SharedColor checkColor{};
+  SharedColor amberColor{};
+  SharedColor calculatorColor{};
+  SharedColor glyphColor{};
+  Float iconSize{0.0};
+  Float iconGap{0.0};
+  Float iconBorderRadius{0.0};
+  Float dimmedOpacity{0.0};
+  Float activeBackgroundOpacity{0.0};
+  std::string activeId{};
+  std::string activeTarget{};
+
+
+#ifdef RN_SERIALIZABLE_STATE
+  bool operator==(const EnrichedMarkdownMarkdownStyleDoseStruct&) const = default;
+
+  folly::dynamic toDynamic() const {
+    folly::dynamic result = folly::dynamic::object();
+    result["checkColor"] = ::facebook::react::toDynamic(checkColor);
+    result["amberColor"] = ::facebook::react::toDynamic(amberColor);
+    result["calculatorColor"] = ::facebook::react::toDynamic(calculatorColor);
+    result["glyphColor"] = ::facebook::react::toDynamic(glyphColor);
+    result["iconSize"] = iconSize;
+    result["iconGap"] = iconGap;
+    result["iconBorderRadius"] = iconBorderRadius;
+    result["dimmedOpacity"] = dimmedOpacity;
+    result["activeBackgroundOpacity"] = activeBackgroundOpacity;
+    result["activeId"] = activeId;
+    result["activeTarget"] = activeTarget;
+    return result;
+  }
+#endif
+};
+
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownMarkdownStyleDoseStruct &result) {
+  auto map = (std::unordered_map<std::string, RawValue>)value;
+
+  auto tmp_checkColor = map.find("checkColor");
+  if (tmp_checkColor != map.end()) {
+    fromRawValue(context, tmp_checkColor->second, result.checkColor);
+  }
+  auto tmp_amberColor = map.find("amberColor");
+  if (tmp_amberColor != map.end()) {
+    fromRawValue(context, tmp_amberColor->second, result.amberColor);
+  }
+  auto tmp_calculatorColor = map.find("calculatorColor");
+  if (tmp_calculatorColor != map.end()) {
+    fromRawValue(context, tmp_calculatorColor->second, result.calculatorColor);
+  }
+  auto tmp_glyphColor = map.find("glyphColor");
+  if (tmp_glyphColor != map.end()) {
+    fromRawValue(context, tmp_glyphColor->second, result.glyphColor);
+  }
+  auto tmp_iconSize = map.find("iconSize");
+  if (tmp_iconSize != map.end()) {
+    fromRawValue(context, tmp_iconSize->second, result.iconSize);
+  }
+  auto tmp_iconGap = map.find("iconGap");
+  if (tmp_iconGap != map.end()) {
+    fromRawValue(context, tmp_iconGap->second, result.iconGap);
+  }
+  auto tmp_iconBorderRadius = map.find("iconBorderRadius");
+  if (tmp_iconBorderRadius != map.end()) {
+    fromRawValue(context, tmp_iconBorderRadius->second, result.iconBorderRadius);
+  }
+  auto tmp_dimmedOpacity = map.find("dimmedOpacity");
+  if (tmp_dimmedOpacity != map.end()) {
+    fromRawValue(context, tmp_dimmedOpacity->second, result.dimmedOpacity);
+  }
+  auto tmp_activeBackgroundOpacity = map.find("activeBackgroundOpacity");
+  if (tmp_activeBackgroundOpacity != map.end()) {
+    fromRawValue(context, tmp_activeBackgroundOpacity->second, result.activeBackgroundOpacity);
+  }
+  auto tmp_activeId = map.find("activeId");
+  if (tmp_activeId != map.end()) {
+    fromRawValue(context, tmp_activeId->second, result.activeId);
+  }
+  auto tmp_activeTarget = map.find("activeTarget");
+  if (tmp_activeTarget != map.end()) {
+    fromRawValue(context, tmp_activeTarget->second, result.activeTarget);
+  }
+}
+
+static inline std::string toString(const EnrichedMarkdownMarkdownStyleDoseStruct &value) {
+  return "[Object EnrichedMarkdownMarkdownStyleDoseStruct]";
+}
+
+#ifdef RN_SERIALIZABLE_STATE
+static inline folly::dynamic toDynamic(const EnrichedMarkdownMarkdownStyleDoseStruct &value) {
+  return value.toDynamic();
+}
+#endif
+
 struct EnrichedMarkdownMarkdownStyleStruct {
   EnrichedMarkdownMarkdownStyleParagraphStruct paragraph{};
   EnrichedMarkdownMarkdownStyleH1Struct h1{};
@@ -2029,6 +2123,7 @@ struct EnrichedMarkdownMarkdownStyleStruct {
   EnrichedMarkdownMarkdownStyleInlineMathStruct inlineMath{};
   EnrichedMarkdownMarkdownStyleSpoilerStruct spoiler{};
   EnrichedMarkdownMarkdownStyleCitationStruct citation{};
+  EnrichedMarkdownMarkdownStyleDoseStruct dose{};
 
 
 #ifdef RN_SERIALIZABLE_STATE
@@ -2061,6 +2156,7 @@ struct EnrichedMarkdownMarkdownStyleStruct {
     result["inlineMath"] = ::facebook::react::toDynamic(inlineMath);
     result["spoiler"] = ::facebook::react::toDynamic(spoiler);
     result["citation"] = ::facebook::react::toDynamic(citation);
+    result["dose"] = ::facebook::react::toDynamic(dose);
     return result;
   }
 #endif
@@ -2168,6 +2264,10 @@ static inline void fromRawValue(const PropsParserContext& context, const RawValu
   auto tmp_citation = map.find("citation");
   if (tmp_citation != map.end()) {
     fromRawValue(context, tmp_citation->second, result.citation);
+  }
+  auto tmp_dose = map.find("dose");
+  if (tmp_dose != map.end()) {
+    fromRawValue(context, tmp_dose->second, result.dose);
   }
 }
 
@@ -3947,6 +4047,100 @@ static inline folly::dynamic toDynamic(const EnrichedMarkdownTextMarkdownStyleCi
 }
 #endif
 
+struct EnrichedMarkdownTextMarkdownStyleDoseStruct {
+  SharedColor checkColor{};
+  SharedColor amberColor{};
+  SharedColor calculatorColor{};
+  SharedColor glyphColor{};
+  Float iconSize{0.0};
+  Float iconGap{0.0};
+  Float iconBorderRadius{0.0};
+  Float dimmedOpacity{0.0};
+  Float activeBackgroundOpacity{0.0};
+  std::string activeId{};
+  std::string activeTarget{};
+
+
+#ifdef RN_SERIALIZABLE_STATE
+  bool operator==(const EnrichedMarkdownTextMarkdownStyleDoseStruct&) const = default;
+
+  folly::dynamic toDynamic() const {
+    folly::dynamic result = folly::dynamic::object();
+    result["checkColor"] = ::facebook::react::toDynamic(checkColor);
+    result["amberColor"] = ::facebook::react::toDynamic(amberColor);
+    result["calculatorColor"] = ::facebook::react::toDynamic(calculatorColor);
+    result["glyphColor"] = ::facebook::react::toDynamic(glyphColor);
+    result["iconSize"] = iconSize;
+    result["iconGap"] = iconGap;
+    result["iconBorderRadius"] = iconBorderRadius;
+    result["dimmedOpacity"] = dimmedOpacity;
+    result["activeBackgroundOpacity"] = activeBackgroundOpacity;
+    result["activeId"] = activeId;
+    result["activeTarget"] = activeTarget;
+    return result;
+  }
+#endif
+};
+
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, EnrichedMarkdownTextMarkdownStyleDoseStruct &result) {
+  auto map = (std::unordered_map<std::string, RawValue>)value;
+
+  auto tmp_checkColor = map.find("checkColor");
+  if (tmp_checkColor != map.end()) {
+    fromRawValue(context, tmp_checkColor->second, result.checkColor);
+  }
+  auto tmp_amberColor = map.find("amberColor");
+  if (tmp_amberColor != map.end()) {
+    fromRawValue(context, tmp_amberColor->second, result.amberColor);
+  }
+  auto tmp_calculatorColor = map.find("calculatorColor");
+  if (tmp_calculatorColor != map.end()) {
+    fromRawValue(context, tmp_calculatorColor->second, result.calculatorColor);
+  }
+  auto tmp_glyphColor = map.find("glyphColor");
+  if (tmp_glyphColor != map.end()) {
+    fromRawValue(context, tmp_glyphColor->second, result.glyphColor);
+  }
+  auto tmp_iconSize = map.find("iconSize");
+  if (tmp_iconSize != map.end()) {
+    fromRawValue(context, tmp_iconSize->second, result.iconSize);
+  }
+  auto tmp_iconGap = map.find("iconGap");
+  if (tmp_iconGap != map.end()) {
+    fromRawValue(context, tmp_iconGap->second, result.iconGap);
+  }
+  auto tmp_iconBorderRadius = map.find("iconBorderRadius");
+  if (tmp_iconBorderRadius != map.end()) {
+    fromRawValue(context, tmp_iconBorderRadius->second, result.iconBorderRadius);
+  }
+  auto tmp_dimmedOpacity = map.find("dimmedOpacity");
+  if (tmp_dimmedOpacity != map.end()) {
+    fromRawValue(context, tmp_dimmedOpacity->second, result.dimmedOpacity);
+  }
+  auto tmp_activeBackgroundOpacity = map.find("activeBackgroundOpacity");
+  if (tmp_activeBackgroundOpacity != map.end()) {
+    fromRawValue(context, tmp_activeBackgroundOpacity->second, result.activeBackgroundOpacity);
+  }
+  auto tmp_activeId = map.find("activeId");
+  if (tmp_activeId != map.end()) {
+    fromRawValue(context, tmp_activeId->second, result.activeId);
+  }
+  auto tmp_activeTarget = map.find("activeTarget");
+  if (tmp_activeTarget != map.end()) {
+    fromRawValue(context, tmp_activeTarget->second, result.activeTarget);
+  }
+}
+
+static inline std::string toString(const EnrichedMarkdownTextMarkdownStyleDoseStruct &value) {
+  return "[Object EnrichedMarkdownTextMarkdownStyleDoseStruct]";
+}
+
+#ifdef RN_SERIALIZABLE_STATE
+static inline folly::dynamic toDynamic(const EnrichedMarkdownTextMarkdownStyleDoseStruct &value) {
+  return value.toDynamic();
+}
+#endif
+
 struct EnrichedMarkdownTextMarkdownStyleStruct {
   EnrichedMarkdownTextMarkdownStyleParagraphStruct paragraph{};
   EnrichedMarkdownTextMarkdownStyleH1Struct h1{};
@@ -3973,6 +4167,7 @@ struct EnrichedMarkdownTextMarkdownStyleStruct {
   EnrichedMarkdownTextMarkdownStyleInlineMathStruct inlineMath{};
   EnrichedMarkdownTextMarkdownStyleSpoilerStruct spoiler{};
   EnrichedMarkdownTextMarkdownStyleCitationStruct citation{};
+  EnrichedMarkdownTextMarkdownStyleDoseStruct dose{};
 
 
 #ifdef RN_SERIALIZABLE_STATE
@@ -4005,6 +4200,7 @@ struct EnrichedMarkdownTextMarkdownStyleStruct {
     result["inlineMath"] = ::facebook::react::toDynamic(inlineMath);
     result["spoiler"] = ::facebook::react::toDynamic(spoiler);
     result["citation"] = ::facebook::react::toDynamic(citation);
+    result["dose"] = ::facebook::react::toDynamic(dose);
     return result;
   }
 #endif
@@ -4112,6 +4308,10 @@ static inline void fromRawValue(const PropsParserContext& context, const RawValu
   auto tmp_citation = map.find("citation");
   if (tmp_citation != map.end()) {
     fromRawValue(context, tmp_citation->second, result.citation);
+  }
+  auto tmp_dose = map.find("dose");
+  if (tmp_dose != map.end()) {
+    fromRawValue(context, tmp_dose->second, result.dose);
   }
 }
 

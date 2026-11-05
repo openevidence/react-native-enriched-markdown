@@ -151,6 +151,20 @@ interface CitationStyleInternal {
   borderRadius: CodegenTypes.Float;
 }
 
+interface DoseStyleInternal {
+  checkColor: ColorValue;
+  amberColor: ColorValue;
+  calculatorColor: ColorValue;
+  glyphColor: ColorValue;
+  iconSize: CodegenTypes.Float;
+  iconGap: CodegenTypes.Float;
+  iconBorderRadius: CodegenTypes.Float;
+  dimmedOpacity: CodegenTypes.Float;
+  activeBackgroundOpacity: CodegenTypes.Float;
+  activeId: string;
+  activeTarget: string;
+}
+
 export interface MarkdownStyleInternal {
   paragraph: ParagraphStyleInternal;
   h1: HeadingStyleInternal;
@@ -177,6 +191,7 @@ export interface MarkdownStyleInternal {
   inlineMath: InlineMathStyleInternal;
   spoiler: SpoilerStyleInternal;
   citation: CitationStyleInternal;
+  dose: DoseStyleInternal;
 }
 
 export interface LinkPressEvent {
@@ -199,6 +214,7 @@ export interface CitationPressEvent {
 
 export interface DosePressEvent {
   doseId: string;
+  target: string;
 }
 
 export interface ContextMenuItemConfig {

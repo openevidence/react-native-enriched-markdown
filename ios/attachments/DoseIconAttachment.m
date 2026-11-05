@@ -1,17 +1,22 @@
 #import "DoseIconAttachment.h"
 
-// Sized like the citation chip: 18 pt tall beside 17 pt text, scaled with the
-// surrounding font and capped by the line height so a mark never grows a line.
+// The tile is drawn on a 22-unit grid, the size it has beside 17 pt text, and
+// scaled with the surrounding font. It is capped by the line height so a mark
+// never grows its line.
 static const CGFloat kBaseSurroundingFontSize = 17.0;
-static const CGFloat kBaseIconSize = 18.0;
-static const CGFloat kBaseCornerRadius = 4.5;
-// Glyphs are drawn on an 18-unit grid and scaled to the icon's size.
-static const CGFloat kGlyphGrid = 18.0;
+static const CGFloat kGlyphGrid = 22.0;
+// Width of the active ring on the grid; the tile shrinks inside it so the
+// mark's width never changes when a card opens.
+static const CGFloat kActiveRing = 2.0;
 
 static NSCache<NSString *, RCTUIImage *> *sDoseIconCache = nil;
 
+@implementation DoseIconAppearance
+@end
+
 @implementation DoseIconAttachment {
   CGFloat _baseLeadingGap;
+  DoseIconAppearance *_appearance;
   // Computed per layout in attachmentBoundsForTextContainer:, used by imageForBounds:.
   CGFloat _iconSize;
   CGFloat _leadingGap;
@@ -21,29 +26,19 @@ static NSCache<NSString *, RCTUIImage *> *sDoseIconCache = nil;
 {
   if (self == [DoseIconAttachment class]) {
     sDoseIconCache = [[NSCache alloc] init];
-    sDoseIconCache.countLimit = 48;
+    sDoseIconCache.countLimit = 64;
   }
 }
 
-+ (RCTUIColor *)colorForKind:(ENRMDoseIconKind)kind
-{
-  switch (kind) {
-    case ENRMDoseIconKindCheck:
-      return [RCTUIColor colorWithRed:47 / 255.0 green:158 / 255.0 blue:92 / 255.0 alpha:1.0]; // #2F9E5C
-    case ENRMDoseIconKindPerson:
-      return [RCTUIColor colorWithRed:217 / 255.0 green:119 / 255.0 blue:6 / 255.0 alpha:1.0]; // #D97706
-    case ENRMDoseIconKindCalculator:
-      return [RCTUIColor colorWithRed:228 / 255.0 green:100 / 255.0 blue:61 / 255.0 alpha:1.0]; // #E4643D, OE orange
-  }
-  return [RCTUIColor grayColor];
-}
-
-- (instancetype)initWithKind:(ENRMDoseIconKind)kind leadingGap:(CGFloat)leadingGap
+- (instancetype)initWithKind:(ENRMDoseIconKind)kind
+                  leadingGap:(CGFloat)leadingGap
+                  appearance:(DoseIconAppearance *)appearance
 {
   self = [super init];
   if (self) {
     _kind = kind;
     _baseLeadingGap = leadingGap;
+    _appearance = appearance;
   }
   return self;
 }
@@ -64,29 +59,57 @@ static NSCache<NSString *, RCTUIImage *> *sDoseIconCache = nil;
     }
   }
 
+  CGFloat baseSize = _appearance.baseSize > 0 ? _appearance.baseSize : 22.0;
   CGFloat surroundingFontSize = surroundingFont ? surroundingFont.pointSize : kBaseSurroundingFontSize;
   CGFloat scale = surroundingFontSize / kBaseSurroundingFontSize;
-  CGFloat lineHeightCap = lineFragment.size.height > 0 ? lineFragment.size.height : kBaseIconSize * scale * 1.3;
+  CGFloat lineHeightCap = lineFragment.size.height > 0 ? lineFragment.size.height : baseSize * scale * 1.3;
 
-  _iconSize = MIN(kBaseIconSize * scale, lineHeightCap);
+  _iconSize = MIN(baseSize * scale, lineHeightCap);
   _leadingGap = _baseLeadingGap * scale;
 
-  // Centre the square on the text's cap height, as the citation chip does.
-  CGFloat yOffset = surroundingFont ? (surroundingFont.capHeight - _iconSize) / 2.0 : -4.0;
+  // Centre the tile on the text's cap height, as the citation chip does.
+  CGFloat yOffset = surroundingFont ? (surroundingFont.capHeight - _iconSize) / 2.0 : -5.0;
   return CGRectMake(0, yOffset, _leadingGap + _iconSize, _iconSize);
 }
 
 #if !TARGET_OS_OSX
+static NSString *ENRMColorKey(UIColor *color)
+{
+  CGFloat r = 0, g = 0, b = 0, a = 0;
+  [color getRed:&r green:&g blue:&b alpha:&a];
+  return [NSString stringWithFormat:@"%.3f,%.3f,%.3f,%.3f", r, g, b, a];
+}
+
+/// The tile colour mixed toward the glyph colour, for the active tile.
+static UIColor *ENRMLighter(UIColor *tile, UIColor *glyph, CGFloat amount)
+{
+  CGFloat r1 = 0, g1 = 0, b1 = 0, a1 = 0, r2 = 0, g2 = 0, b2 = 0, a2 = 0;
+  [tile getRed:&r1 green:&g1 blue:&b1 alpha:&a1];
+  [glyph getRed:&r2 green:&g2 blue:&b2 alpha:&a2];
+  return [UIColor colorWithRed:r1 + (r2 - r1) * amount
+                         green:g1 + (g2 - g1) * amount
+                          blue:b1 + (b2 - b1) * amount
+                         alpha:a1];
+}
+
 - (UIImage *)imageForBounds:(CGRect)imageBounds
               textContainer:(NSTextContainer *)textContainer
              characterIndex:(NSUInteger)charIndex
 {
-  CGFloat iconSize = _iconSize > 0 ? _iconSize : kBaseIconSize;
+  CGFloat baseSize = _appearance.baseSize > 0 ? _appearance.baseSize : 22.0;
+  CGFloat iconSize = _iconSize > 0 ? _iconSize : baseSize;
   CGFloat leadingGap = _leadingGap;
   ENRMDoseIconKind kind = _kind;
+  UIColor *tile = _appearance.tileColor ?: [UIColor grayColor];
+  UIColor *glyph = _appearance.glyphColor ?: [UIColor whiteColor];
+  ENRMDoseIconState state = _appearance.state;
+  CGFloat dimmedOpacity = _appearance.dimmedOpacity > 0 ? _appearance.dimmedOpacity : 0.4;
+  CGFloat cornerRadius = (_appearance.baseCornerRadius > 0 ? _appearance.baseCornerRadius : 5.0) * (iconSize / baseSize);
 
-  NSString *cacheKey = [NSString stringWithFormat:@"%ld|%.2f|%.2f|%.0fx%.0f", (long)kind, iconSize, leadingGap,
-                                                  imageBounds.size.width, imageBounds.size.height];
+  NSString *cacheKey =
+      [NSString stringWithFormat:@"%ld|%ld|%@|%@|%.2f|%.2f|%.2f|%.2f|%.0fx%.0f", (long)kind, (long)state, ENRMColorKey(tile),
+                                 ENRMColorKey(glyph), iconSize, leadingGap, cornerRadius, dimmedOpacity,
+                                 imageBounds.size.width, imageBounds.size.height];
   UIImage *cached = [sDoseIconCache objectForKey:cacheKey];
   if (cached)
     return cached;
@@ -94,73 +117,86 @@ static NSCache<NSString *, RCTUIImage *> *sDoseIconCache = nil;
   UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:imageBounds.size];
   UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext *ctx) {
     CGContextRef cg = ctx.CGContext;
+    if (state == ENRMDoseIconStateDimmed) {
+      CGContextSetAlpha(cg, dimmedOpacity);
+      CGContextBeginTransparencyLayer(cg, NULL);
+    }
     CGRect square = CGRectMake(leadingGap, 0, iconSize, iconSize);
-    CGFloat radius = kBaseCornerRadius * (iconSize / kBaseIconSize);
-    [[DoseIconAttachment colorForKind:kind] setFill];
-    [[UIBezierPath bezierPathWithRoundedRect:square cornerRadius:radius] fill];
+    if (state == ENRMDoseIconStateActive) {
+      CGFloat ring = kActiveRing * (iconSize / kGlyphGrid);
+      [[tile colorWithAlphaComponent:0.55] setFill];
+      [[UIBezierPath bezierPathWithRoundedRect:square cornerRadius:cornerRadius] fill];
+      [ENRMLighter(tile, glyph, 0.14) setFill];
+      [[UIBezierPath bezierPathWithRoundedRect:CGRectInset(square, ring, ring)
+                                  cornerRadius:MAX(cornerRadius - ring, 1.0)] fill];
+    } else {
+      [tile setFill];
+      [[UIBezierPath bezierPathWithRoundedRect:square cornerRadius:cornerRadius] fill];
+    }
 
     CGContextSaveGState(cg);
     CGContextTranslateCTM(cg, square.origin.x, square.origin.y);
     CGFloat unit = iconSize / kGlyphGrid;
     CGContextScaleCTM(cg, unit, unit);
-    [[UIColor whiteColor] setStroke];
-    [[UIColor whiteColor] setFill];
-    [DoseIconAttachment drawGlyphForKind:kind];
+    [DoseIconAttachment drawGlyphForKind:kind tile:tile glyph:glyph];
     CGContextRestoreGState(cg);
+    if (state == ENRMDoseIconStateDimmed) {
+      CGContextEndTransparencyLayer(cg);
+    }
   }];
 
   [sDoseIconCache setObject:image forKey:cacheKey];
   return image;
 }
 
-/// Draws the white glyph on the 18-unit grid (the caller has scaled the context).
-+ (void)drawGlyphForKind:(ENRMDoseIconKind)kind
+/// Draws the glyph on the 22-unit grid (the caller has scaled the context).
+/// The check and the calculator are a page in the glyph colour with their
+/// details cut out in the tile colour, as in the design.
++ (void)drawGlyphForKind:(ENRMDoseIconKind)kind tile:(UIColor *)tile glyph:(UIColor *)glyph
 {
   switch (kind) {
     case ENRMDoseIconKindCheck: {
-      // A page with a check mark: "checked against the source document".
-      UIBezierPath *page = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(5.0, 3.4, 8.0, 11.2) cornerRadius:1.6];
-      page.lineWidth = 1.5;
-      [page stroke];
-      UIBezierPath *line = [UIBezierPath bezierPath];
-      [line moveToPoint:CGPointMake(7.4, 6.4)];
-      [line addLineToPoint:CGPointMake(10.6, 6.4)];
-      line.lineWidth = 1.5;
-      line.lineCapStyle = kCGLineCapRound;
-      [line stroke];
+      [glyph setFill];
+      [[UIBezierPath bezierPathWithRoundedRect:CGRectMake(6.0, 3.5, 10.0, 15.0) cornerRadius:2.0] fill];
+      [tile setFill];
+      [[UIBezierPath bezierPathWithRoundedRect:CGRectMake(8.0, 6.0, 6.0, 1.7) cornerRadius:0.85] fill];
+      [[UIBezierPath bezierPathWithRoundedRect:CGRectMake(8.0, 8.8, 4.0, 1.7) cornerRadius:0.85] fill];
       UIBezierPath *check = [UIBezierPath bezierPath];
-      [check moveToPoint:CGPointMake(7.0, 10.2)];
-      [check addLineToPoint:CGPointMake(8.6, 11.8)];
-      [check addLineToPoint:CGPointMake(11.3, 8.8)];
-      check.lineWidth = 1.7;
+      [check moveToPoint:CGPointMake(8.8, 13.8)];
+      [check addLineToPoint:CGPointMake(10.5, 15.2)];
+      [check addLineToPoint:CGPointMake(13.4, 12.2)];
+      check.lineWidth = 1.6;
       check.lineCapStyle = kCGLineCapRound;
       check.lineJoinStyle = kCGLineJoinRound;
+      [tile setStroke];
       [check stroke];
       break;
     }
     case ENRMDoseIconKindPerson: {
-      // A person: "written for a different patient group".
-      [[UIBezierPath bezierPathWithOvalInRect:CGRectMake(6.3, 3.6, 5.4, 5.4)] fill];
+      // A person, outlined: "written for a different patient group".
+      [glyph setStroke];
+      UIBezierPath *head = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(8.4, 4.4, 5.2, 5.2)];
+      head.lineWidth = 1.6;
+      [head stroke];
       UIBezierPath *shoulders = [UIBezierPath bezierPath];
-      [shoulders moveToPoint:CGPointMake(4.2, 14.6)];
-      [shoulders addCurveToPoint:CGPointMake(13.8, 14.6)
-                   controlPoint1:CGPointMake(4.4, 9.4)
-                   controlPoint2:CGPointMake(13.6, 9.4)];
-      [shoulders closePath];
-      [shoulders fill];
+      [shoulders moveToPoint:CGPointMake(5.8, 17.4)];
+      [shoulders addCurveToPoint:CGPointMake(16.2, 17.4)
+                   controlPoint1:CGPointMake(6.0, 11.6)
+                   controlPoint2:CGPointMake(16.0, 11.6)];
+      shoulders.lineWidth = 1.6;
+      shoulders.lineCapStyle = kCGLineCapRound;
+      [shoulders stroke];
       break;
     }
     case ENRMDoseIconKindCalculator: {
-      // A calculator: "a rule the dosing calculator can compute from".
-      UIBezierPath *body = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(5.0, 3.2, 8.0, 11.6) cornerRadius:1.6];
-      body.lineWidth = 1.5;
-      [body stroke];
-      [[UIBezierPath bezierPathWithRoundedRect:CGRectMake(7.0, 5.2, 4.0, 2.1) cornerRadius:0.5] fill];
+      [glyph setFill];
+      [[UIBezierPath bezierPathWithRoundedRect:CGRectMake(6.0, 3.5, 10.0, 15.0) cornerRadius:2.0] fill];
+      [tile setFill];
+      [[UIBezierPath bezierPathWithRoundedRect:CGRectMake(7.6, 5.2, 6.8, 2.6) cornerRadius:0.6] fill];
       for (int row = 0; row < 2; row++) {
         for (int col = 0; col < 2; col++) {
-          CGFloat cx = 7.6 + col * 2.8;
-          CGFloat cy = 9.6 + row * 2.6;
-          [[UIBezierPath bezierPathWithOvalInRect:CGRectMake(cx - 0.85, cy - 0.85, 1.7, 1.7)] fill];
+          CGRect key = CGRectMake(7.6 + col * 4.2, 9.4 + row * 4.3, 2.6, 2.6);
+          [[UIBezierPath bezierPathWithRoundedRect:key cornerRadius:0.6] fill];
         }
       }
       break;

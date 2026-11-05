@@ -268,6 +268,18 @@ static inline NSString *normalizedFontWeight(NSString *fontWeight)
   _citationColor = [RCTUIColor colorWithRed:0.196 green:0.192 blue:0.188 alpha:1.0];           // ~#323130
   _citationFontSize = 11.0;
   _citationBorderRadius = 999.0; // pill shape
+  // Library fallbacks only: apps pass their theme's colours in markdownStyle.dose.
+  _doseCheckColor = [RCTUIColor colorWithRed:0.180 green:0.490 blue:0.322 alpha:1.0];      // ~#2E7D52
+  _doseAmberColor = [RCTUIColor colorWithRed:0.541 green:0.353 blue:0.0 alpha:1.0];        // ~#8A5A00
+  _doseCalculatorColor = [RCTUIColor colorWithRed:0.894 green:0.392 blue:0.239 alpha:1.0]; // ~#E4643D
+  _doseGlyphColor = [RCTUIColor whiteColor];
+  _doseIconSize = 22.0;
+  _doseIconGap = 4.0;
+  _doseIconBorderRadius = 5.0;
+  _doseDimmedOpacity = 0.4;
+  _doseActiveBackgroundOpacity = 0.18;
+  _doseActiveId = @"";
+  _doseActiveTarget = @"";
   return self;
 }
 
@@ -512,6 +524,17 @@ static inline NSString *normalizedFontWeight(NSString *fontWeight)
   copy->_citationColor = [_citationColor copy];
   copy->_citationFontSize = _citationFontSize;
   copy->_citationBorderRadius = _citationBorderRadius;
+  copy.doseCheckColor = [self.doseCheckColor copy];
+  copy.doseAmberColor = [self.doseAmberColor copy];
+  copy.doseCalculatorColor = [self.doseCalculatorColor copy];
+  copy.doseGlyphColor = [self.doseGlyphColor copy];
+  copy.doseIconSize = self.doseIconSize;
+  copy.doseIconGap = self.doseIconGap;
+  copy.doseIconBorderRadius = self.doseIconBorderRadius;
+  copy.doseDimmedOpacity = self.doseDimmedOpacity;
+  copy.doseActiveBackgroundOpacity = self.doseActiveBackgroundOpacity;
+  copy.doseActiveId = self.doseActiveId;
+  copy.doseActiveTarget = self.doseActiveTarget;
 
   return copy;
 }
