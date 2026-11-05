@@ -767,7 +767,7 @@ Class<RCTComponentViewProtocol> EnrichedMarkdownCls(void)
     auto eventEmitter = std::static_pointer_cast<EnrichedMarkdownEventEmitter const>(_eventEmitter);
     if (eventEmitter) {
       eventEmitter->onDosePress({.doseId = std::string([doseId UTF8String] ?: ""),
-                                 .target = std::string([doseTarget ?: @"text" UTF8String])});
+                                 .doseTarget = std::string([doseTarget ?: @"text" UTF8String])});
     }
     return;
   }

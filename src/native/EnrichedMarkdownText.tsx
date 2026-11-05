@@ -142,9 +142,11 @@ export const EnrichedMarkdownText = ({
   );
 
   const handleDosePress = useCallback(
-    (e: NativeSyntheticEvent<DosePressEvent>) => {
-      const { doseId, target } = e.nativeEvent;
-      onDosePress?.({ doseId, target: target || 'text' });
+    // React Native overwrites nativeEvent.target with the view's tag, so the
+    // native event carries the tapped part as doseTarget.
+    (e: NativeSyntheticEvent<{ doseId: string; doseTarget: string }>) => {
+      const { doseId, doseTarget } = e.nativeEvent;
+      onDosePress?.({ doseId, target: doseTarget || 'text' });
     },
     [onDosePress]
   );

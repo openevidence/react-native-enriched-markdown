@@ -216,7 +216,7 @@ export interface CitationPressEvent {
 
 export interface DosePressEvent {
   doseId: string;
-  target: string;
+  doseTarget: string;
 }
 
 export interface ContextMenuItemConfig {
