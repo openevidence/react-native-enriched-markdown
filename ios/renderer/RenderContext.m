@@ -3,6 +3,9 @@
 #import "FontUtils.h"
 #import <React/RCTFont.h>
 
+NSString *const ENRMDoseIdAttributeName = @"doseId";
+NSString *const ENRMDoseDecorationAttributeName = @"ENRMDoseDecoration";
+
 @implementation BlockStyle
 @end
 
@@ -28,6 +31,9 @@
     _listItemPositions = [NSMutableArray array];
     _listItemDepths = [NSMutableArray array];
     _listItemOrdered = [NSMutableArray array];
+    _doseRanges = [NSMutableArray array];
+    _doseIds = [NSMutableArray array];
+    _doseAccessibilityLabels = [NSMutableArray array];
     _fontCache = [NSMutableDictionary dictionary];
     _currentBlockStyle = [[BlockStyle alloc] init];
     _allowFontScaling = YES;
@@ -134,6 +140,26 @@
     if (NSMaxRange(range) > length)
       continue;
     [attributedString addAttribute:@"citationNumbers" value:self.citationNumbers[i] range:range];
+  }
+}
+
+- (void)registerDoseRange:(NSRange)range doseId:(NSString *)doseId accessibilityLabel:(NSString *)accessibilityLabel
+{
+  if (range.length == 0 || doseId.length == 0)
+    return;
+  [self.doseRanges addObject:[NSValue valueWithRange:range]];
+  [self.doseIds addObject:doseId];
+  [self.doseAccessibilityLabels addObject:accessibilityLabel ?: @""];
+}
+
+- (void)applyDoseAttributesToString:(NSMutableAttributedString *)attributedString
+{
+  NSUInteger length = attributedString.length;
+  for (NSUInteger i = 0; i < self.doseRanges.count; i++) {
+    NSRange range = [self.doseRanges[i] rangeValue];
+    if (NSMaxRange(range) > length)
+      continue;
+    [attributedString addAttribute:ENRMDoseIdAttributeName value:self.doseIds[i] range:range];
   }
 }
 
@@ -275,6 +301,9 @@
   [_listItemPositions removeAllObjects];
   [_listItemDepths removeAllObjects];
   [_listItemOrdered removeAllObjects];
+  [_doseRanges removeAllObjects];
+  [_doseIds removeAllObjects];
+  [_doseAccessibilityLabels removeAllObjects];
   [self clearBlockStyle];
 
   _blockquoteDepth = 0;

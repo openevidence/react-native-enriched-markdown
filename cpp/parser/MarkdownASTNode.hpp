@@ -35,7 +35,10 @@ enum class NodeType {
     LatexMathInline,
     LatexMathDisplay,
     Spoiler,
-    Citation
+    Citation,
+    // OE dose check mark: <dose id="…" state="…" calc="…" label="…">words</dose>.
+    // Produced only when Md4cFlags::doseTags is set.
+    Dose
 };
 
 struct MarkdownASTNode {

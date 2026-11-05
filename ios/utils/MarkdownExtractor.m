@@ -10,6 +10,7 @@
 #endif
 #import "LastElementUtils.h"
 #import "ListItemRenderer.h"
+#import "RenderContext.h"
 #import "RuntimeKeys.h"
 #import "ThematicBreakAttachment.h"
 
@@ -143,6 +144,10 @@ NSString *_Nullable extractMarkdownFromAttributedString(NSAttributedString *attr
                       usingBlock:^(NSDictionary<NSAttributedStringKey, id> *attrs, NSRange attrRange, BOOL *stop) {
                         NSString *text = [[attributedText attributedSubstringFromRange:attrRange] string];
                         if (text.length == 0)
+                          return;
+
+                        // Dose mark icons are drawing, not content.
+                        if (attrs[ENRMDoseDecorationAttributeName])
                           return;
 
                         // Images and Thematic Breaks

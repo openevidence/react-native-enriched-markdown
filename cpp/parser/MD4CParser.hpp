@@ -11,6 +11,10 @@ struct Md4cFlags {
     bool latexMath = true;
     bool permissiveAutolinks = true;
     bool singleTilde = false;
+    // Parse OE's inline <dose …>…</dose> tags into Dose nodes. Off by default:
+    // a platform without a dose renderer keeps today's behaviour, where the
+    // unknown tag is dropped and its words render as plain text.
+    bool doseTags = false;
 };
 
 class MD4CParser {

@@ -13,6 +13,12 @@ typedef NS_ENUM(NSInteger, BlockType) {
 
 typedef NS_ENUM(NSInteger, ListType) { ListTypeUnordered, ListTypeOrdered };
 
+/// Attribute holding a dose mark's id over its words and icons; taps read it.
+extern NSString *const ENRMDoseIdAttributeName;
+/// Marks the characters a dose mark adds (icons and the word joiners that keep
+/// them on the line), so copy and export can leave them out.
+extern NSString *const ENRMDoseDecorationAttributeName;
+
 @interface BlockStyle : NSObject
 @property (nonatomic, assign) CGFloat fontSize;
 @property (nonatomic, strong) NSString *fontFamily;
@@ -36,6 +42,9 @@ typedef NS_ENUM(NSInteger, ListType) { ListTypeUnordered, ListTypeOrdered };
 @property (nonatomic, strong) NSMutableArray<NSNumber *> *listItemPositions; // Position in parent list (1, 2, 3...)
 @property (nonatomic, strong) NSMutableArray<NSNumber *> *listItemDepths;  // Nesting depth (1 = top level, 2+ = nested)
 @property (nonatomic, strong) NSMutableArray<NSNumber *> *listItemOrdered; // YES = ordered, NO = unordered (bullet)
+@property (nonatomic, strong) NSMutableArray<NSValue *> *doseRanges;
+@property (nonatomic, strong) NSMutableArray<NSString *> *doseIds;
+@property (nonatomic, strong) NSMutableArray<NSString *> *doseAccessibilityLabels;
 @property (nonatomic, assign) BlockType currentBlockType;
 @property (nonatomic, strong) BlockStyle *currentBlockStyle;
 @property (nonatomic, assign) NSInteger currentHeadingLevel;
@@ -59,6 +68,8 @@ typedef NS_ENUM(NSInteger, ListType) { ListTypeUnordered, ListTypeOrdered };
 
 - (void)applyLinkAttributesToString:(NSMutableAttributedString *)attributedString;
 - (void)applyCitationAttributesToString:(NSMutableAttributedString *)attributedString;
+- (void)registerDoseRange:(NSRange)range doseId:(NSString *)doseId accessibilityLabel:(NSString *)accessibilityLabel;
+- (void)applyDoseAttributesToString:(NSMutableAttributedString *)attributedString;
 - (void)registerHeadingRange:(NSRange)range level:(NSInteger)level text:(NSString *)text;
 - (void)registerImageRange:(NSRange)range altText:(NSString *)altText url:(NSString *)url;
 - (void)registerListItemRange:(NSRange)range

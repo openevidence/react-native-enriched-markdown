@@ -3,6 +3,7 @@
 #import "CitationRenderer.h"
 #import "CodeBlockRenderer.h"
 #import "CodeRenderer.h"
+#import "DoseRenderer.h"
 #import "ENRMImageRenderer.h"
 #import "EmphasisRenderer.h"
 
@@ -112,6 +113,8 @@
       return [[ENRMSpoilerRenderer alloc] initWithRendererFactory:self config:_config];
     case MarkdownNodeTypeCitation:
       return [[CitationRenderer alloc] initWithRendererFactory:self config:_config];
+    case MarkdownNodeTypeDose:
+      return [[DoseRenderer alloc] initWithRendererFactory:self config:_config];
     default:
       return nil;
   }

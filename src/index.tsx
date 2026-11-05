@@ -10,6 +10,7 @@ export type {
   LinkLongPressEvent,
   TaskListItemPressEvent,
   CitationPressEvent,
+  DosePressEvent,
 } from './types/events';
 
 export { EnrichedMarkdownInput } from './EnrichedMarkdownInput';

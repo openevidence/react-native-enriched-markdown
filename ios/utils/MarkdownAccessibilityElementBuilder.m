@@ -4,6 +4,24 @@
 
 typedef NS_ENUM(NSInteger, ElementType) { ElementTypeText, ElementTypeLink, ElementTypeImage };
 
+#if !TARGET_OS_OSX
+/// A dose check mark for VoiceOver: a button that opens the mark's source, like a tap.
+@interface ENRMDoseAccessibilityElement : UIAccessibilityElement
+@property (nonatomic, copy) NSString *doseId;
+@property (nonatomic, copy, nullable) void (^onActivate)(NSString *doseId);
+@end
+
+@implementation ENRMDoseAccessibilityElement
+- (BOOL)accessibilityActivate
+{
+  if (!self.onActivate || self.doseId.length == 0)
+    return NO;
+  self.onActivate(self.doseId);
+  return YES;
+}
+@end
+#endif
+
 @implementation MarkdownAccessibilityElementBuilder
 
 #if !TARGET_OS_OSX
@@ -13,6 +31,14 @@ typedef NS_ENUM(NSInteger, ElementType) { ElementTypeText, ElementTypeLink, Elem
 + (NSMutableArray<UIAccessibilityElement *> *)buildElementsForTextView:(UITextView *)textView
                                                                   info:(AccessibilityInfo *)info
                                                              container:(id)container
+{
+  return [self buildElementsForTextView:textView info:info container:container onDoseActivate:nil];
+}
+
++ (NSMutableArray<UIAccessibilityElement *> *)buildElementsForTextView:(UITextView *)textView
+                                                                  info:(AccessibilityInfo *)info
+                                                             container:(id)container
+                                                        onDoseActivate:(void (^_Nullable)(NSString *doseId))onDoseActivate
 {
   NSString *fullString = textView.attributedText.string;
   if (fullString.length == 0)
@@ -31,7 +57,8 @@ typedef NS_ENUM(NSInteger, ElementType) { ElementTypeText, ElementTypeLink, Elem
     if (trimmed.length > 0) {
       NSArray *links = [self linksInRange:paragraphRange info:info];
       NSArray *images = [self imagesInRange:paragraphRange info:info];
-      NSArray *specials = [links arrayByAddingObjectsFromArray:images];
+      NSArray *doses = [self dosesInRange:paragraphRange info:info];
+      NSArray *specials = [[links arrayByAddingObjectsFromArray:images] arrayByAddingObjectsFromArray:doses];
 
       NSInteger level = [self headingLevelForRange:paragraphRange info:info];
       NSDictionary *list = [self listItemInfoForRange:paragraphRange info:info];
@@ -52,7 +79,8 @@ typedef NS_ENUM(NSInteger, ElementType) { ElementTypeText, ElementTypeLink, Elem
                                                                  listInfo:list
                                                                  specials:specials
                                                                inTextView:textView
-                                                                container:container]];
+                                                                container:container
+                                                           onDoseActivate:onDoseActivate]];
       }
     }
     currentPos = NSMaxRange(paragraphRange);
@@ -77,6 +105,7 @@ typedef NS_ENUM(NSInteger, ElementType) { ElementTypeText, ElementTypeLink, Elem
                                                             specials:(NSArray *)specials
                                                           inTextView:(UITextView *)textView
                                                            container:(id)container
+                                                      onDoseActivate:(void (^_Nullable)(NSString *doseId))onDoseActivate
 {
   NSMutableArray<UIAccessibilityElement *> *elements = [NSMutableArray array];
   NSArray *sortedSpecials = [specials sortedArrayUsingComparator:^NSComparisonResult(NSDictionary *a, NSDictionary *b) {
@@ -84,6 +113,7 @@ typedef NS_ENUM(NSInteger, ElementType) { ElementTypeText, ElementTypeLink, Elem
   }];
 
   NSUInteger segmentStart = paragraphRange.location;
+  NSUInteger doseEnd = 0;
   for (NSDictionary *item in sortedSpecials) {
     NSRange itemRange = [item[@"range"] rangeValue];
 
@@ -101,6 +131,23 @@ typedef NS_ENUM(NSInteger, ElementType) { ElementTypeText, ElementTypeLink, Elem
                                                    view:textView
                                               container:container]];
       }
+    }
+
+    // A link inside a dose mark is read as part of the mark, not twice.
+    if (itemRange.location < doseEnd)
+      continue;
+
+    if (item[@"doseId"] != nil) {
+      ENRMDoseAccessibilityElement *dose = [[ENRMDoseAccessibilityElement alloc] initWithAccessibilityContainer:container];
+      dose.doseId = item[@"doseId"];
+      dose.onActivate = onDoseActivate;
+      dose.accessibilityLabel = item[@"label"];
+      dose.accessibilityTraits = UIAccessibilityTraitButton;
+      dose.accessibilityFrameInContainerSpace = [self frameForRange:itemRange inTextView:textView container:container];
+      [elements addObject:dose];
+      segmentStart = NSMaxRange(itemRange);
+      doseEnd = segmentStart;
+      continue;
     }
 
     BOOL isImg = item[@"altText"] != nil;
@@ -222,6 +269,21 @@ typedef NS_ENUM(NSInteger, ElementType) { ElementTypeText, ElementTypeLink, Elem
     }
   }
   return links;
+}
+
++ (NSArray *)dosesInRange:(NSRange)range info:(AccessibilityInfo *)info
+{
+  NSMutableArray *doses = [NSMutableArray array];
+  for (NSUInteger i = 0; i < info.doseRanges.count; i++) {
+    if (NSIntersectionRange(range, [info.doseRanges[i] rangeValue]).length > 0) {
+      [doses addObject:@{
+        @"range" : info.doseRanges[i],
+        @"doseId" : info.doseIds[i] ?: @"",
+        @"label" : info.doseLabels[i] ?: @""
+      }];
+    }
+  }
+  return doses;
 }
 
 + (NSArray *)imagesInRange:(NSRange)range info:(AccessibilityInfo *)info

@@ -3,6 +3,7 @@
 #import "HTMLGenerator.h"
 #import "MarkdownExtractor.h"
 #import "RTFExportUtils.h"
+#import "RenderContext.h"
 #import "StyleConfig.h"
 #include <TargetConditionals.h>
 #if !TARGET_OS_OSX
@@ -53,6 +54,43 @@ static void addHTMLData(NSMutableDictionary *items, NSAttributedString *attribut
   }
 }
 
+// Dose mark icons and the word joiners that hold them on the line are drawing,
+// not words: copied plain text leaves them out.
+static NSString *plainTextWithoutDoseDecorations(NSAttributedString *attributedString)
+{
+  NSMutableString *text = [attributedString.string mutableCopy];
+  __block NSUInteger removed = 0;
+  [attributedString enumerateAttribute:ENRMDoseDecorationAttributeName
+                               inRange:NSMakeRange(0, attributedString.length)
+                               options:0
+                            usingBlock:^(id value, NSRange range, BOOL *stop) {
+                              if (!value)
+                                return;
+                              [text deleteCharactersInRange:NSMakeRange(range.location - removed, range.length)];
+                              removed += range.length;
+                            }];
+  return text;
+}
+
+// The source markdown carries <dose …> tags for the renderer; copied markdown
+// keeps only the words inside them.
+static NSString *markdownWithoutDoseTags(NSString *markdown)
+{
+  if ([markdown rangeOfString:@"dose" options:NSCaseInsensitiveSearch].location == NSNotFound)
+    return markdown;
+  static NSRegularExpression *doseTag;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    doseTag = [NSRegularExpression regularExpressionWithPattern:@"</?dose(?:\\s[^<>]*)?/?>"
+                                                        options:NSRegularExpressionCaseInsensitive
+                                                          error:nil];
+  });
+  return [doseTag stringByReplacingMatchesInString:markdown
+                                           options:0
+                                             range:NSMakeRange(0, markdown.length)
+                                      withTemplate:@""];
+}
+
 #pragma mark - Public API
 
 void copyStringToPasteboard(NSString *string)
@@ -92,7 +130,7 @@ void copyAttributedStringToPasteboard(NSAttributedString *attributedString, NSSt
 
   NSMutableDictionary *items = [NSMutableDictionary dictionary];
 
-  items[kUTIPlainText] = attributedString.string;
+  items[kUTIPlainText] = plainTextWithoutDoseDecorations(attributedString);
 
   if (markdown.length > 0) {
     items[kUTIMarkdown] = markdown;
@@ -128,7 +166,7 @@ NSString *_Nullable markdownForRange(NSAttributedString *attributedText, NSRange
   // Full selection: use cached markdown directly
   BOOL isFullSelection = (range.location == 0 && range.length >= attributedText.length - 1);
   if (isFullSelection) {
-    return cachedMarkdown;
+    return markdownWithoutDoseTags(cachedMarkdown);
   }
 
   // Partial selection: reverse-engineer from attributes

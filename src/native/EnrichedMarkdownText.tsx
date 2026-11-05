@@ -14,6 +14,7 @@ import type {
   LinkLongPressEvent,
   TaskListItemPressEvent,
   CitationPressEvent,
+  DosePressEvent,
   OnContextMenuItemPressEvent,
 } from '../types/events';
 
@@ -24,6 +25,7 @@ export type {
   LinkLongPressEvent,
   TaskListItemPressEvent,
   CitationPressEvent,
+  DosePressEvent,
 };
 
 const defaultMd4cFlags: Md4cFlags = {
@@ -40,6 +42,7 @@ export const EnrichedMarkdownText = ({
   onLinkLongPress,
   onTaskListItemPress,
   onCitationPress,
+  onDosePress,
   enableLinkPreview,
   selectable = true,
   md4cFlags = defaultMd4cFlags,
@@ -138,6 +141,14 @@ export const EnrichedMarkdownText = ({
     [onCitationPress]
   );
 
+  const handleDosePress = useCallback(
+    (e: NativeSyntheticEvent<DosePressEvent>) => {
+      const { doseId } = e.nativeEvent;
+      onDosePress?.({ doseId });
+    },
+    [onDosePress]
+  );
+
   const sharedProps = {
     markdown,
     markdownStyle: normalizedStyle,
@@ -145,6 +156,7 @@ export const EnrichedMarkdownText = ({
     onLinkLongPress: handleLinkLongPress,
     onTaskListItemPress: handleTaskListItemPress,
     onCitationPress: handleCitationPress,
+    onDosePress: handleDosePress,
     enableLinkPreview: onLinkLongPress == null && (enableLinkPreview ?? true),
     selectable,
     md4cFlags: normalizedMd4cFlags,

@@ -182,6 +182,10 @@ class EnrichedMarkdownEventEmitter : public ViewEventEmitter {
       std::string numbers;
     };
 
+  struct OnDosePress {
+      std::string doseId;
+    };
+
   struct OnContextMenuItemPress {
       std::string itemText;
     std::string selectedText;
@@ -195,6 +199,8 @@ class EnrichedMarkdownEventEmitter : public ViewEventEmitter {
   void onTaskListItemPress(OnTaskListItemPress value) const;
 
   void onCitationPress(OnCitationPress value) const;
+
+  void onDosePress(OnDosePress value) const;
 
   void onContextMenuItemPress(OnContextMenuItemPress value) const;
 };
@@ -220,6 +226,10 @@ class EnrichedMarkdownTextEventEmitter : public ViewEventEmitter {
       std::string numbers;
     };
 
+  struct OnDosePress {
+      std::string doseId;
+    };
+
   struct OnContextMenuItemPress {
       std::string itemText;
     std::string selectedText;
@@ -233,6 +243,8 @@ class EnrichedMarkdownTextEventEmitter : public ViewEventEmitter {
   void onTaskListItemPress(OnTaskListItemPress value) const;
 
   void onCitationPress(OnCitationPress value) const;
+
+  void onDosePress(OnDosePress value) const;
 
   void onContextMenuItemPress(OnContextMenuItemPress value) const;
 };

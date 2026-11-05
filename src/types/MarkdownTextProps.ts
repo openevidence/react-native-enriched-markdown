@@ -5,6 +5,7 @@ import type {
   LinkLongPressEvent,
   TaskListItemPressEvent,
   CitationPressEvent,
+  DosePressEvent,
 } from './events';
 
 /**
@@ -76,6 +77,12 @@ export interface EnrichedMarkdownTextProps extends Omit<ViewProps, 'style'> {
    * @platform ios, android, web
    */
   onCitationPress?: (event: CitationPressEvent) => void;
+  /**
+   * Callback fired when a dose check mark is tapped or activated with VoiceOver.
+   * Marks come from inline <dose id="…" state="green|amber" calc="1" label="…"> tags.
+   * @platform ios
+   */
+  onDosePress?: (event: DosePressEvent) => void;
   /**
    * Controls whether the system link preview is shown on long press (iOS only).
    *

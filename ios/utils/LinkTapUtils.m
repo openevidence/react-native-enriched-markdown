@@ -1,6 +1,7 @@
 #import "LinkTapUtils.h"
 #import "ENRMSpoilerTapUtils.h"
 #import "ENRMTextHitTest.h"
+#import "RenderContext.h"
 
 NSString *_Nullable linkURLAtTapLocation(ENRMPlatformTextView *textView, ENRMTapRecognizer *recognizer)
 {
@@ -31,6 +32,16 @@ NSString *_Nullable citationNumbersAtTapLocation(ENRMPlatformTextView *textView,
   return [attrText attribute:@"citationNumbers" atIndex:characterIndex effectiveRange:NULL];
 }
 
+NSString *_Nullable doseIdAtTapLocation(ENRMPlatformTextView *textView, ENRMTapRecognizer *recognizer)
+{
+  NSUInteger characterIndex = ENRMCharacterIndexForTap(textView, recognizer);
+  if (characterIndex == NSNotFound)
+    return nil;
+
+  NSAttributedString *attrText = ENRMGetAttributedText(textView);
+  return [attrText attribute:ENRMDoseIdAttributeName atIndex:characterIndex effectiveRange:NULL];
+}
+
 BOOL isPointOnInteractiveElement(ENRMPlatformTextView *textView, CGPoint point)
 {
   NSUInteger charIndex = ENRMCharacterIndexAtPoint(textView, point);
@@ -39,5 +50,5 @@ BOOL isPointOnInteractiveElement(ENRMPlatformTextView *textView, CGPoint point)
 
   NSDictionary *attrs = [ENRMGetAttributedText(textView) attributesAtIndex:charIndex effectiveRange:NULL];
   return attrs[@"linkURL"] != nil || attrs[@"citationNumbers"] != nil || [attrs[@"TaskItem"] boolValue] ||
-         attrs[SpoilerAttributeName] != nil;
+         attrs[SpoilerAttributeName] != nil || attrs[ENRMDoseIdAttributeName] != nil;
 }

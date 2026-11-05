@@ -228,6 +228,15 @@ void EnrichedMarkdownEventEmitter::onCitationPress(OnCitationPress event) const 
 }
 
 
+void EnrichedMarkdownEventEmitter::onDosePress(OnDosePress event) const {
+  dispatchEvent("dosePress", [event=std::move(event)](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    payload.setProperty(runtime, "doseId", event.doseId);
+    return payload;
+  });
+}
+
+
 void EnrichedMarkdownEventEmitter::onContextMenuItemPress(OnContextMenuItemPress event) const {
   dispatchEvent("contextMenuItemPress", [event=std::move(event)](jsi::Runtime &runtime) {
     auto payload = jsi::Object(runtime);
@@ -273,6 +282,15 @@ void EnrichedMarkdownTextEventEmitter::onCitationPress(OnCitationPress event) co
   dispatchEvent("citationPress", [event=std::move(event)](jsi::Runtime &runtime) {
     auto payload = jsi::Object(runtime);
     payload.setProperty(runtime, "numbers", event.numbers);
+    return payload;
+  });
+}
+
+
+void EnrichedMarkdownTextEventEmitter::onDosePress(OnDosePress event) const {
+  dispatchEvent("dosePress", [event=std::move(event)](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    payload.setProperty(runtime, "doseId", event.doseId);
     return payload;
   });
 }

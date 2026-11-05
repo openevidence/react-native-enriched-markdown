@@ -761,6 +761,15 @@ Class<RCTComponentViewProtocol> EnrichedMarkdownCls(void)
     }
   }
 
+  NSString *doseId = doseIdAtTapLocation(textView, recognizer);
+  if (doseId) {
+    auto eventEmitter = std::static_pointer_cast<EnrichedMarkdownEventEmitter const>(_eventEmitter);
+    if (eventEmitter) {
+      eventEmitter->onDosePress({.doseId = std::string([doseId UTF8String] ?: "")});
+    }
+    return;
+  }
+
   NSString *url = linkURLAtTapLocation(textView, recognizer);
   if (url) {
     auto eventEmitter = std::static_pointer_cast<EnrichedMarkdownEventEmitter const>(_eventEmitter);

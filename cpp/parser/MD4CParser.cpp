@@ -1,5 +1,6 @@
 #include "MD4CParser.hpp"
 #include "../md4c/md4c.h"
+#include <cctype>
 #include <cstring>
 #include <cstdio>
 #include <vector>
@@ -12,6 +13,7 @@ public:
   std::vector<std::shared_ptr<MarkdownASTNode>> nodeStack;
   std::string currentText;
   const char *inputText = nullptr;
+  bool doseTags = false;
 
   static const std::string ATTR_LEVEL;
   static const std::string ATTR_URL;
@@ -64,9 +66,109 @@ public:
     }
   }
 
+  // Longest attribute value kept on a Dose node. The app writes short ids,
+  // states and labels; a longer value is cut rather than copied whole.
+  static constexpr size_t kMaxDoseAttributeLength = 512;
+
+  static bool isTagNameEnd(char c) {
+    return c == '>' || c == '/' || c == ' ' || c == '\t' || c == '\n' || c == '\r';
+  }
+
+  // True for "<dose>" or "<dose " + attributes + ">", case-insensitive.
+  // A self-closing "<dose/>" carries no words to mark, so it is not an opener.
+  static bool isDoseOpenTag(const std::string &tag) {
+    if (tag.size() < 6 || tag[0] != '<')
+      return false;
+    static const char *name = "dose";
+    for (size_t i = 0; i < 4; ++i) {
+      if (std::tolower(static_cast<unsigned char>(tag[i + 1])) != name[i])
+        return false;
+    }
+    if (!isTagNameEnd(tag[5]))
+      return false;
+    size_t last = tag.find_last_not_of(" \t\n\r");
+    if (last == std::string::npos || tag[last] != '>')
+      return false;
+    size_t prev = last > 0 ? tag.find_last_not_of(" \t\n\r", last - 1) : std::string::npos;
+    return !(prev != std::string::npos && prev >= 5 && tag[prev] == '/');
+  }
+
+  static bool isDoseCloseTag(const std::string &normalizedLower) { return normalizedLower == "</dose>"; }
+
+  // Reads name="value", name='value' and name=value pairs after "<dose".
+  static void parseDoseAttributes(const std::string &tag, MarkdownASTNode &node) {
+    size_t end = tag.size();
+    while (end > 0 && (tag[end - 1] == '>' || tag[end - 1] == ' ' || tag[end - 1] == '\t' || tag[end - 1] == '\n' ||
+                       tag[end - 1] == '\r')) {
+      --end;
+    }
+    size_t i = 5; // past "<dose"
+    auto isSpace = [](char c) { return c == ' ' || c == '\t' || c == '\n' || c == '\r'; };
+    auto isNameChar = [](char c) {
+      return std::isalnum(static_cast<unsigned char>(c)) || c == '_' || c == '-' || c == ':' || c == '.';
+    };
+    while (i < end) {
+      while (i < end && isSpace(tag[i]))
+        ++i;
+      size_t nameStart = i;
+      while (i < end && isNameChar(tag[i]))
+        ++i;
+      if (i == nameStart) {
+        ++i; // skip a stray character such as '/'
+        continue;
+      }
+      std::string attrName;
+      attrName.reserve(i - nameStart);
+      for (size_t k = nameStart; k < i; ++k) {
+        attrName.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(tag[k]))));
+      }
+      while (i < end && isSpace(tag[i]))
+        ++i;
+      std::string value;
+      if (i < end && tag[i] == '=') {
+        ++i;
+        while (i < end && isSpace(tag[i]))
+          ++i;
+        if (i < end && (tag[i] == '"' || tag[i] == '\'')) {
+          char quote = tag[i++];
+          size_t valueStart = i;
+          while (i < end && tag[i] != quote)
+            ++i;
+          value = tag.substr(valueStart, i - valueStart);
+          if (i < end)
+            ++i; // closing quote
+        } else {
+          size_t valueStart = i;
+          while (i < end && !isSpace(tag[i]))
+            ++i;
+          value = tag.substr(valueStart, i - valueStart);
+        }
+      }
+      if (value.size() > kMaxDoseAttributeLength) {
+        value.resize(kMaxDoseAttributeLength);
+      }
+      node.setAttribute(attrName, value);
+    }
+  }
+
+  // A <dose> opened inside a span or block that ends before its </dose> is
+  // closed with that span or block, so the mark never swallows what follows.
+  void closeDanglingDoseNodes() {
+    while (nodeStack.size() > 1 && nodeStack.back()->type == NodeType::Dose) {
+      popNode();
+    }
+  }
+
   // Map recognized inline HTML tags to AST nodes (Strong, Emphasis, etc.)
   // Unrecognized tags are silently dropped (their text content still appears).
   void handleInlineHtml(const std::string &tag) {
+    if (doseTags && isDoseOpenTag(tag)) {
+      auto node = std::make_shared<MarkdownASTNode>(NodeType::Dose);
+      parseDoseAttributes(tag, *node);
+      pushNode(node);
+      return;
+    }
+
     // Normalize: lowercase comparison, trim whitespace
     std::string lower;
     lower.reserve(tag.size());
@@ -81,6 +183,12 @@ public:
       pushNode(std::make_shared<MarkdownASTNode>(NodeType::Strong));
     } else if (lower == "<em>" || lower == "<i>") {
       pushNode(std::make_shared<MarkdownASTNode>(NodeType::Emphasis));
+    }
+    // A </dose> closes only an open Dose; a stray one is dropped.
+    else if (isDoseCloseTag(lower)) {
+      if (doseTags && !nodeStack.empty() && nodeStack.back()->type == NodeType::Dose) {
+        popNode();
+      }
     }
     // Closing tags → pop node
     else if (lower == "</strong>" || lower == "</b>" ||
@@ -255,6 +363,7 @@ public:
     auto *impl = static_cast<Impl *>(userdata);
 
     if (type != MD_BLOCK_DOC && !impl->nodeStack.empty()) {
+      impl->closeDanglingDoseNodes();
       impl->popNode();
     }
 
@@ -351,6 +460,7 @@ public:
     auto *impl = static_cast<Impl *>(userdata);
 
     if (!impl->nodeStack.empty()) {
+      impl->closeDanglingDoseNodes();
       impl->popNode();
     }
 
@@ -646,6 +756,7 @@ std::shared_ptr<MarkdownASTNode> MD4CParser::parse(const std::string &markdown, 
 
   impl_->reset(estimatedDepth);
   impl_->inputText = markdown.c_str();
+  impl_->doseTags = md4cFlags.doseTags;
 
   unsigned flags = MD_FLAG_STRIKETHROUGH | MD_FLAG_TABLES | MD_FLAG_TASKLISTS | MD_FLAG_SPOILER;
   if (md4cFlags.permissiveAutolinks) {

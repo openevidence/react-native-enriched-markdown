@@ -13,6 +13,9 @@
     info->_linkURLs = [context.linkURLs copy];
     info->_imageRanges = [context.imageRanges copy];
     info->_imageAltTexts = [context.imageAltTexts copy];
+    info->_doseRanges = [context.doseRanges copy];
+    info->_doseIds = [context.doseIds copy];
+    info->_doseLabels = [context.doseAccessibilityLabels copy];
     info->_listItemRanges = [context.listItemRanges copy];
     info->_listItemPositions = [context.listItemPositions copy];
     info->_listItemDepths = [context.listItemDepths copy];

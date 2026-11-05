@@ -417,6 +417,8 @@ using namespace facebook::react;
   [cursorAttrs removeObjectForKey:NSAttachmentAttributeName];
   [cursorAttrs removeObjectForKey:@"linkURL"];
   [cursorAttrs removeObjectForKey:@"citationNumbers"];
+  [cursorAttrs removeObjectForKey:ENRMDoseIdAttributeName];
+  [cursorAttrs removeObjectForKey:ENRMDoseDecorationAttributeName];
 
   // The leading space gives the cursor breathing room from the preceding text.
   NSAttributedString *cursorChar = [[NSAttributedString alloc] initWithString:@" ▌" attributes:cursorAttrs];
@@ -637,6 +639,12 @@ Class<RCTComponentViewProtocol> EnrichedMarkdownTextCls(void)
     return;
   }
 
+  NSString *doseId = doseIdAtTapLocation(textView, recognizer);
+  if (doseId) {
+    [self emitDosePress:doseId];
+    return;
+  }
+
   NSString *url = linkURLAtTapLocation(textView, recognizer);
   if (url) {
     auto eventEmitter = std::static_pointer_cast<EnrichedMarkdownTextEventEmitter const>(_eventEmitter);
@@ -656,6 +664,14 @@ Class<RCTComponentViewProtocol> EnrichedMarkdownTextCls(void)
   }
 
   ENRMClearSelection(textView);
+}
+
+- (void)emitDosePress:(NSString *)doseId
+{
+  auto eventEmitter = std::static_pointer_cast<EnrichedMarkdownTextEventEmitter const>(_eventEmitter);
+  if (eventEmitter) {
+    eventEmitter->onDosePress({.doseId = std::string([doseId UTF8String] ?: "")});
+  }
 }
 
 #pragma mark - UITextViewDelegate (Link Interaction)
@@ -723,9 +739,13 @@ Class<RCTComponentViewProtocol> EnrichedMarkdownTextCls(void)
   }
   _accessibilityNeedsRebuild = NO;
 #if !TARGET_OS_OSX
+  __weak EnrichedMarkdownText *weakSelf = self;
   _accessibilityElements = [MarkdownAccessibilityElementBuilder buildElementsForTextView:_textView
                                                                                     info:_accessibilityInfo
-                                                                               container:self];
+                                                                               container:self
+                                                                          onDoseActivate:^(NSString *doseId) {
+                                                                            [weakSelf emitDosePress:doseId];
+                                                                          }];
 #else
   _accessibilityElements = [NSMutableArray array];
 #endif

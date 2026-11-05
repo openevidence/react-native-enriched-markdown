@@ -138,6 +138,7 @@
 
   [context applyLinkAttributesToString:attributedText];
   [context applyCitationAttributesToString:attributedText];
+  [context applyDoseAttributesToString:attributedText];
 
   if (alignment != NSTextAlignmentLeft && attributedText.length > 0) {
     NSRange fullRange = NSMakeRange(0, attributedText.length);
