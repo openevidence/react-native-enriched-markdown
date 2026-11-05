@@ -4,11 +4,36 @@
 #import "CodeBlockBackground.h"
 #import "DosePillBackground.h"
 #import "ListMarkerDrawer.h"
+#import "RenderContext.h"
 #import "RuntimeKeys.h"
 #import "StyleConfig.h"
 #import <objc/runtime.h>
 
+static const NSUInteger kDosePillMaxUnbrokenLength = 28;
+static const NSUInteger kDosePillSearchWindow = 64;
+
 @implementation TextViewLayoutManager
+
+// A bordered pill split across two lines reads as two doses, so a short pill
+// moves to the next line whole.
+- (BOOL)layoutManager:(NSLayoutManager *)layoutManager shouldBreakLineByWordBeforeCharacterAtIndex:(NSUInteger)charIndex
+{
+  NSTextStorage *storage = layoutManager.textStorage;
+  if (charIndex == 0 || charIndex >= storage.length) {
+    return YES;
+  }
+  NSUInteger windowStart = charIndex > kDosePillSearchWindow ? charIndex - kDosePillSearchWindow : 0;
+  NSUInteger windowEnd = MIN(storage.length, charIndex + kDosePillSearchWindow);
+  NSRange pill = NSMakeRange(NSNotFound, 0);
+  id doseId = [storage attribute:ENRMDosePillAttributeName
+                         atIndex:charIndex
+           longestEffectiveRange:&pill
+                         inRange:NSMakeRange(windowStart, windowEnd - windowStart)];
+  if (doseId == nil || charIndex <= pill.location) {
+    return YES;
+  }
+  return pill.length > kDosePillMaxUnbrokenLength;
+}
 
 - (void)drawBackgroundForGlyphRange:(NSRange)glyphsToShow atPoint:(CGPoint)origin
 {

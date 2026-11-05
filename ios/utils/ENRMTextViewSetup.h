@@ -16,6 +16,9 @@ static inline void ENRMAttachLayoutManager(ENRMPlatformTextView *textView, Style
   }
   layoutManager.allowsNonContiguousLayout = NO;
   object_setClass(layoutManager, [TextViewLayoutManager class]);
+  if (layoutManager.delegate == nil) {
+    layoutManager.delegate = (TextViewLayoutManager *)layoutManager;
+  }
   if (config != nil) {
     [layoutManager setValue:config forKey:@"config"];
   }
@@ -26,6 +29,9 @@ static inline void ENRMDetachLayoutManager(ENRMPlatformTextView *textView)
   NSLayoutManager *layoutManager = textView.layoutManager;
   if (layoutManager != nil && [object_getClass(layoutManager) isEqual:[TextViewLayoutManager class]]) {
     [layoutManager setValue:nil forKey:@"config"];
+    if (layoutManager.delegate == (id<NSLayoutManagerDelegate>)layoutManager) {
+      layoutManager.delegate = nil;
+    }
     object_setClass(layoutManager, [NSLayoutManager class]);
   }
 }

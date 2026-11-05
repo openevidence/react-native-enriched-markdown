@@ -5,7 +5,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class StyleConfig;
 
-@interface TextViewLayoutManager : NSLayoutManager
+@interface TextViewLayoutManager : NSLayoutManager <NSLayoutManagerDelegate>
 
 @property (nonatomic, strong) StyleConfig *config;
 
