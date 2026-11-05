@@ -4,8 +4,14 @@
 
 static const CGFloat kPillHeightEm = 2.0;
 static const CGFloat kPillCornerEm = 0.47;
-static const CGFloat kPillBorderWidth = 1.0;
 static const CGFloat kPillLineInset = 1.0;
+
+const CGFloat ENRMDosePillBorderWidth = 1.0;
+
+CGFloat ENRMDosePillHeight(CGFloat fontSize, CGFloat capHeight, CGFloat lineHeight)
+{
+  return MIN(fontSize * kPillHeightEm, MAX(lineHeight - 2.0 * kPillLineInset, capHeight));
+}
 
 @implementation DosePillBackground {
   StyleConfig *_config;
@@ -92,8 +98,7 @@ static const CGFloat kPillLineInset = 1.0;
                                                                             inTextContainer:textContainer];
                                  CGPoint location = [layoutManager locationForGlyphAtIndex:piece.location];
                                  CGFloat capCentre = rect.origin.y + location.y - capHeight / 2.0;
-                                 CGFloat height = MIN(fontSize * kPillHeightEm,
-                                                      MAX(usedRect.size.height - 2.0 * kPillLineInset, capHeight));
+                                 CGFloat height = ENRMDosePillHeight(fontSize, capHeight, usedRect.size.height);
                                  CGRect pill = CGRectMake(textRect.origin.x + origin.x,
                                                           capCentre - height / 2.0 + origin.y,
                                                           textRect.size.width, height);
@@ -131,7 +136,7 @@ static const CGFloat kPillLineInset = 1.0;
             fill:(nullable RCTUIColor *)fill
           border:(nullable RCTUIColor *)border
 {
-  CGRect inner = CGRectInset(rect, kPillBorderWidth / 2.0, kPillBorderWidth / 2.0);
+  CGRect inner = CGRectInset(rect, ENRMDosePillBorderWidth / 2.0, ENRMDosePillBorderWidth / 2.0);
   UIBezierPath *shape = [self pathForRect:inner isFirst:isFirst isLast:isLast radius:radius];
   if (fill) {
     [fill setFill];
@@ -141,7 +146,7 @@ static const CGFloat kPillLineInset = 1.0;
     [border setStroke];
     UIBezierPath *stroke =
         (isFirst && isLast) ? shape : [self openBorderPathForRect:inner isFirst:isFirst isLast:isLast radius:radius];
-    stroke.lineWidth = kPillBorderWidth;
+    stroke.lineWidth = ENRMDosePillBorderWidth;
     BezierPathSetRoundStyle(stroke);
     [stroke stroke];
   }

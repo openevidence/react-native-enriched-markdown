@@ -1,9 +1,11 @@
 #import "DoseIconAttachment.h"
+#import "DosePillBackground.h"
 
 static const CGFloat kBaseSurroundingFontSize = 17.0;
 static const CGFloat kGlyphGrid = 22.0;
 static const CGFloat kActiveRing = 2.0;
 static const CGFloat kPersonIconScale = 0.9;
+static const CGFloat kPersonPillClearance = 1.5;
 
 static NSCache<NSString *, RCTUIImage *> *sDoseIconCache = nil;
 
@@ -61,6 +63,14 @@ static NSCache<NSString *, RCTUIImage *> *sDoseIconCache = nil;
 
   CGFloat kindScale = _kind == ENRMDoseIconKindPerson ? kPersonIconScale : 1.0;
   _iconSize = MIN(baseSize * scale * kindScale, lineHeightCap);
+  if (_kind == ENRMDoseIconKindPerson && surroundingFont) {
+    CGFloat lineHeight = lineFragment.size.height > 0 ? lineFragment.size.height : surroundingFontSize * 1.3;
+    CGFloat pillInner = ENRMDosePillHeight(surroundingFontSize, surroundingFont.capHeight, lineHeight) -
+                        2.0 * (ENRMDosePillBorderWidth + kPersonPillClearance);
+    if (pillInner > 0) {
+      _iconSize = MIN(_iconSize, pillInner);
+    }
+  }
   _leadingGap = _baseLeadingGap * scale;
 
   CGFloat yOffset = surroundingFont ? (surroundingFont.capHeight - _iconSize) / 2.0 : -5.0;
