@@ -43,14 +43,16 @@
   BOOL active = _config.doseActiveId.length > 0 && [_config.doseActiveId isEqualToString:doseId];
   BOOL calculatorActive = active && hasCalculator && [_config.doseActiveTarget isEqualToString:@"calculator"];
 
+  // At rest the mark is a dotted underline in its colour; while its card is
+  // open the line turns solid in the open icon's colour (Daniel v2 pp. 3-5).
+  RCTUIColor *activeColor = calculatorActive ? _config.doseCalculatorColor : markColor;
   [output addAttribute:NSUnderlineStyleAttributeName
-                 value:@(NSUnderlineStyleSingle | NSUnderlinePatternDot)
+                 value:active ? @(NSUnderlineStyleSingle) : @(NSUnderlineStyleSingle | NSUnderlinePatternDot)
                  range:textRange];
-  [output addAttribute:NSUnderlineColorAttributeName value:markColor range:textRange];
+  [output addAttribute:NSUnderlineColorAttributeName value:active ? activeColor : markColor range:textRange];
   if (active) {
-    RCTUIColor *tint = calculatorActive ? _config.doseCalculatorColor : markColor;
     [output addAttribute:NSBackgroundColorAttributeName
-                   value:[tint colorWithAlphaComponent:_config.doseActiveBackgroundOpacity]
+                   value:[activeColor colorWithAlphaComponent:_config.doseActiveBackgroundOpacity]
                    range:textRange];
   }
 
