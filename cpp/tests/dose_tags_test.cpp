@@ -45,7 +45,7 @@ void serialize(const MarkdownASTNode &node, std::string &out) {
   if (node.type == NodeType::Dose) {
     out += "[";
     bool first = true;
-    for (const char *key : {"id", "state", "calc", "label"}) {
+    for (const char *key : {"id", "state", "calc", "late", "label"}) {
       auto it = node.attributes.find(key);
       if (it == node.attributes.end()) continue;
       if (!first) out += ",";
@@ -140,6 +140,11 @@ int main() {
          "label, with a dosing calculator\">5 mg orally twice daily</dose>.[[1|DailyMed|]]",
          "P(Text\"the labeled apixaban dose is \",Dose[id=d1,state=green,calc=1,label=checked against the FDA "
          "label, with a dosing calculator](Text\"5 mg orally twice daily\"),Text\".\",Cite[DailyMed])");
+  expect("a late dose keeps its late attribute for the renderer",
+         "Give <dose id=\"a1\" state=\"amber\" late=\"1\" label=\"in the FDA label for a different patient group\">250 mg "
+         "4\u00d7/day</dose> now.",
+         "P(Text\"Give \",Dose[id=a1,state=amber,late=1,label=in the FDA label for a different patient group](Text\"250 "
+         "mg 4\u00d7/day\"),Text\" now.\")");
   expect("a self-closing dose marks nothing", "A <dose id=\"x\"/> B", "P(Text\"A  B\")");
 
   expect("a half-written tag at the end stays text (the app strips it while streaming)",
