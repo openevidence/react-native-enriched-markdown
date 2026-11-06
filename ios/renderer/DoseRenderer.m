@@ -35,10 +35,13 @@ static const CGFloat kPillPaddingEnd = 12.0;
     return;
   }
   BOOL amber = [node.attributes[@"state"] isEqualToString:@"amber"];
-  BOOL hasCalculator = [node.attributes[@"calc"] isEqualToString:@"1"];
+  // A dose shown before its check landed keeps its place: only an underline,
+  // which takes no room, so nothing around it moves.
+  BOOL late = [node.attributes[@"late"] isEqualToString:@"1"];
+  BOOL hasCalculator = !late && [node.attributes[@"calc"] isEqualToString:@"1"];
 
   NSUInteger start = output.length;
-  if (amber) {
+  if (amber && !late) {
     // Inserted before the words render, so the ranges the children register never shift.
     [output appendAttributedString:[self spacerWithWidth:kPillPaddingStart textAttributes:@{}]];
     [output appendAttributedString:[[NSAttributedString alloc] initWithString:@"\u2060"
@@ -57,7 +60,9 @@ static const CGFloat kPillPaddingEnd = 12.0;
   NSString *words = [[output.string substringWithRange:textRange]
       stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 
-  if (amber) {
+  if (late) {
+    [self decorateLateTextRange:textRange doseId:doseId amber:amber into:output];
+  } else if (amber) {
     NSDictionary *firstAttributes = [output attributesAtIndex:textStart effectiveRange:NULL];
     [output addAttributes:[self decorationAttributesFrom:firstAttributes] range:NSMakeRange(start, textStart - start)];
     [self finishAmberPillFrom:start textAttributes:textAttributes doseId:doseId into:output];
@@ -72,6 +77,24 @@ static const CGFloat kPillPaddingEnd = 12.0;
   NSString *label = node.attributes[@"label"];
   NSString *spoken = label.length > 0 ? [NSString stringWithFormat:@"%@, %@", words, label] : words;
   [context registerDoseRange:NSMakeRange(start, output.length - start) doseId:doseId accessibilityLabel:spoken];
+}
+
+- (void)decorateLateTextRange:(NSRange)textRange
+                       doseId:(NSString *)doseId
+                        amber:(BOOL)amber
+                         into:(NSMutableAttributedString *)output
+{
+  RCTUIColor *color = amber ? _config.doseAmberColor : _config.doseCheckColor;
+  BOOL active = _config.doseActiveId.length > 0 && [_config.doseActiveId isEqualToString:doseId];
+  [output addAttribute:NSUnderlineStyleAttributeName
+                 value:active ? @(NSUnderlineStyleSingle) : @(NSUnderlineStyleSingle | NSUnderlinePatternDot)
+                 range:textRange];
+  [output addAttribute:NSUnderlineColorAttributeName value:color range:textRange];
+  if (active) {
+    [output addAttribute:NSBackgroundColorAttributeName
+                   value:[color colorWithAlphaComponent:_config.doseActiveBackgroundOpacity]
+                   range:textRange];
+  }
 }
 
 - (void)decorateCheckedTextRange:(NSRange)textRange
